@@ -1,0 +1,30 @@
+% Minimal test instance: 1 bus, 3 stops
+% Designed to be FEASIBLE if constraints are properly balanced
+
+num_buses = 1;
+num_stations = 3;
+max_stops = 3;
+
+num_stops = [3];  % Bus 0 has 3 stops
+
+% Station mapping: Bus 0 visits stations 1, 2, 3
+st_bi = [| 1, 2, 3 |];
+
+% Battery parameters
+Cmax = 1400;      % 140 kWh (scaled ×10)
+Cmin = 400;       % 40 kWh (minimum safe level)
+alpha = 2;        % 0.2 kWh/min charging rate (2 units/min scaled)
+
+% Time parameters
+mu = 50;          % 5 min max deviation
+psi = 5;          % 0.5 min minimum charging (5 units scaled)
+SM = 10;          % 1 min safety margin (10 units scaled)
+
+% Route data: Energy consumption between stops
+D = [| 130, 120, 130 |];
+
+% Route data: Travel time between stops (in minutes, scaled ×10)
+T = [| 150, 100, 100 |];
+
+% Scheduled arrival times (in minutes, scaled ×10)
+tau_bi = [| 0, 150, 300 |];
