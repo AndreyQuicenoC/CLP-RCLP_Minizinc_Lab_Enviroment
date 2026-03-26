@@ -1,0 +1,61 @@
+% --- Dimensiones Solicitadas ---
+num_buses = 5;
+num_stations = 8;
+
+% --- Parámetros de Energía (Basados en el modelo CLP) ---
+% NOTA: Todos los valores están escalados ×10 para trabajar con enteros
+Cmax = 1000;  % Capacidad total (100.0)
+Cmin = 200;   % 20% de reserva obligatoria para evitar daños [1] (20.0)
+alpha = 100;  % Tasa de carga rápida: 10 kWh por minuto [3]
+
+% --- Parámetros de Tiempo y Restricciones ---
+mu = 50;      % Máximo retraso permitido de 5 minutos respecto al horario [4]
+SM = 10;      % Margen de seguridad de 1 min entre cargas [5]
+psi = 10;     % Mínimo tiempo de carga: 1 min [6]
+beta = 100;   % Máximo tiempo de carga por parada: 10 min [6]
+M = 10000;    % Constante para lógica de tiempos [7]
+
+% --- Estructura de Rutas ---
+max_stops = 8;
+num_stops = [8,8,8,8,8];
+
+% Mapeo de paradas a estaciones físicas (1 a 8)
+st_bi = array2d(1..5, 1..8, [
+  1,2,3,4,5,6,7,8,  % Bus 1: Cruza toda la ciudad
+  8,7,6,5,4,3,2,1,  % Bus 2: Ruta inversa
+  1,3,5,7,2,4,6,8,  % Bus 3: Saltos (posible congestión en estaciones compartidas)
+  2,4,6,8,1,3,5,7,  % Bus 4: Intersecciones con Bus 3
+  1,4,7,2,5,8,3,6   % Bus 5: Ruta diagonal
+]);
+
+% Energía consumida entre paradas (kWh)
+% Analizando el Bus 1: 15+15+20+20+20+15+15 = 120 kWh totales.
+% Como la batería útil es 80 kWh, este bus NECESITA cargar al menos 40 kWh.
+% (Valores escalados ×10)
+D = array2d(1..5, 1..8, [
+  0,150,150,200,200,200,150,150,
+  0,150,150,200,200,200,150,150,
+  0,180,180,180,180,180,180,120,
+  0,180,180,180,180,180,180,120,
+  0,250,250,250,250,200,100,100
+]);
+
+% Tiempo de viaje entre paradas (minutos)
+% (Valores escalados ×10)
+T = array2d(1..5, 1..8, [
+  0,100,100,120,120,120,100,100,
+  0,100,100,120,120,120,100,100,
+  0,150,150,150,150,150,150,100,
+  0,150,150,150,150,150,150,100,
+  0,200,200,200,200,150,80,80
+]);
+
+% Horario original de llegada (Timetable)
+% (Valores escalados ×10)
+tau_bi = array2d(1..5, 1..8, [
+  0,100,200,320,440,560,660,760,
+  50,150,250,370,490,610,710,810,
+  20,170,320,470,620,770,920,1020,
+  80,230,380,530,680,830,980,1080,
+  100,300,500,700,900,1050,1130,1210
+]);
