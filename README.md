@@ -170,7 +170,7 @@ python Scripts/testing/run_battery_project_tests.py  # Tests Battery
 ### Diagnosticar Problemas
 ```bash
 python Scripts/setup/setup_and_validate.py  # Validar entorno
-python Scripts/utilities/diagnose_cork.sh    # Diagnosticar Cork
+bash Scripts/utilities/diagnose_cork.sh    # Diagnosticar Cork
 ```
 
 ## 📊 Conjuntos de Datos
@@ -291,28 +291,13 @@ Este proyecto está bajo licencia MIT. Ver [LICENSE](LICENSE) para detalles.
 **Última Actualización**: 2026-03-25
 **Estado**: ✅ Production Ready
 
-[⬆ Volver arriba](#clp-rclp-minizinc-lab-environment)
+## 📝 Nota Técnica
 
 Todos los parámetros numéricos están escalados ×10 para usar aritmética entera:
 
 - **Tiempo**: `4200` = 420.0 minutos = 7:00 AM
 - **Energía**: `250` = 25.0 kWh
 - **Capacidad**: `1000` = 100.0 kWh
-
-## 🧪 Resultados de Validación
-
-### Instancias Validadas (noncity)
-
-- ✓ `noncity_5buses-8stations.dzn`: **3-6 estaciones** (dependiendo de K)
-- ✓ Tiempos de ejecución: < 1 segundo (Gecode)
-
-### Instancias Sintéticas Corregidas
-
-- ✓ Índices 1-based correctos
-- ✓ Sin errores de acceso a arrays
-- ✓ Consumos energéticos balanceados para forzar carga estratégica
-- ✓ Padding de rutas apropiado para buses con menos paradas
-
 
 ## 📚 Referencias
 
@@ -321,20 +306,4 @@ Este proyecto se basa en la investigación publicada en:
 - **JITS 2022**: Journal of Intelligent Transportation Systems
 - **Modelo original**: Véase carpeta `JITS2022/`
 
-## 👥 Contribuciones
-
-Para reportar problemas o sugerir mejoras:
-
-1. Verificar que los archivos .dzn usen índices 1-based
-2. Validar que consumos energéticos sean realistas (total > 80 kWh para forzar carga)
-3. Ejecutar pruebas con `test_clp_preliminary.sh` antes de commits
-
-## 📄 Licencia
-
-Todos los derechos para
-- Andrey Quiceno Cabrera
-- Juan Francesco García Vargas
-
-**Última actualización**: Marzo 2026
-**Versión del modelo**: CLP v1.0 | RCLP v1.0
-**MiniZinc compatible**: 2.5+
+[⬆ Volver arriba](#clp-rclp-minizinc-lab-environment)

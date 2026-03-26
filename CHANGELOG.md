@@ -1,178 +1,161 @@
 # Changelog
 
-Todos los cambios significativos en este proyecto se documentan en este archivo.
+All notable changes to this project will be documented in this file.
 
-El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [1.0.0] - 2026-03-25
 
-### ✨ Características Principales
+### Added
 
-#### Agregado
-- **Sistema Profesional de Generación de Instancias CLP**
-  - Generador GUI interactivo con Tkinter
-  - Algoritmo experto basado en análisis de instancias validadas
-  - Validación automática con MiniZinc
-  - Auto-corrección para instancias UNSAT
-  - Gestión de expected results en JSON
+- **GUI Instance Generator** (`Generator/generator.py`)
+  - Tkinter-based professional interface
+  - Supports 2-25 buses and 4-25 stations
+  - Expert algorithm with overconsumption factor adjustment
+  - Automatic MiniZinc validation
+  - Self-correction: regenerates up to 5 times if UNSAT
+  - JSON-based expected results storage
+  - Dark blue/white/gray professional theme
 
-- **Organización Profesional del Proyecto**
-  - Scripts agrupados en 5 categorías funcionales
-  - Documentación estructurada en 3 seções temáticas
-  - README en cada directorio de scripts
-  - Índices de navegación en documentación
+- **Data Processing Scripts**
+  - `Scripts/data-processing/convert_json_to_integer_dzn.py` - Convert JSON to MiniZinc format
+  - `Scripts/data-processing/validate_integer_dzn.py` - Validate DZN files for correctness
 
-- **Scripts de Generación y Validación**
-  - `create_cork_variants.py` - Reducción de instancias Cork (full-day → single-cycle)
-  - `convert_json_to_integer_dzn.py` - Conversión JSON → .dzn
-  - `validate_integer_dzn.py` - Validación de integridad
+- **Generator Scripts**
+  - `Scripts/generation/create_cork_variants.py` - Extract single cycles from Cork instances
+  - `Scripts/generation/generate_synthetic_data.py` - Generate synthetic test cases
 
-- **Suite Completa de Testing**
-  - `test_generator.sh` - 7 tests del sistema
-  - `test_clp_preliminary.sh` - Tests preliminares
-  - `run_battery_project_tests.py` - Suite Battery Project
-  - Todos con reportes detallados
+- **Testing Suite**
+  - `Scripts/testing/test_generator.sh` - Comprehensive system validation (7 tests)
+  - `Scripts/testing/test_clp_preliminary.sh` - Preliminary CLP tests
+  - `Scripts/testing/run_battery_project_tests.py` - Full battery test suite
+  - `Scripts/testing/test_initial_small_case.py` - Small case validation
 
-### 🔧 Modificaciones Técnicas
+- **Setup & Utilities**
+  - `Scripts/setup/setup_and_validate.py` - Initial environment validation
+  - `Scripts/utilities/diagnose_cork.sh` - Cork instance diagnostics
 
-- Modelo CLP con restricciones mejoradas para manejo de depot
-- Escalado ×10 de todos los valores para aritmética entera
-- Manejo UTF-8 en todas las plataformas (Windows, Linux, macOS)
+- **Documentation**
+  - Comprehensive README files in all directories
+  - Generated System documentation (600+ lines)
+  - Model documentation (mathematical formulation)
+  - Analysis reports (Cork feasibility, data corrections, model modifications)
 
-### 📚 Documentación
+- **Data**
+  - 5 Cork single-cycle variants in `Data/Battery Project Variant/`
+  - 3 generated test instances in `Data/Battery Generated/`
+  - Expected results for regression testing
+  - Original validated instances in `Data/Battery Own/`
 
-- Documentación completa del generador (600+ líneas)
-- Análisis de infactibilidad de Cork
-- Justificación de cambios del modelo
-- Guía rápida de inicio
-- Ejemplos de uso
+- **Professional Organization**
+  - Organized Scripts into 5 functional categories (data-processing, generation, testing, setup, utilities)
+  - Organized Docs into 3 technical categories (generated-system, model, analysis)
+  - Professional .gitignore
+  - LICENSE (MIT)
+  - CONTRIBUTING.md guidelines
 
-### 🧪 Pruebas y Validación
+### Technical Details
 
-- 100% de tests pasados (7/7)
-- 3 instancias generadas validadas
-- 5 variantes Cork creadas exitosamente
-- Expected results storage para regression testing
+- **Overconsumption Factor**: 1.1-1.4x forcing strategic charging
+- **Route Diversity**: Multiple strategies (sequential, reverse, zigzag, weighted-random)
+- **Consumption Model**: Gaussian(18kWh, σ=4kWh) per stop, scaled ×10 for integer arithmetic
+- **Temporal Feasibility**: Staggered start times (7:00 AM + 5 min/bus)
+- **Auto-Validation**: MiniZinc integration with subprocess control and 5-attempt self-correction
+- **Encoding**: UTF-8 support with Windows/Linux/macOS compatibility
 
-## [0.9.0] - 2026-03-20 (Pre-release)
+### Test Results
 
-### Agregado
-- Estructuras iniciales de proyectos
-- Esquemas de datos básicos
-- Primeras versiones de scripts
+- 7/7 system tests passing (100% success rate)
+- All instances validated as SATISFIABLE or properly flagged
+- Cork variants successfully extracted and reduced from ~378 stops to ~42 stops
+- Generated instances use expert algorithm patterns
+- Performance verified with Chuffed solver (v2.9.4)
 
----
+### Test Instances Available
 
-## Notas de Cambios
+- 5 Cork variants (from full-day multi-cycle to single-cycle)
+- 3 generated test instances (5 buses/8 stations, variable complexity)
+- 2 noncity original instances
+- All instances with complete documentation and expected results
 
-### Versión 1.0.0
-**Hito**: Sistema completo y funcional
+### Quality Metrics
 
-- ✅ Sistema de generación profesional
-- ✅ Organización de proyecto limpia
-- ✅ Documentación completa
-- ✅ Suite de tests completa
-- ✅ Ready for production use
+- Lines of Code: 1500+ (generator.py)
+- Documentation: 600+ lines (README.md)
+- Test Coverage: 7 test cases covering all major components
+- Code Organization: 5 script categories + 3 doc categories
+- Compatibility: Windows, Linux, macOS
 
-### Cambios Futuros Planificados
+### Known Limitations
 
-#### [1.1.0] - Próxima Liberación
-- [ ] Batch generation mode (generar N instancias)
-- [ ] Custom parameter profiles
-- [ ] Advanced constraints support
-- [ ] Real-time route visualization
-- [ ] CLI mode para automatización
+- Cork single-cycle variants are structurally complex (expected WARN on tests)
+- Large instances (>20 buses) may timeout with default 5-minute limit
+- GUI requires tkinter (included in standard Python installation)
 
-#### [1.2.0] - Mejoras de Rendimiento
-- [ ] Optimizaciones de algoritmo
-- [ ] Caching de instancias generadas
-- [ ] Parallelización de generación
-- [ ] Reduced memory footprint
+### Dependencies
 
-#### [2.0.0] - Expansión
-- [ ] Integración con benchmark suite
-- [ ] Soporte para múltiples modelos
-- [ ] API REST para generación remota
-- [ ] Interfaz web
+- Python 3.8+
+- MiniZinc 2.6+
+- Chuffed solver (recommended)
+- Standard library modules
 
----
+### Files Overview
 
-## Resumen de Cambios Estructurales
-
-### Reorganización de Proyecto (2026-03-25)
-
-**Antes**:
 ```
-Scripts/
-├── *.py (11 scripts sueltos)
-├── *.sh (3 scripts sueltos)
-└── Generated System/
-    ├── *.py
-    └── *.sh
-```
-
-**Después**:
-```
-Scripts/
-├── data-processing/    [*.py de conversión]
-├── generation/         [create_cork_variants.py]
-├── testing/           [tests y validación *.py *.sh]
-├── setup/             [configuración *.py *.sh]
-└── utilities/         [herramientas y diagnóstico]
-```
-
-### Documentación (2026-03-25)
-
-**Antes**:
-```
-Docs/
-├── Generated System/
-├── Corrected/
-└── Public/
-```
-
-**Después**:
-```
-Docs/
-├── generated-system/  [sistema de generación]
-├── model/            [documentación del modelo]
-└── analysis/         [análisis y diagnóstico]
+CLP-RCLP Minizinc/
+├── Generator/                          # GUI application
+│   ├── generator.py (1500+ lines)
+│   └── README_BUILD.md
+├── Scripts/
+│   ├── data-processing/ (2 scripts)
+│   ├── generation/ (2 scripts)
+│   ├── testing/ (4 scripts)
+│   ├── setup/ (1 script)
+│   └── utilities/ (1 script)
+├── Docs/
+│   ├── generated-system/ (600+ lines)
+│   ├── model/
+│   └── analysis/
+├── Data/
+│   ├── Battery Project Integer/        # Cork instances
+│   ├── Battery Project Variant/        # Generated Cork variants
+│   ├── Battery Generated/              # User-generated instances
+│   └── Battery Own/                    # Original validated instances
+├── Models/                             # MiniZinc model files
+├── Tests/                              # Execution results
+├── README.md                           # Main documentation
+├── LICENSE                             # MIT License
+├── CONTRIBUTING.md                     # Contributing guidelines
+├── CHANGELOG.md                        # This file
+└── .gitignore                          # Git ignore rules
 ```
 
 ---
 
-## Estabilidad de Versión
+## Future Roadmap
 
-### API/Interface
-- ✅ Generador GUI - Stable
-- ✅ Scripts CLI - Stable
-- ✅ Formato .dzn - Stable
+### Planned for v1.1
+- Build .exe executable with PyInstaller
+- Batch instance generation
+- Advanced visualization of solutions
+- CLI mode for automated generation
 
-### Performance
-- ✅ Generación < 1s (sin MiniZinc)
-- ✅ Validación < 30s (instancias normales)
-- ✅ Suite tests ~ 2 minutos
+### Planned for v1.2
+- RCLP model integration
+- Constraint relaxation tools
+- Performance profiling subsystem
+- Parallel solver support
 
-### Compatibilidad
-- ✅ Python 3.8+
-- ✅ MiniZinc 2.5+
-- ✅ Windows / Linux / macOS
-
----
-
-## Incidentes Resueltos
-
-| Problema | Causa | Solución | Versión |
-|----------|-------|----------|---------|
-| Cork UNSAT | Demasiadas paradas | Single-cycle reduction | 1.0.0 |
-| Encoding errors | Windows console | UTF-8 config | 1.0.0 |
-| Path issues | Espacios en nombres | Quoting | 1.0.0 |
-| Algorithm UNSAT | Insuficientes stops | Buffer +2 stops | 1.0.0 |
+### Long-term Vision
+- Web interface for remote access
+- Cloud-based instance generation
+- Integration with other optimization toolkits
+- Academic paper generation from results
+- Advanced analytics dashboard
 
 ---
 
-**Nota**: Este archivo se actualiza con cada liberación significativa.
-
-Para cambios no liberados, consultar commits recientes en Git.
-
-*Última actualización: 2026-03-25*
+**Version**: 1.0.0
+**Release Date**: 2026-03-25
+**Status**: Stable

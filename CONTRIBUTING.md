@@ -1,172 +1,213 @@
-# Guía de Contribución
+# Contributing to CLP-RCLP MiniZinc Lab Environment
 
-¡Gracias por tu interés en contribuir a CLP-RCLP MiniZinc Lab Environment!
+Thank you for your interest in contributing! This document provides guidelines and instructions for contributing to the project.
 
-## Reportar Problemas
+## Code of Conduct
 
-Si encuentras un bug o tienes una sugerencia, por favor:
+We are committed to providing a welcoming and inclusive environment for all contributors.
 
-1. Verificar que no exista un issue similar ya abierto
-2. Crear un nuevo issue con:
-   - Descripción clara del problema
-   - Pasos para reproducir (si es un bug)
-   - Versión de Python, MiniZinc, OS
-   - Logs relevantes
+## How to Contribute
 
-## Proponer Cambios
+### Reporting Bugs
 
-1. **Fork** el repositorio
-2. **Crear una rama** para tu feature: `git checkout -b feature/mi-feature`
-3. **Hacer commits** claros con mensajes descriptivos
-4. **Agregar tests** si es aplicable
-5. **Push** a tu fork
-6. **Crear Pull Request** con descripción clara
+Before creating a bug report, check if the issue already exists. When creating a bug report, include:
 
-## Estándares de Código
+- **Clear description** of what the bug is
+- **Steps to reproduce** the behavior
+- **Expected behavior** vs actual behavior
+- **Environment details**: OS, Python version, MiniZinc version
+- **Screenshots** if applicable
+- **Log files** if available
+
+### Suggesting Enhancements
+
+Enhancement suggestions are tracked as GitHub issues. When suggesting an enhancement:
+
+- Use a **clear and descriptive title**
+- Provide **detailed description** of the suggested enhancement
+- Explain **why this enhancement would be useful**
+- List **examples** of how it would work
+
+### Pull Requests
+
+1. **Fork** the repository
+2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`)
+3. **Make your changes**
+4. **Test your changes** thoroughly
+5. **Commit with clear messages** (see Commit Guidelines below)
+6. **Push to your fork** (`git push origin feature/AmazingFeature`)
+7. **Submit a Pull Request**
+
+## Development Setup
+
+### Prerequisites
+
+```bash
+# Python 3.8+
+python --version
+
+# MiniZinc 2.6+
+minizinc --version
+
+# Git
+git --version
+```
+
+### Setup Development Environment
+
+```bash
+# Clone the repository
+git clone https://github.com/AndreyQuicenoC/CLP-RCLP_Minizinc_Lab_Enviroment.git
+cd CLP-RCLP\ Minizinc\ Lab\ Enviroment
+
+# Create virtual environment (optional but recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install MiniZinc if not already installed
+# https://www.minizinc.org/software.html
+```
+
+### Project Structure
+
+- `Models/` - MiniZinc model files (.mzn)
+- `Data/` - Test instances (.dzn files)
+- `Scripts/` - Python and shell scripts (organized by function)
+- `Docs/` - Documentation and technical guides
+- `Tests/` - Test results and benchmarks
+- `Generator/` - GUI-based instance generator
+- `JITS2022/` - Reference implementation from paper
+
+### Testing
+
+Run the test suite:
+
+```bash
+# Test entire system
+bash Scripts/testing/test_generator.sh
+
+# Run specific tests
+python Scripts/testing/test_initial_small_case.py
+python Scripts/testing/run_battery_project_tests.py
+```
+
+## Commit Guidelines
+
+### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Types
+
+- **feat**: A new feature
+- **fix**: A bug fix
+- **docs**: Documentation only changes
+- **style**: Changes that don't affect code meaning (formatting, etc)
+- **refactor**: Code change that neither fixes a bug nor adds a feature
+- **perf**: Code change that improves performance
+- **test**: Adding or updating tests
+- **chore**: Changes to build process, CI/CD, dependencies
+
+### Scope
+
+Scope should specify what is affected:
+- `generator` - Instance generator GUI
+- `scripts` - Python/shell scripts
+- `models` - MiniZinc model files
+- `data` - Data processing or test instances
+- `docs` - Documentation
+
+### Subject
+
+- Use imperative mood ("add feature" not "added feature")
+- Don't capitalize first letter
+- No period at the end
+- Limit to 50 characters
+
+### Body
+
+- Explain **what** and **why**, not **how**
+- Wrap at 72 characters
+- Separate from subject with blank line
+
+### Footer
+
+Reference issues with keywords:
+- `Closes #123`
+- `Fixes #456`
+- `Resolves #789`
+
+### Example
+
+```
+feat(generator): implement expert algorithm for instance generation
+
+Add intelligent instance generation based on noncity analysis patterns.
+Implements overconsumption factor (1.1-1.4x) with route diversity and
+temporal feasibility. Includes auto-validation with MiniZinc integration.
+
+Closes #42
+Resolves #55
+```
+
+## Code Style
 
 ### Python
-- Seguir [PEP 8](https://www.python.org/dev/peps/pep-0008/)
-- Docstrings en formato Google
-- Type hints donde sea posible
-- Máximo 88 caracteres por línea (black standard)
+
+- Follow PEP 8 style guide
+- Use 4-space indentation
+- Keep lines under 100 characters
+- Add docstrings to functions and classes
 
 ```python
-def function_name(parameter: type) -> return_type:
+def validate_instance(dzn_file):
     """
-    Breve descripción.
-
-    Descripción más detallada si es necesario.
-
+    Validate a DZN instance file for correctness.
+    
     Args:
-        parameter: Descripción del parámetro
-
+        dzn_file (str): Path to the .dzn file
+        
     Returns:
-        Descripción del retorno
-
-    Raises:
-        Exception: Cuándo se lanza
+        tuple: (is_valid, error_message)
     """
     pass
 ```
 
-### Bash Scripts
-- Variables UPPER_CASE
-- Funciones lower_case
-- Comentarios explicativos
-- Manejo de errores con `set -e` o checks explícitos
+### Shell Scripts
 
-```bash
-#!/bin/bash
-# Descripción del script
+- Use bash (#!/bin/bash)
+- Quote variables: `"$variable"`
+- Use meaningful variable names
+- Add comments for complex logic
 
-set -e  # Exit on error
+### Documentation
 
-VARIABLE_NAME="value"
+- Use Markdown for documentation
+- Include code examples where helpful
+- Keep documentation up-to-date with code changes
+- Add links to related documentation
 
-log() {
-    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*"
-}
+## Reporting Security Issues
 
-main() {
-    log "Empezando..."
-    # Tu código aquí
-}
+**Do not** open a public issue for security vulnerabilities. Email security concerns to the project maintainers instead.
 
-main "$@"
-```
+## Recognition
 
-### Documentación
-- Markdown bien formateado
-- Índices de navegación
-- Links internos relativos
-- Ejemplos de código prácticos
+Contributors will be recognized in:
+- README.md contributors section
+- GitHub contributors page
+- Project releases
 
-## Estructura de Recursos
+## Questions?
 
-```
-Scripts/
-├── data-processing/     # Conversión y validación de datos
-├── generation/          # Generación de instancias
-├── testing/            # Suite de tests
-├── setup/              # Configuración e initialization
-└── utilities/          # Utilidades y diagnóstico
-
-Docs/
-├── generated-system/   # Sistema de generación
-├── model/             # Documentación del modelo
-└── analysis/          # Análisis y diagnóstico
-```
-
-Para agregar nuevo contenido:
-1. Poner en categoría apropiada
-2. Actualizar README.md correspondiente
-3. Seguir estándares de código
-
-## Testing
-
-Antes de hacer PR:
-
-```bash
-# Validar scripts
-python Scripts/data-processing/validate_integer_dzn.py
-
-# Ejecutar tests
-bash Scripts/testing/test_generator.sh
-
-# Verificar generación
-python Scripts/generation/create_cork_variants.py
-```
-
-## Commit Messages
-
-Usar formato claro:
-```
-[TIPO] Descripción breve
-
-Descripción detallada si es necesario.
-
-- Punto 1
-- Punto 2
-
-Relacionado a #123
-```
-
-Tipos de commit:
-- `[FEATURE]` - Nueva funcionalidad
-- `[FIX]` - Corrección de bug
-- `[DOCS]` - Documentación
-- `[REFACTOR]` - Reorganización sin cambio funcional
-- `[TEST]` - Adición o mejora de tests
-- `[PERF]` - Mejora de performance
-
-## Documentación de Cambios
-
-Si tu PR incluye cambios significativos:
-1. Actualizar README relevante
-2. Agregar entrada a CHANGELOG.md
-3. Actualizar docstrings
-4. Incluir ejemplos de uso
-
-## Preguntas
-
-Para preguntas:
-1. Revisar [Docs/README.md](Docs/README.md) primero
-2. Chequear issues existentes
-3. Abrir un issue con tag `question`
-
-## Código de Conducta
-
-- Ser respetuoso
-- Acepta crítica constructiva
-- Enfócate en lo que es mejor para el proyecto
-- Reporta comportamiento inapropiado a los maintainers
-
-## Reconocimiento
-
-Los contribuyentes significativos serán reconocidos en el archivo de contribuyentes.
+Feel free to open an issue with the `question` label for any clarification.
 
 ---
 
-**Gracias por contribuir!** 🎉
-
-*Última actualización: 2026-03-25*
+**Last Updated**: 2026-03-25
