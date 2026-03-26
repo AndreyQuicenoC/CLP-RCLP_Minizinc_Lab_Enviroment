@@ -1,25 +1,26 @@
 """
 ================================================================================
-Instance Generator Module - CLP Instance Generation
+Instance Generator Module - CLP Instance Generation (v2.1 - Improved Heuristics)
 ================================================================================
-Expert algorithm for generating feasible CLP instances based on constraint
-analysis of the CLP model.
+Professional instance generation using intelligent heuristics based on analysis
+of working examples (Battery Own dataset).
 
-Key Principles:
-1. Force needed charging: consumption > usable capacity
-2. Strategic placement: 1-2 forced charge points per route
-3. Temporal feasibility: ensure deviation constraints are satisfiable
-4. Diversity: minimize station conflicts between buses
+Key Improvements:
+1. Smarter max_stops calculation based on bus/station ratio
+2. Consumption-driven generation (ensure overconsumption)
+3. Diverse and realistic route patterns (5+ strategies)
+4. Early detection of problematic instances
+5. Better distribution of energy and timing
 ================================================================================
 """
 
 import random
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from config import Config
 
 
 class ConstraintAnalyzer:
-    """Analyzes CLP constraints to guide instance generation"""
+    """Analyzes CLP constraints using working examples as reference"""
 
     def __init__(self, num_buses: int, num_stations: int):
         self.num_buses = num_buses
@@ -28,231 +29,235 @@ class ConstraintAnalyzer:
 
     def estimate_optimal_stops(self) -> int:
         """
-        Estimate optimal number of stops to force exactly 1-2 charges.
+        Estimate optimal number of stops using professional heuristics.
 
-        Logic:
-        - Usable capacity: 80 kWh
-        - Target overconsumption: 1.2-1.5x to force charging
-        - Average consumption: ~18 kWh/stop
-        - Result: need ~6-8 stops to trigger charging
+        Analysis of working examples (Battery Own):
+        - noncity_5buses-8stations: 8 stops (1 per station)
+        - synthetic_3buses-6stations: 5 stops (1 per station minus 1)
+        - Pattern: max_stops ≈ num_stations (NOT limited by buses)
 
-        CRITICAL: Limit by number of stations to avoid excessive padding/repetition.
-        With N stations, can realistically have max N unique stops (including depot).
+        CRITICAL FIX: For 2 buses / 4 stations:
+        - Previous: calculated 4 (too low, causes repetition issues)
+        - Improved: calculate based on station-bus ratio
+        - Use at least 70% of stations
         """
-        target = self.config.USABLE_CAPACITY * 1.3
-        avg = self.config.OPTIMAL_CONSUMPTION_PER_STOP
-        base_stops = int(target / avg)
+        # Heuristic: Use enough stops to visit most stations
+        min_unique_stops = max(4, int(self.num_stations * 0.7))
 
-        # Maximum stops limited by number of stations
-        # With N stations: max = N (unique stations) + padding allowed by config
-        # For small station counts, reduce aggressively
-        max_by_stations = min(
-            max(self.num_stations - 1, 3),  # At least 3, but not more than stations-1
-            self.config.MAX_STOPS_PER_BUS
-        )
+        # For the consumption target to work:
+        # We need: total_consumption > USABLE_CAPACITY
+        # With N stops and avg 180 per stop: N * 180 > 800
+        # So: N > 4.4, we aim for N = 6-8
 
-        # Bound by configuration AND station count
-        optimal = max(
-            self.config.MIN_STOPS_PER_BUS,
-            min(base_stops + 1, max_by_stations)
-        )
+        base_stops = max(5, min(self.num_stations - 1, 8))
 
-        return optimal
+        # Final: Take the max to ensure feasibility
+        optimal = max(min_unique_stops, base_stops)
+
+        return min(optimal, self.num_stations)
 
 
-class RouteGenerator:
-    """Generates bus routes with diversity constraints"""
+class RoutePatternGenerator:
+    """Generates diverse route patterns based on working examples"""
 
-    def __init__(self, num_buses: int, num_stations: int, max_stops: int):
+    def __init__(self, num_buses: int, num_stations: int):
         self.num_buses = num_buses
         self.num_stations = num_stations
-        self.max_stops = max_stops
-        self.config = Config()
-        self.station_usage = {s: [] for s in range(1, num_stations + 1)}
+        # Pattern selection for bus i to ensure diversity
+        self.patterns_assigned = {}
 
     def generate_station_sequence(self, bus_id: int, num_stops: int) -> List[int]:
         """
-        Generate station sequence for a bus, PADDED to max_stops.
+        Generate diverse station sequences using 5 proven patterns.
 
-        Strategy:
-        - Start at depot (station 1)
-        - Visit diverse stations
-        - Minimize station reuse conflicts
-        - Create varied patterns
-        - Pad to max_stops
+        Patterns from Battery Own working examples:
+        1. Sequential: 1,2,3,4,5...
+        2. Reverse: N,N-1,N-2...
+        3. Alternate-odd: 1,3,5,7,2,4,6,8
+        4. Alternate-even: 2,4,6,8,1,3,5,7
+        5. Random-weighted: Prefer less-used stations
         """
-        sequence = [1]  # Depot
+        sequence = [1]  # Always start at depot
 
-        pattern = random.choice(['sequential', 'reverse', 'zigzag', 'random'])
+        # Assign pattern based on bus_id for consistency
+        pattern_idx = bus_id % 5
+        patterns = ['sequential', 'reverse', 'alternate_odd', 'alternate_even', 'random_weighted']
+        pattern = patterns[pattern_idx]
+
         available = list(range(2, self.num_stations + 1))
 
         if pattern == 'sequential':
-            for i in range(1, num_stops):
-                idx = ((i - 1) % (self.num_stations - 1)) + 2
-                sequence.append(idx)
+            # Visit stations in order
+            for i in range(num_stops - 1):
+                station_idx = i % len(available)
+                sequence.append(available[station_idx])
 
         elif pattern == 'reverse':
-            for i in range(1, num_stops):
-                idx = self.num_stations - ((i - 1) % (self.num_stations - 1))
-                sequence.append(idx)
+            # Visit stations in reverse order
+            for i in range(num_stops - 1):
+                station_idx = (len(available) - 1 - i) % len(available)
+                sequence.append(available[station_idx])
 
-        elif pattern == 'zigzag':
+        elif pattern == 'alternate_odd':
+            # Odd stations first, then even
             odds = [s for s in available if s % 2 == 1]
             evens = [s for s in available if s % 2 == 0]
             combined = odds + evens
+            for i in range(num_stops - 1):
+                station_idx = i % len(combined)
+                sequence.append(combined[station_idx])
 
-            for i in range(1, num_stops):
-                idx = (i - 1) % len(combined)
-                sequence.append(combined[idx])
+        elif pattern == 'alternate_even':
+            # Even stations first, then odd
+            odds = [s for s in available if s % 2 == 1]
+            evens = [s for s in available if s % 2 == 0]
+            combined = evens + odds
+            for i in range(num_stops - 1):
+                station_idx = i % len(combined)
+                sequence.append(combined[station_idx])
 
-        else:  # random with preference for less-used
-            for i in range(1, num_stops):
-                weights = [1.0 / (len(self.station_usage[s]) + 1)
-                           for s in available]
-                total = sum(weights)
-                probs = [w / total for w in weights]
-                chosen = random.choices(available, weights=probs)[0]
+        else:  # random_weighted
+            # Prefer less-used stations (simple heuristic)
+            used_count = {s: 0 for s in available}
+            for i in range(num_stops - 1):
+                # Weight inversely proportional to usage
+                weights = [1.0 / (used_count[s] + 1) for s in available]
+                total_weight = sum(weights)
+                probs = [w / total_weight for w in weights]
+                chosen = random.choices(available, weights=probs, k=1)[0]
                 sequence.append(chosen)
+                used_count[chosen] += 1
 
-        # Register usage
-        for station in sequence:
-            self.station_usage[station].append((bus_id, len(sequence)))
-
-        # Pad to max_stops with last station
-        sequence += [sequence[-1]] * (self.max_stops - num_stops)
-
-        return sequence
+        return sequence [:num_stops]  # Don't pad yet
 
 
 class ConsumptionGenerator:
-    """Generates energy consumption patterns ensuring feasibility"""
+    """
+    Generates energy consumption ensuring feasibility.
 
-    def __init__(self, max_stops: int):
+    Key insight from Battery Own:
+    - noncity_5buses-8stations: Each bus consumes 1200-1300 (scaled)
+    - With 8 stops: avg 150-160 per stop
+    - Total >> USABLE_CAPACITY (800), so charging is necessary
+    """
+
+    def __init__(self, num_stops_per_bus: List[int]):
         self.config = Config()
-        self.max_stops = max_stops
+        self.num_stops_per_bus = num_stops_per_bus
+        self.num_buses = len(num_stops_per_bus)
 
-    def generate_consumption(self, num_stops: int, bus_id: int) -> List[int]:
+    def generate_consumptions(self) -> List[List[int]]:
         """
-        Generate energy consumption ensuring:
-        - Total exceeds usable capacity
-        - Varied pattern
-        - Realistic bounds
-        - Padded to max_stops
+        Generate energy consumptions for all buses.
+
+        Strategy:
+        1. Calculate target total consumption (must exceed capacity)
+        2. Distribute across stops with realistic variance
+        3. Ensure each bus has different consumption profile
         """
-        consumption = [0]  # Depot: no consumption
+        all_consumptions = []
 
-        # Randomly set overconsumption factor
-        factor = random.uniform(
-            self.config.TARGET_CONSUMPTION_FACTOR_MIN,
-            self.config.TARGET_CONSUMPTION_FACTOR_MAX
-        )
-        target_total = int(self.config.USABLE_CAPACITY * factor)
+        for bus_id in range(self.num_buses):
+            nb = self.num_stops_per_bus[bus_id]
 
-        accumulated = 0
-        for i in range(1, num_stops):
-            if i == num_stops - 1:
-                # Last stop: close to target
-                remaining = target_total - accumulated
-                value = max(
-                    self.config.MIN_CONSUMPTION_PER_STOP,
-                    min(remaining, self.config.MAX_CONSUMPTION_PER_STOP)
-                )
-            else:
-                # Random with bias toward optimal
-                mean = self.config.OPTIMAL_CONSUMPTION_PER_STOP
-                std = 50
-                value = int(random.gauss(mean, std))
-                value = max(
-                    self.config.MIN_CONSUMPTION_PER_STOP,
-                    min(value, self.config.MAX_CONSUMPTION_PER_STOP)
-                )
+            # Target: 1.3-1.5x usable capacity over all stops
+            overconsumption_factor = random.uniform(1.3, 1.5)
+            target_total = int(self.config.USABLE_CAPACITY * overconsumption_factor)
 
-            consumption.append(value)
-            accumulated += value
+            # Generate consumption for each stop
+            consumption = [0]  # Depot: no consumption
+            accumulated = 0
 
-        # Pad to max_stops with zeros
-        consumption += [0] * (self.max_stops - num_stops)
+            for i in range(1, nb):
+                if i == nb - 1:
+                    # Last stop: adjust to reach target
+                    remaining = target_total - accumulated
+                    value = max(
+                        self.config.MIN_CONSUMPTION_PER_STOP,
+                        min(remaining, self.config.MAX_CONSUMPTION_PER_STOP)
+                    )
+                else:
+                    # Intermediate stops: 150-200 (scaled)
+                    base = 150 + bus_id * 10  # Vary by bus
+                    variance = random.gauss(0, 30)
+                    value = int(base + variance)
+                    value = max(
+                        self.config.MIN_CONSUMPTION_PER_STOP,
+                        min(value, self.config.MAX_CONSUMPTION_PER_STOP)
+                    )
 
-        return consumption
+                consumption.append(value)
+                accumulated += value
+
+            all_consumptions.append(consumption)
+
+        return all_consumptions
 
 
 class TimingGenerator:
-    """Generates travel times and timetables respecting CLP constraints"""
+    """
+    Generates travel times and timetables respecting CLP constraints.
 
-    def __init__(self, max_stops: int):
+    Key insight: Stagger bus starts to avoid simultaneous charging demands.
+    """
+
+    def __init__(self, num_stops_per_bus: List[int]):
         self.config = Config()
-        self.max_stops = max_stops
+        self.num_stops_per_bus = num_stops_per_bus
+        self.num_buses = len(num_stops_per_bus)
 
-    def generate_travel_times(self, num_stops: int) -> List[int]:
-        """Generate travel times with realistic distribution, padded to max_stops"""
-        times = [0]  # Depot: no travel
+    def generate_travel_times(self) -> List[List[int]]:
+        """Generate travel times realistic and constrained"""
+        all_times = []
 
-        for i in range(1, num_stops):
-            mean = self.config.OPTIMAL_TRAVEL_TIME
-            std = 40
-            value = int(random.gauss(mean, std))
-            value = max(
-                self.config.MIN_TRAVEL_TIME,
-                min(value, self.config.MAX_TRAVEL_TIME)
-            )
-            times.append(value)
+        for bus_id in range(self.num_buses):
+            nb = self.num_stops_per_bus[bus_id]
+            times = [0]  # Depot: no travel time
 
-        # Pad to max_stops with zeros
-        times += [0] * (self.max_stops - num_stops)
+            for i in range(1, nb):
+                # 80-150 (8-15 minutes scaled ×10)
+                base = 100 + random.gauss(0, 30)
+                value = int(max(60, min(150, base)))
+                times.append(value)
 
-        return times
+            all_times.append(times)
 
-    def generate_timetable(self, bus_id: int, travel_times: List[int]) -> List[int]:
+        return all_times
+
+    def generate_timetables(self, travel_times: List[List[int]]) -> List[List[int]]:
         """
-        Generate arrival timetable respecting CLP timing constraints.
+        Generate arrival timetables with staggered bus starts.
 
-        CRITICAL: Ensures that tau_bi allows time for both travel AND charging:
-        tau_bi[i] >= tau_bi[i-1] + T[i] + PSI * (charge chance)
-
-        Also ensures mu constraint is satisfiable by creating schedule with margin.
+        Pattern from Battery Own: Each bus starts 20-50 time units apart
         """
-        num_stops = len(travel_times)
-        # Stagger buses to reduce charging conflicts: bus 0 at 7:00, bus 1 at 7:05, etc.
-        start_time = 4200 + (bus_id * 50)
+        all_timetables = []
 
-        timetable = [start_time]
-        accumulated = start_time
+        for bus_id in range(self.num_buses):
+            nb = self.num_stops_per_bus[bus_id]
 
-        for i in range(1, num_stops):
-            # CONSTRAINT-RESPECTING TIMING:
-            # Previous stop + travel time + buffer for charging (if needed)
-            # Buffer = PSI (minimum charge time) to allow option to charge
-            travel_time = travel_times[i]
+            # Staggered start times: 7:00 + (bus_id × 50) minutes (scaled)
+            start_time = 4200 + (bus_id * 50)
 
-            # Minimum time needed: only travel
-            min_next_time = accumulated + travel_time
+            timetable = [start_time]
+            accumulated = start_time
 
-            # Add buffer for potential charging to remain feasible
-            # Use half the mu value to leave deviation margin
-            charge_buffer = int(self.config.PSI * 1.5)  # 1.5× minimum charge time
-            desired_next_time = min_next_time + charge_buffer
+            for i in range(1, nb):
+                travel_time = travel_times[bus_id][i]
+                # Add travel time + charging buffer
+                charge_buffer = int(self.config.PSI * 1.5)
+                accumulated += travel_time + random.randint(-10, charge_buffer)
+                timetable.append(accumulated)
 
-            # Add small variance (±10 units = ±1 min) to create realistic schedules
-            variance = random.randint(-10, 10)
-            next_time = desired_next_time + variance
+            all_timetables.append(timetable)
 
-            accumulated = next_time
-            timetable.append(accumulated)
-
-        # Ensure length = max_stops
-        if len(timetable) < self.max_stops:
-            # Pad with last value
-            timetable += [accumulated] * (self.max_stops - len(timetable))
-
-        return timetable
+        return all_timetables
 
 
 class FeasibleInstanceGenerator:
     """
-    Expert generator producing highly feasible CLP instances.
+    Generates potentially feasible CLP instances using smart heuristics.
 
-    Combines constraint analysis, route diversity, and temporal feasibility
-    to maximize SAT probability.
+    Philosophy: Better to fail quickly and retry than generate 100 invalid instances.
     """
 
     def __init__(self, num_buses: int, num_stations: int):
@@ -260,61 +265,77 @@ class FeasibleInstanceGenerator:
         self.num_stations = num_stations
         self.config = Config()
 
+        # Calculate max_stops using improved heuristic
         self.analyzer = ConstraintAnalyzer(num_buses, num_stations)
-
-        # Calculate optimal stops FIRST
         self.max_stops = self.analyzer.estimate_optimal_stops()
 
-        # THEN pass max_stops to all generators
-        self.route_gen = RouteGenerator(num_buses, num_stations, self.max_stops)
-        self.consumption_gen = ConsumptionGenerator(self.max_stops)
-        self.timing_gen = TimingGenerator(self.max_stops)
+        # Generate number of stops per bus (variation within reason)
+        self.num_stops_per_bus = self._generate_stops_per_bus()
 
-        self.num_stops = self._generate_num_stops()
+    def _generate_stops_per_bus(self) -> List[int]:
+        """
+        Generate number of actual stops per bus.
 
-    def _generate_num_stops(self) -> List[int]:
-        """Generate varied stops per bus around optimal"""
+        Constraint: All buses must have similar stop counts for feasibility.
+        Variation: ±1 stop only
+        """
         base = self.max_stops
         stops = []
 
         for b in range(self.num_buses):
-            # ±1 variation
-            variation = random.choice([-1, 0, 0, 1])
-            value = max(
-                self.config.MIN_STOPS_PER_BUS,
-                min(base + variation, self.max_stops)
-            )
+            # Small variation: -1, 0, or +1
+            variation = random.choice([-1, 0, 1])
+            value = max(4, min(base + variation, self.max_stops))
             stops.append(value)
 
         return stops
 
     def generate_instance(self) -> Dict:
-        """Generate complete feasible instance"""
+        """Generate complete instance with all components"""
 
+        # 1. Generate routes (station sequences)
+        route_gen = RoutePatternGenerator(self.num_buses, self.num_stations)
         st_bi = []
-        D = []
-        T = []
-        tau_bi = []
-
         for b in range(self.num_buses):
-            nb = self.num_stops[b]
+            sequence = route_gen.generate_station_sequence(b, self.num_stops_per_bus[b])
+            # Pad to max_stops
+            padded = sequence + [sequence[-1]] * (self.max_stops - len(sequence))
+            st_bi.append(padded[:self.max_stops])
 
-            # Generate components
-            stations = self.route_gen.generate_station_sequence(b, nb)
-            energy = self.consumption_gen.generate_consumption(nb, b)
-            times = self.timing_gen.generate_travel_times(nb)
-            timetable = self.timing_gen.generate_timetable(b, times)
+        # 2. Generate consumptions (must be high enough to force charging)
+        consumption_gen = ConsumptionGenerator(self.num_stops_per_bus)
+        D_raw = consumption_gen.generate_consumptions()
 
-            st_bi.append(stations)
-            D.append(energy)
-            T.append(times)
-            tau_bi.append(timetable)
+        # Pad to max_stops with zeros
+        D = []
+        for D_bus in D_raw:
+            padded = D_bus + [0] * (self.max_stops - len(D_bus))
+            D.append(padded[:self.max_stops])
+
+        # 3. Generate travel times
+        timing_gen = TimingGenerator(self.num_stops_per_bus)
+        T_raw = timing_gen.generate_travel_times()
+
+        # Pad to max_stops with zeros
+        T = []
+        for T_bus in T_raw:
+            padded = T_bus + [0] * (self.max_stops - len(T_bus))
+            T.append(padded[:self.max_stops])
+
+        # 4. Generate timetables
+        tau_bi_raw = timing_gen.generate_timetables(T_raw)
+
+        # Pad to max_stops
+        tau_bi = []
+        for tau_bus in tau_bi_raw:
+            padded = tau_bus + [tau_bus[-1]] * (self.max_stops - len(tau_bus))
+            tau_bi.append(padded[:self.max_stops])
 
         return {
             'num_buses': self.num_buses,
             'num_stations': self.num_stations,
             'max_stops': self.max_stops,
-            'num_stops': self.num_stops,
+            'num_stops': self.num_stops_per_bus,
             'st_bi': st_bi,
             'D': D,
             'T': T,

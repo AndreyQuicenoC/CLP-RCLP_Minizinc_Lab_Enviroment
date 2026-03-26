@@ -227,6 +227,20 @@ class GeneratorGUI:
         )
         self.generate_btn.pack(side='left', padx=(0, 10))
 
+        # STOP button - initially disabled
+        self.stop_btn = tk.Button(
+            button_frame,
+            text=" Stop Generation ",
+            font=('Arial', 11, 'bold'),
+            bg=self.colors['error'],
+            fg=self.colors['white'],
+            padx=15,
+            pady=10,
+            command=self._on_stop,
+            state='disabled'
+        )
+        self.stop_btn.pack(side='left', padx=(0, 10))
+
         tk.Button(
             button_frame,
             text="Clear Log",
@@ -290,6 +304,8 @@ class GeneratorGUI:
             return
 
         self.generate_btn.config(state='disabled', bg=self.colors['gray'])
+        self.stop_btn.config(state='normal', bg=self.colors['error'])
+        self.orchestrator.stop_requested = False
         self._log("=" * 60, 'info')
 
         # Run in background thread
@@ -298,6 +314,12 @@ class GeneratorGUI:
             daemon=True
         )
         self.generation_thread.start()
+
+    def _on_stop(self):
+        """Handle stop button click"""
+        self._log("STOP requested by user...", 'warning')
+        self.orchestrator.request_stop()
+        self.stop_btn.config(state='disabled', bg=self.colors['gray'])
 
     def _generate_worker(self):
         """Worker thread for generation"""
@@ -349,6 +371,7 @@ class GeneratorGUI:
                 state='normal',
                 bg=self.config_obj.COLOR_LIGHT_BLUE
             )
+            self.stop_btn.config(state='disabled', bg=self.colors['error'])
 
 
 def main():
