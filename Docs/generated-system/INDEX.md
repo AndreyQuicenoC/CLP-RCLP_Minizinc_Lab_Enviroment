@@ -1,37 +1,37 @@
 # Generated System Documentation
 
-Documentación completa del Sistema de Generación de Instancias CLP.
+Complete documentation of the CLP Instance Generation System.
 
-## 📚 Contenido
+## 📚 Contents
 
-El directorio `generated-system/` contiene la documentación principal del sistema de generación automática de instancias de prueba para el modelo CLP (Charging Location Problem).
+The `generated-system/` directory contains the main documentation for the automatic test instance generation system for the CLP model (Charging Location Problem).
 
-### Documentos Principales
+### Main Documents
 
-- **README.md** - Guía completa de uso del generador
+- **README.md** - Complete generator usage guide
   - Quick Start
-  - Características principales
-  - Algoritmo experto
-  - Guía de uso
+  - Main features
+  - Expert algorithm
+  - Usage guide
   - Troubleshooting
   - Performance metrics
 
 ## 🎯 Quick Navigation
 
-1. **Quiero generar instancias** → Ver sección "Quick Start" en README.md
-2. **Necesito entender el algoritmo** → Ver "Algorithm Design"
-3. **Tengo un error** → Ver "Troubleshooting"
-4. **Quiero entender el diseño** → Ver "Technical Details"
+1. **I want to generate instances** → See "Quick Start" section in README.md
+2. **I need to understand the algorithm** → See "Algorithm Design"
+3. **I have an error** → See "Troubleshooting"
+4. **I want to understand the design** → See "Technical Details"
 
-## 🔗 Links Relacionados
+## 🔗 Related Links
 
-- [Scripts de Generación](../../Scripts/generation/)
-- [Scripts de Testing](../../Scripts/testing/)
-- [Documentación del Modelo](../model/)
-- [Análisis y Diagnóstico](../analysis/)
+- [Generation Scripts](../../Scripts/generation/)
+- [Testing Scripts](../../Scripts/testing/)
+- [Model Documentation](../model/)
+- [Analysis and Diagnostics](../analysis/)
 
-## 📖 Para Más Información
+## 📖 For More Information
 
-Consultar el README.md de este directorio para documentación completa del sistema.
+Consult the README.md in this directory for complete system documentation.
 
-**Última Actualización**: 2026-03-25
+**Last Updated**: 2026-03-26
