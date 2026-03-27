@@ -15,12 +15,12 @@ Architecture:
   - generator.py: Main entry point
 
 Features:
-  ✓ Generates only satisfiable instances
-  ✓ 10-minute validation timeout per instance
-  ✓ Automatic cleanup of failed attempts
-  ✓ Comprehensive logging
-  ✓ Modular, maintainable design
-  ✓ Professional UI
+  [OK] Generates only satisfiable instances
+  [OK] 10-minute validation timeout per instance
+  [OK] Automatic cleanup of failed attempts
+  [OK] Comprehensive logging
+  [OK] Modular, maintainable design
+  [OK] Professional UI
 
 Author: AVISPA Research Team
 Version: 2.0.0

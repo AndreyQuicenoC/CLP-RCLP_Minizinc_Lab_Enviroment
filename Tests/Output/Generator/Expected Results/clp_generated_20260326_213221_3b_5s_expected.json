@@ -1,0 +1,11 @@
+{
+  "instance": "clp_generated_20260326_213221_3b_5s",
+  "generated": "2026-03-26T21:32:21.837424",
+  "solver": "chuffed",
+  "satisfiable": true,
+  "solution": {
+    "total_stations": 1,
+    "total_deviation": 678
+  },
+  "dzn_path": "Tests\\Output\\Generator\\clp_generated_20260326_213221_3b_5s.dzn"
+}

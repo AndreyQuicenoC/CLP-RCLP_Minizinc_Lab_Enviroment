@@ -1,0 +1,76 @@
+% =============================================================================
+% Generated CLP Test Instance (v3.0 - Working Pattern Replication)
+% =============================================================================
+% Generator: AVISPA CLP Instance Generator v3.0.0 (Professional)
+% Generated: 2026-03-26 21:28:44
+%
+% Instance Characteristics:
+%   - Buses: 2
+%   - Stations: 4
+%   - Max stops per bus: 4
+%   - Actual stops per bus: [4, 4]
+%   - Total energy consumption: 2512 (scaled ×10)
+%   - Average per bus: 1256 (125.6 kWh)
+%   - Usable capacity: 800 (80.0 kWh)
+%
+% Feasibility Analysis:
+%   - Overconsumption factor: 1.57x
+%   - Pattern: Each bus visits every station EXACTLY ONCE
+%   - Route diversity: 5 distinct patterns (sequential, reverse, alternating, diagonal)
+%   - Energy forcing: Designed to require strategic charging at intermediate stations
+%
+% All values scaled ×10 for integer arithmetic.
+% Divide by 10 to get original units (kWh, minutes).
+% =============================================================================
+
+% --- Problem Dimensions ---
+num_buses = 2;
+num_stations = 4;
+
+% --- Energy Parameters (CLP Model) ---
+% All values scaled ×10 from kWh
+Cmax = 1000;  % 100.0 kWh maximum capacity
+Cmin = 200;  % 20.0 kWh minimum reserve
+alpha = 100;  % 10.0 kWh/min charging rate
+
+% --- Time and Schedule Parameters ---
+% All values scaled ×10 from minutes
+mu = 50;      % 5.0 min maximum delay
+SM = 10;      % 1.0 min safety margin
+psi = 10;     % 1.0 min minimum charging time
+beta = 100;   % 10.0 min maximum charging time
+M = 10000;      % Big-M constant
+
+% --- Route Structure ---
+max_stops = 4;
+num_stops = [4,4];
+
+% --- Station Sequence (st_bi) ---
+% Maps each bus stop to a physical station ID (1-indexed)
+% Station 1 is the depot (D=0, T=0)
+st_bi = array2d(1..2, 1..4, [
+  1,2,3,4,  % Bus 1
+  4,3,2,1  % Bus 2
+]);
+
+% --- Energy Consumption (D) ---
+% Energy consumed between stops (scaled ×10, divide by 10 for kWh)
+D = array2d(1..2, 1..4, [
+  0,405,408,403,  % Bus 1
+  0,432,431,433  % Bus 2
+]);
+
+% --- Travel Time (T) ---
+% Time between stops (scaled ×10, divide by 10 for minutes)
+T = array2d(1..2, 1..4, [
+  0,139,112,132,  % Bus 1
+  0,107,110,117  % Bus 2
+]);
+
+% --- Timetable (tau_bi) ---
+% Scheduled arrival times (scaled ×10, divide by 10 for minutes since 00:00)
+% Buses are staggered to reduce station conflicts
+tau_bi = array2d(1..2, 1..4, [
+  2,141,253,385,  % Bus 1
+  56,163,273,390  % Bus 2
+]);

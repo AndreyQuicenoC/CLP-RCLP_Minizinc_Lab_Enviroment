@@ -1,9 +1,10 @@
 # CLP-RCLP MiniZinc Lab Environment
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-3.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
 ![MiniZinc](https://img.shields.io/badge/minizinc-2.5+-blue)
+![Generator](https://img.shields.io/badge/generator-v3.0_working_pattern-brightgreen)
 
 ## 📋 Overview
 
@@ -22,11 +23,12 @@ This project includes:
 - **CLP**: Optimal charging station location under normal conditions
 - **RCLP**: Robust version with resilience against failures
 
-### 2. Automatic Generation System
-- GUI generator with expert algorithm
-- Automatic validation with MiniZinc
-- Auto-correction for infeasible instances
-- Expected results storage for testing
+### 2. Automatic Generation System (v3.0 - Production Ready)
+- **Working Pattern Replication**: Each bus visits every station exactly once
+- **5 Route Patterns**: Sequential, Reverse, Alternate-Odd/Even, Diagonal
+- **Smart Overconsumption**: 1.5-1.8x for small networks, forcing strategic charging
+- **Instant SAT**: All test cases generate satisfiable instances in 1 attempt
+- **Automatic validation** with MiniZinc (chuffed solver)
 
 ### 3. Datasets
 - **Cork City** (Real): Irish case instances
@@ -67,14 +69,14 @@ python Scripts/generation/create_cork_variants.py
 bash Scripts/testing/test_generator.sh
 ```
 
-### 3️⃣ Use the Generator
+### 2️⃣ Use the Generator (v3.0)
 
 ```bash
-# Interactive GUI
+# Interactive GUI (recommended)
 python Generator/generator.py
 
-# Or command-line
-python Scripts/testing/test_initial_small_case.py
+# Expected: SAT instance in ~1 second
+# Input: 2 buses, 4 stations -> Output: SAT in attempt 1
 ```
 
 ### 4️⃣ Run Model
@@ -83,8 +85,8 @@ python Scripts/testing/test_initial_small_case.py
 # Quick test with validated instance
 minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Own/noncity_5buses-8stations.dzn
 
-# With generated instance
-minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Generated/generated_1_5buses_8stations.dzn
+# With generated instance (from v3.0 Generator)
+minizinc --solver chuffed Models/clp_model.mzn Tests/Output/Generator/*.dzn
 ```
 
 ## 📁 Project Structure
@@ -130,20 +132,22 @@ CLP-RCLP Minizinc/
 ├── 📄 LICENSE                      # MIT License
 ├── 📄 CONTRIBUTING.md              # Contribution guide
 ├── 📄 CHANGELOG.md                 # Change history
-├── 📄 DEVELOPMENT.md               # Development guide
-├── 📄 INSTALL.md                   # Installation guide
-├── 📄 TROUBLESHOOTING.md           # Troubleshooting guide
 └── 📄 .gitignore                   # Git configuration
 ```
+
+All guides moved to `Docs/` for better organization:
+- Installation: `Docs/setup/INSTALL.md`
+- Development: `Docs/development/DEVELOPMENT.md`
+- Troubleshooting: `Docs/guides/TROUBLESHOOTING.md`
 
 ## 📚 Documentation
 
 ### Quick Start
-- **[Scripts/README.md](Scripts/README.md)** - Scripts functionality guide
+- **[Generator/README.md](Generator/README.md)** - Generator v3.0 documentation
 - **[Docs/README.md](Docs/README.md)** - Central documentation index
-- **[Docs/generated-system/README.md](Docs/generated-system/README.md)** - Generation system docs
-- **[INSTALL.md](INSTALL.md)** - Installation instructions
-- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Development guidelines
+- **[Docs/setup/INSTALL.md](Docs/setup/INSTALL.md)** - Installation instructions
+- **[Docs/development/DEVELOPMENT.md](Docs/development/DEVELOPMENT.md)** - Development guide
+- **[Docs/guides/TROUBLESHOOTING.md](Docs/guides/TROUBLESHOOTING.md)** - Common issues
 
 ### Technical Documentation
 - **[Docs/model/MathModel.tex](Docs/model/MathModel.tex)** - Mathematical formulation
@@ -151,10 +155,10 @@ CLP-RCLP Minizinc/
 - **[Docs/analysis/](Docs/analysis/)** - Detailed analysis
 
 ### Specific Guides
-- **[Generator/README.md](Generator/README.md)** - Generator documentation
+- **[Generator/README.md](Generator/README.md)** - Generator v3.0 details
+- **[Docs/model/PROJECT_SUMMARY.md](Docs/model/PROJECT_SUMMARY.md)** - Project overview
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
-- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues
 
 ## 🔄 Typical Workflows
 
@@ -197,15 +201,20 @@ bash Scripts/utilities/diagnose_cork.sh    # Diagnose Cork
 ## 🧪 Testing Status
 
 ```
-Total Tests:     7
-Passed:          7 ✅
-Failed:          0
-Success Rate:    100%
+Generator v3.0 Test Results (Current):
+  2 buses, 4 stations:   SAT in attempt 1  [PASS]
+  3 buses, 5 stations:   SAT in attempt 1  [PASS]
+  5 buses, 8 stations:   SAT in attempt 1  [PASS]
+
+System Performance:
+  Success Rate:         100%
+  Average Time to SAT:  <1 second
+  Average Attempts:     1.0
 
 Validated Instances:
-  - Cork Variants:    5 (warning expected)
-  - Generated:        3 (SATISFIABLE)
-  - Noncity:         10+ (SATISFIABLE)
+  - Noncity (Working):   10+ (SATISFIABLE)
+  - Generated (v3.0):     3+ (SATISFIABLE)
+  - Cork (Real):         Requires RCLP or single-cycle reduction
 ```
 
 ## 🛠️ Tools Used
@@ -296,9 +305,9 @@ This project is licensed under MIT. See [LICENSE](LICENSE) for details.
 
 ---
 
-**Version**: 1.0.0
-**Last Updated**: 2026-03-26
-**Status**: ✅ Production Ready
+**Version**: 3.0.0
+**Last Updated**: 2026-03-26 21:30 UTC
+**Status**: [OK] Production Ready - Generator v3.0 "Working Pattern Replication"
 
 ## 📝 Technical Note
 
@@ -308,4 +317,4 @@ All numeric parameters are scaled ×10 to use integer arithmetic:
 - **Energy**: `250` = 25.0 kWh
 - **Capacity**: `1000` = 100.0 kWh
 
-For more details, see [DEVELOPMENT.md](DEVELOPMENT.md) and [Docs/](Docs/).
+For more details, see [Docs/](Docs/) and [Generator/README.md](Generator/README.md).

@@ -32,7 +32,7 @@ class MiniZincExporter:
             else:
                 lines.append(f"  {row}  % Bus {b+1}")
 
-        return '[\n' + '\n'.join(lines) + '\n]'
+        return '[\n' + '\n'.join(lines) + '\n]'  # No Unicode arrows
 
     @staticmethod
     def export_to_dzn(instance: Dict, output_path: str) -> str:
@@ -54,9 +54,9 @@ class MiniZincExporter:
         )
 
         content = f"""% =============================================================================
-% Generated CLP Test Instance (v2.0)
+% Generated CLP Test Instance (v3.0 - Working Pattern Replication)
 % =============================================================================
-% Generator: AVISPA CLP Instance Generator v2.0.0 (Modular)
+% Generator: AVISPA CLP Instance Generator v3.0.0 (Professional)
 % Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 %
 % Instance Characteristics:
@@ -70,8 +70,9 @@ class MiniZincExporter:
 %
 % Feasibility Analysis:
 %   - Overconsumption factor: {overconsumption_factor:.2f}x
-%   - Expected charges per bus: {overconsumption_factor - 1:.1f}
-%   - Pattern: Designed to force strategic charging
+%   - Pattern: Each bus visits every station EXACTLY ONCE
+%   - Route diversity: 5 distinct patterns (sequential, reverse, alternating, diagonal)
+%   - Energy forcing: Designed to require strategic charging at intermediate stations
 %
 % All values scaled ×10 for integer arithmetic.
 % Divide by 10 to get original units (kWh, minutes).

@@ -161,11 +161,14 @@ def process_bus_line(line_data: Dict[str, Any]) -> Dict[str, List]:
                     path[i-1]['lat'], path[i-1]['lon'],
                     path[i]['lat'], path[i]['lon']
                 )
-                # Scale distance to energy consumption (assuming 1 dist_unit ≈ 1 kWh)
-                energy = dist * 100  # Scaling factor for realistic energy values
+                # Scale distance to energy consumption (realistic estimation)
+                # Typical: 100m → 0.5-1 kWh depending on bus type
+                energy = (dist * 0.01) * 10  # 100m ≈ 0.1 kWh base
             else:
-                # Approximate energy based on time (rough estimate)
-                energy = time_deltas[i] * 0.15  # ~0.15 kWh per minute of travel
+                # Approximate energy based on time
+                # Realistic consumption: 1.5-2 kWh per minute for electric bus
+                time_minutes = time_deltas[i]  # Already in minutes
+                energy = time_minutes * 0.20  # ~0.2 kWh per minute (realistic for bus operation)
 
             distances.append(energy)
 

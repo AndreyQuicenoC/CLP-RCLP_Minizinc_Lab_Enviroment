@@ -1,0 +1,18 @@
+{
+  "instance": "clp_generated_20260326_213220_2b_4s",
+  "generated": "2026-03-26T21:32:21.250808",
+  "num_buses": 2,
+  "num_stations": 4,
+  "max_stops": 4,
+  "dzn_path": "Tests\\Output\\Generator\\clp_generated_20260326_213220_2b_4s.dzn",
+  "parameters": {
+    "Cmax": 1000,
+    "Cmin": 200,
+    "alpha": 100,
+    "mu": 50,
+    "SM": 10,
+    "psi": 10,
+    "beta": 100,
+    "M": 10000
+  }
+}

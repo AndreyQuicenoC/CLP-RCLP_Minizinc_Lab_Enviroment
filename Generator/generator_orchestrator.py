@@ -54,9 +54,9 @@ class GeneratorOrchestrator:
 
     def _default_log(self, message: str, level: str = 'info'):
         """Default logging to console"""
-        prefix_map = {'info': 'ℹ', 'success': '✓', 'error': '✗',
-                     'warning': '⚠'}
-        prefix = prefix_map.get(level, '•')
+        prefix_map = {'info': '[I]', 'success': '[OK]', 'error': '[ERROR]',
+                     'warning': '[WARN]'}
+        prefix = prefix_map.get(level, '[.]')
         print(f"[{level.upper()}] {prefix} {message}")
 
     def log(self, message: str, level: str = 'info'):
@@ -71,7 +71,7 @@ class GeneratorOrchestrator:
     def generate_and_validate(self, num_buses: int,
                              num_stations: int) -> Tuple[bool, str]:
         """
-        Main workflow: generate → export → validate → cleanup
+        Main workflow: generate -> export -> validate -> cleanup
 
         Returns:
             (success: bool, dzn_path: str)
@@ -86,7 +86,7 @@ class GeneratorOrchestrator:
         attempt = 0
         failed_attempts = []
         consecutive_failures = 0
-        max_consecutive = 20  # Give up if 20 consecutive failures
+        max_consecutive = 200  # High threshold - continue trying for bad param combinations
 
         while attempt < self.config.VALIDATION_ATTEMPTS:
             if self.stop_requested:
@@ -125,7 +125,7 @@ class GeneratorOrchestrator:
 
             try:
                 MiniZincExporter.export_to_dzn(instance, str(filepath))
-                self.log(f"  → Exported: {filename}", 'success')
+                self.log(f"  Exported: {filename}", 'success')
                 self.current_dzn_path = str(filepath)
                 failed_attempts.append(str(filepath))
             except Exception as e:
@@ -134,11 +134,11 @@ class GeneratorOrchestrator:
                 continue
 
             # STEP 3: Validate with MiniZinc
-            self.log("  → Validating with MiniZinc...", 'info')
+            self.log("  Validating with MiniZinc...", 'info')
             is_sat, solution, msg = self.validator.validate(str(filepath))
 
             if is_sat:
-                self.log(f"✓✓✓ SUCCESS at attempt {attempt}!", 'success')
+                self.log(f"[SUCCESS] SUCCESS at attempt {attempt}!", 'success')
                 self.log(
                     f"  Solution: {solution['total_stations']} stations, "
                     f"deviation: {solution['total_deviation']}",
@@ -160,7 +160,7 @@ class GeneratorOrchestrator:
             else:
                 consecutive_failures += 1
                 if consecutive_failures <= 5 or attempt % 20 == 0:
-                    self.log(f"  ⚠ Attempt {attempt} failed: {msg}", 'warning')
+                    self.log(f"  [!] Attempt {attempt} failed: {msg}", 'warning')
 
                 # Give up if too many consecutive failures (abort bad strategy)
                 if consecutive_failures >= max_consecutive:

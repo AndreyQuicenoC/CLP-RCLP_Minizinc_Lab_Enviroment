@@ -749,13 +749,13 @@ class GeneratorGUI:
         timestamp = datetime.now().strftime('%H:%M:%S')
 
         if level == 'success':
-            prefix = "✓"
+            prefix = "[OK]"
             color_tag = 'success'
         elif level == 'error':
-            prefix = "✗"
+            prefix = "[X]"
             color_tag = 'error'
         elif level == 'warning':
-            prefix = "⚠"
+            prefix = "[!]"
             color_tag = 'warning'
         else:
             prefix = "ℹ"
@@ -831,7 +831,7 @@ class GeneratorGUI:
             is_sat, solution, error = validator.validate_instance(filepath)
 
             if is_sat:
-                self._log(f"✓ Instance is SATISFIABLE!", 'success')
+                self._log(f"[OK] Instance is SATISFIABLE!", 'success')
                 self._log(f"  Solution: {solution['total_stations']} stations optimal", 'success')
 
                 # Save expected result
@@ -848,7 +848,7 @@ class GeneratorGUI:
                 return
 
             else:
-                self._log(f"✗ Attempt {attempt}/{max_attempts}: {error}", 'warning')
+                self._log(f"[X] Attempt {attempt}/{max_attempts}: {error}", 'warning')
 
                 if attempt < max_attempts:
                     self._log(f"Regenerating instance (attempt {attempt + 1})...", 'info')

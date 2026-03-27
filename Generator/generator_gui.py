@@ -281,7 +281,7 @@ class GeneratorGUI:
         self.log_text.config(state='normal')
 
         timestamp = datetime.now().strftime('%H:%M:%S')
-        prefix = {'success': '✓', 'error': '✗', 'warning': '⚠',
+        prefix = {'success': '[OK]', 'error': '[X]', 'warning': '[!]',
                  'info': 'ℹ'}.get(level, '•')
 
         self.log_text.insert('end', f"[{timestamp}] {prefix} {message}\n",
