@@ -1,0 +1,11 @@
+============================================================
+CLP-RCLP Test Execution Result
+============================================================
+
+Number of Buses:        5
+Number of Stations:     8
+Charged Stations:       3
+Charging Locations:     [0,1,1,0,0,1,0,0]
+Time Deviation:         1579 minutes
+
+============================================================

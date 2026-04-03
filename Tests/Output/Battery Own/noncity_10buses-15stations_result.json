@@ -1,0 +1,23 @@
+{
+  "num_buses": 10,
+  "num_stations": 15,
+  "charged_stations": 0,
+  "charging_locations": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "time_deviation": 376.4
+}

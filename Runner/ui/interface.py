@@ -298,7 +298,7 @@ class RunnerInterface:
                 self._log(f"  Buses: {result['num_buses']}")
                 self._log(f"  Stations: {result['num_stations']}")
                 self._log(f"  Charged: {result['charged_stations']}")
-                self._log(f"  Deviation: {result['time_deviation']} minutes")
+                self._log(f"  Deviation: {result['time_deviation'] / 10} minutes") # Convert back to minutes for display
 
                 # Save results
                 handler = ResultHandler(str(output_dir))

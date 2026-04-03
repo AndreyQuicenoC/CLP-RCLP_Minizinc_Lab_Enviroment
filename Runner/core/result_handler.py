@@ -59,7 +59,7 @@ class ResultHandler:
             "num_stations": result.get('num_stations', 0),
             "charged_stations": result.get('charged_stations', 0),
             "charging_locations": result.get('charging_locations', []),
-            "time_deviation": result.get('time_deviation', 0)
+            "time_deviation": result.get('time_deviation', 0) / 10 # convert back to minutes
         }
 
         with open(path, 'w') as f:
@@ -71,7 +71,7 @@ class ResultHandler:
         num_stations = result.get('num_stations', 0)
         charged = result.get('charged_stations', 0)
         locations = result.get('charging_locations', [])
-        deviation = result.get('time_deviation', 0)
+        deviation = result.get('time_deviation', 0) / 10 # Convert back to minutes
 
         # Format charging locations as binary array
         locations_str = "[" + ",".join(str(x) for x in locations) + "]"
