@@ -1,5 +1,8 @@
 """
-Themes Module - High-quality color schemes and design tokens for Runner UI.
+Themes Module - Premium color schemes and design tokens for UI.
+
+Provides comprehensive theming with dark and light modes, professional palettes,
+typography definitions, and dynamic theme management via singleton pattern.
 """
 
 from typing import Dict, Any, Literal
@@ -41,8 +44,17 @@ LIGHT_PALETTE = ColorPalette(
     border_normal="#CCCCCC", border_active="#2E5FCC",
 )
 
+class Spacing:
+    """Consistent spacing and padding constants."""
+    HEADER_HEIGHT = 70
+    FOOTER_HEIGHT = 40
+    PAD_LARGE = 20
+    PAD_MEDIUM = 16
+    PAD_SMALL = 12
+    PAD_TINY = 8
+
 class ThemeManager:
-    """Singleton theme manager."""
+    """Singleton theme manager for dynamic theme switching."""
     _instance = None
     _current_mode: Literal["dark", "light"] = "dark"
     _palette: ColorPalette = DARK_PALETTE
@@ -55,12 +67,14 @@ class ThemeManager:
 
     @classmethod
     def get_palette(cls, mode: Literal["dark", "light"] = None) -> ColorPalette:
+        """Get color palette for specified mode. None returns current."""
         if mode is None:
             return cls._palette
         return DARK_PALETTE if mode == "dark" else LIGHT_PALETTE
 
     @classmethod
     def set_mode(cls, mode: Literal["dark", "light"]) -> None:
+        """Switch to specified theme mode."""
         if mode not in ("dark", "light"):
             raise ValueError(f"Invalid mode: {mode}")
         if mode == cls._current_mode:
@@ -71,22 +85,62 @@ class ThemeManager:
 
     @classmethod
     def get_mode(cls) -> Literal["dark", "light"]:
+        """Get current theme mode."""
         return cls._current_mode
 
     @classmethod
     def register_observer(cls, callback) -> None:
+        """Register callback for theme change notifications."""
         if callback not in cls._observers:
             cls._observers.append(callback)
 
     @classmethod
     def unregister_observer(cls, callback) -> None:
+        """Unregister theme change callback."""
         if callback in cls._observers:
             cls._observers.remove(callback)
 
     @classmethod
     def _notify_observers(cls) -> None:
+        """Notify all observers of theme mode change."""
         for callback in cls._observers:
             try:
                 callback(cls._current_mode)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Error notifying observer: {e}")
+
+def get_theme_dict(mode: Literal["dark", "light"] = None) -> Dict[str, Any]:
+    """
+    Get complete theme dictionary with all design tokens.
+    
+    Args:
+        mode: Theme mode ("dark" or "light"). If None, uses current mode.
+        
+    Returns:
+        Dictionary with colors, fonts, and spacing for UI styling.
+    """
+    palette = ThemeManager.get_palette(mode)
+    return {
+        "bg_base": palette.bg_base,
+        "bg_surface": palette.bg_surface,
+        "bg_elevated": palette.bg_elevated,
+        "bg_hover": palette.bg_hover,
+        "accent_primary": palette.accent_primary,
+        "accent_dim": palette.accent_dim,
+        "accent_glow": palette.accent_glow,
+        "success": palette.success,
+        "warning": palette.warning,
+        "error": palette.error,
+        "text_primary": palette.text_primary,
+        "text_secondary": palette.text_secondary,
+        "text_muted": palette.text_muted,
+        "text_code": palette.text_code,
+        "border_normal": palette.border_normal,
+        "border_active": palette.border_active,
+        "padding_large": Spacing.PAD_LARGE,
+        "padding_medium": Spacing.PAD_MEDIUM,
+        "padding_small": Spacing.PAD_SMALL,
+        "padding_tiny": Spacing.PAD_TINY,
+        "header_height": Spacing.HEADER_HEIGHT,
+        "footer_height": Spacing.FOOTER_HEIGHT,
+    }
