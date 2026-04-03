@@ -1,6 +1,9 @@
 # CLP-RCLP MiniZinc Lab Environment
 
-Version: 1.2.0 | License: MIT | Python: 3.8+ | MiniZinc: 2.5+
+[![Version](https://img.shields.io/badge/version-1.3.0-brightgreen?style=flat-square)](.)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](.)
+[![Python](https://img.shields.io/badge/python-3.8+-yellow?style=flat-square)](.)
+[![MiniZinc](https://img.shields.io/badge/minizinc-2.5+-ff69b4?style=flat-square)](.)
 
 ## Overview
 
