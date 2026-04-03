@@ -1,41 +1,41 @@
 # Data Processing Scripts
 
-Scripts para procesar, validar y convertir archivos de datos entre diferentes formatos.
+Scripts for processing, validating, and converting data files between different formats.
 
-## Contenido
+## Contents
 
 ### `convert_json_to_integer_dzn.py`
-Convierte archivos JSON con datos de instancias a formato MiniZinc (.dzn) con valores enteros escalados.
+Converts JSON files with instance data to MiniZinc format (.dzn) with scaled integer values.
 
-**Uso**:
+**Usage**:
 ```bash
 python convert_json_to_integer_dzn.py <input.json> <output.dzn>
 ```
 
-**Características**:
-- Convierte valores decimales a enteros (escalados ×10)
-- Valida rangos de valores
-- Genera comentarios descriptivos en el archivo .dzn
-- Compatible con el modelo CLP
+**Features**:
+- Convert decimal values to integers (scaled ×10)
+- Validate value ranges
+- Generate descriptive comments in .dzn file
+- Compatible with CLP model
 
 ### `validate_integer_dzn.py`
-Valida que los archivos .dzn generados cumplan con los requisitos del modelo CLP.
+Verify that generated .dzn files meet CLP model requirements.
 
-**Uso**:
+**Usage**:
 ```bash
 python validate_integer_dzn.py <file.dzn>
 ```
 
-**Validaciones**:
-- Estructura correcta de arrays
-- Tipos de datos correctos (enteros)
-- Valores dentro de rangos permitidos
-- Coherencia entre parámetros
+**Validations**:
+- Correct array structure
+- Correct data types (integers)
+- Values within allowed ranges
+- Parameter coherence
 
 ## Dependencies
 - Python 3.8+
-- numpy (opcional para análisis)
+- numpy (optional for analysis)
 
 ## Related Scripts
-- Generation: `../generation/create_cork_variants.py` (produce datos para este módulo)
-- Testing: `../testing/run_battery_project_tests.py` (valida la salida)
+- Generation: `../generation/create_cork_variants.py` (produces data for this module)
+- Testing: `../testing/run_battery_project_tests.py` (validates output)
