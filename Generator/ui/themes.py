@@ -44,6 +44,14 @@ LIGHT_PALETTE = ColorPalette(
     border_normal="#CCCCCC", border_active="#2E5FCC",
 )
 
+class Typography:
+    """Font families and sizes for consistent typography across UI."""
+    ui_normal = ("Segoe UI", 10)
+    ui_bold = ("Segoe UI", 10, "bold")
+    section = ("Segoe UI", 8, "bold")
+    mono = ("Consolas", 9)
+    small = ("Segoe UI", 8)
+
 class Spacing:
     """Consistent spacing and padding constants."""
     HEADER_HEIGHT = 70
@@ -112,31 +120,51 @@ class ThemeManager:
 def get_theme_dict(mode: Literal["dark", "light"] = None) -> Dict[str, Any]:
     """
     Get complete theme dictionary with all design tokens.
-    
+
+    Provides unified dictionary with colors, typography, and spacing for UI styling.
+
     Args:
         mode: Theme mode ("dark" or "light"). If None, uses current mode.
-        
+
     Returns:
-        Dictionary with colors, fonts, and spacing for UI styling.
+        Dictionary with 26+ design tokens covering colors, fonts, and spacing.
     """
     palette = ThemeManager.get_palette(mode)
     return {
+        # Colors - Backgrounds (4)
         "bg_base": palette.bg_base,
         "bg_surface": palette.bg_surface,
         "bg_elevated": palette.bg_elevated,
         "bg_hover": palette.bg_hover,
+
+        # Colors - Accents (3)
         "accent_primary": palette.accent_primary,
         "accent_dim": palette.accent_dim,
         "accent_glow": palette.accent_glow,
+
+        # Colors - Status (3)
         "success": palette.success,
         "warning": palette.warning,
         "error": palette.error,
+
+        # Colors - Text (4)
         "text_primary": palette.text_primary,
         "text_secondary": palette.text_secondary,
         "text_muted": palette.text_muted,
         "text_code": palette.text_code,
+
+        # Colors - Borders (2)
         "border_normal": palette.border_normal,
         "border_active": palette.border_active,
+
+        # Typography - Font Tuples (5)
+        "font_ui": Typography.ui_normal,
+        "font_bold": Typography.ui_bold,
+        "font_section": Typography.section,
+        "font_mono": Typography.mono,
+        "font_small": Typography.small,
+
+        # Spacing & Measurements (6)
         "padding_large": Spacing.PAD_LARGE,
         "padding_medium": Spacing.PAD_MEDIUM,
         "padding_small": Spacing.PAD_SMALL,
