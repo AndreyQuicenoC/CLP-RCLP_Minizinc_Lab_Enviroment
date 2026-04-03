@@ -1,49 +1,49 @@
 # Setup & Diagnosis Scripts
 
-Scripts para configuración inicial, diagnóstico y resolución de problemas del proyecto CLP-RCLP.
+Scripts for initial configuration, diagnostics, and troubleshooting of the CLP-RCLP project.
 
-## Contenido
+## Contents
 
 ### `setup_and_validate.py`
-Script de configuración inicial que verifica todos los requisitos y prepara el entorno.
+Initial configuration script that verifies all requirements and prepares the environment.
 
-**Uso**:
+**Usage**:
 ```bash
 python setup_and_validate.py
 ```
 
-**Validaciones**:
-- Estructura de directorios correcta
-- Instalación de Python 3.8+
-- Disponibilidad de MiniZinc
-- Archivos de modelo presentes
-- Datos base disponibles
+**Validations**:
+- Correct directory structure
+- Python 3.8+ installation
+- MiniZinc availability
+- Model files present
+- Base data available
 
-**Salida**: Reporte de configuración con pasos para resolver problemas
+**Output**: Configuration report with steps to resolve issues
 
 ## Setup Workflow
 
-1. **Primera vez**:
+1. **First Time**:
    ```bash
-   python setup_and_validate.py    # Validará requisitos
+   python setup_and_validate.py    # Validate requirements
    ```
 
-2. **Si hay problemas con Cork**:
+2. **If Cork Issues**:
    ```bash
-   bash ../utilities/diagnose_cork.sh           # Diagnosticará
-   python ../generation/create_cork_variants.py  # Regenerará
+   bash ../utilities/diagnose_cork.sh           # Diagnose
+   python ../generation/create_cork_variants.py  # Regenerate
    ```
 
-3. **Verificar todo funciona**:
+3. **Verify Everything Works**:
    ```bash
-   bash ../testing/test_generator.sh  # Test completo
+   bash ../testing/test_generator.sh  # Complete test
    ```
 
 ## Dependencies
 - Python 3.8+
-- bash (para scripts .sh)
+- bash (for .sh scripts)
 - MiniZinc 2.5+ (https://www.minizinc.org)
-- git (para clonar/actualizar)
+- git (for cloning/updating)
 
 ## Troubleshooting
 
@@ -56,7 +56,7 @@ sudo apt install minizinc
 brew install minizinc
 
 # Windows
-# Descargar desde https://www.minizinc.org/software.html
+# Download from https://www.minizinc.org/software.html
 ```
 
 ### Python version too old
