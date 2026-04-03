@@ -1,15 +1,16 @@
 """
 ================================================================================
-Generator Orchestrator - Main Generation Workflow (v2.1 - Smart Retries)
+Generator Orchestrator - Main Generation Workflow (v3.0 - Smart Retries)
 ================================================================================
 Coordinates generation with intelligent retry strategy and early detection
-of problematic instances.
+of problematic instances. Output consolidated to Data/Battery Generated.
 
 Features:
 1. Smart parameters adjustment after repeated failures
 2. Early abort for obviously infeasible combinations
 3. Progress tracking with meaningful statistics
 4. Structured cleanup of failed attempts
+5. Consolidated output directory (Data/Battery Generated)
 ================================================================================
 """
 
@@ -29,7 +30,7 @@ class GeneratorOrchestrator:
     Orchestrates the complete instance generation workflow with intelligent retry logic.
     """
 
-    def __init__(self, project_root: str, log_callback: Callable = None, output_subdir: str = 'Tests/Output/Generator'):
+    def __init__(self, project_root: str, log_callback: Callable = None, output_subdir: str = 'Data/Battery Generated'):
         """Initialize orchestrator"""
         self.project_root = Path(project_root)
         self.config = Config()
