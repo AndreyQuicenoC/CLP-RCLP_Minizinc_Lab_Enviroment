@@ -5,6 +5,7 @@ Professional GUI interface for executing CLP and RCLP tests on generated or exis
 ## Overview
 
 Runner provides a clean, user-friendly interface to:
+
 - Select test instances from Data directories
 - Choose between CLP and RCLP models
 - Execute tests with MiniZinc solver
@@ -14,6 +15,7 @@ Runner provides a clean, user-friendly interface to:
 ## Usage
 
 ### Launch the Interface
+
 ```bash
 python Runner/runner.py
 ```
@@ -39,17 +41,19 @@ python Runner/runner.py
 Results are automatically saved to `Tests/Output/{DirectoryName}/` in two formats:
 
 #### JSON Format (`{filename}_result.json`)
+
 ```json
 {
   "num_buses": 5,
   "num_stations": 8,
   "charged_stations": 2,
-  "charging_locations": [0,1,0,0,1,0,0,0],
+  "charging_locations": [0, 1, 0, 0, 1, 0, 0, 0],
   "time_deviation": 45
 }
 ```
 
 #### TXT Format (`{filename}_result.txt`)
+
 ```
 ============================================================
 CLP-RCLP Test Execution Result
@@ -87,19 +91,25 @@ Runner/
 ## Components
 
 ### core/executor.py
+
 Handles MiniZinc model execution with:
+
 - Process management and timeout handling
 - Output parsing and solution extraction
 - Error handling and logging
 
 ### core/result_handler.py
+
 Manages result file generation:
+
 - JSON export with structured data
 - Human-readable TXT format
 - Directory creation and file management
 
 ### ui/interface.py
+
 Professional Tkinter interface featuring:
+
 - Directory and file selection dropdowns
 - Model selector (radio buttons)
 - Real-time status display
@@ -107,7 +117,9 @@ Professional Tkinter interface featuring:
 - Color scheme: Gray, Dark Blue, Black
 
 ### config.py
+
 Centralized configuration with:
+
 - UI color palette
 - Font settings
 - Data directory mapping
@@ -122,6 +134,7 @@ Centralized configuration with:
 ## Color Scheme
 
 Professional palette selected for clarity and aesthetics:
+
 - **Background**: Light Gray (#CCCCCC)
 - **Accents**: Dark Blue (#1E3A5F)
 - **Text**: Black (#000000)
@@ -142,6 +155,7 @@ Professional palette selected for clarity and aesthetics:
 ## Development Notes
 
 To modify colors or settings, edit `config.py`:
+
 ```python
 class RunnerConfig:
     COLOR_GRAY = "#CCCCCC"
