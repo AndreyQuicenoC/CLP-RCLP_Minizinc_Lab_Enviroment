@@ -92,8 +92,8 @@ class MiniZincExecutor:
             (success: bool, result: dict or None)
         """
         try:
-            # Check if satisfiable
-            if "UNSATISFIABLE" in output or "=====\n\n" in output:
+            # Check if satisfiable - look for actual "UNSATISFIABLE" marker, not just separators
+            if output.strip().startswith("UNSATISFIABLE") or "% UNSATISFIABLE" in output:
                 logger.info("Instance is UNSATISFIABLE")
                 return False, None
 
@@ -122,7 +122,7 @@ class MiniZincExecutor:
 
         # Extract num_buses and num_stations from DZN file
         try:
-            with open(dzn_path, 'r') as f:
+            with open(dzn_path, 'r', encoding='utf-8') as f:
                 content = f.read()
                 buses_match = re.search(r'num_buses\s*=\s*(\d+)', content)
                 stations_match = re.search(r'num_stations\s*=\s*(\d+)', content)
@@ -135,27 +135,31 @@ class MiniZincExecutor:
         except Exception:
             return None
 
-        # Extract from solution output
+        # Extract from solution output (MiniZinc outputs in Spanish)
         solution_text = "\n".join(lines)
 
-        # Look for charging locations array
-        locations_match = re.search(r'charging_locations\s*=\s*\[(.*?)\]', solution_text)
-        if locations_match:
-            locations_str = locations_match.group(1)
+        # Look for "Estaciones instaladas: [...]" (Spanish for charging locations)
+        estaciones_match = re.search(r'Estaciones instaladas:\s*\[(.*?)\]', solution_text, re.DOTALL)
+        if estaciones_match:
+            locations_str = estaciones_match.group(1)
             try:
+                # Parse the array
                 charging_locs = [int(x.strip()) for x in locations_str.split(',') if x.strip()]
                 result['charging_locations'] = charging_locs
                 result['charged_stations'] = sum(charging_locs)
             except ValueError:
+                logger.warning(f"Failed to parse charging locations: {locations_str}")
                 return None
         else:
+            logger.warning("Could not find 'Estaciones instaladas' in output")
             return None
 
-        # Look for time deviation
-        deviation_match = re.search(r'total_deviation\s*=\s*(\d+)', solution_text)
-        if deviation_match:
-            result['time_deviation'] = int(deviation_match.group(1))
+        # Look for "Desviacion total: N" (Spanish for time deviation)
+        desviacion_match = re.search(r'Desviacion total:\s*(\d+)', solution_text)
+        if desviacion_match:
+            result['time_deviation'] = int(desviacion_match.group(1))
         else:
+            logger.warning("Could not find 'Desviacion total' in output")
             result['time_deviation'] = 0
 
         return result
