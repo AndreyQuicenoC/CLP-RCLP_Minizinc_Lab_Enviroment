@@ -1,4 +1,0 @@
-Analyzing feasibility of: cork-1-line20_0
-========================================
-Buses: 4
-Stations: 40

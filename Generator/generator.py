@@ -1,17 +1,17 @@
 """
 ================================================================================
-AVISPA CLP Test Instance Generator v2.0
+AVISPA CLP Test Instance Generator v3.0
 ================================================================================
 Professional test instance generator with integrated MiniZinc validation.
 
-Architecture:
+Architecture (v3.0 - Modular):
   - config.py: Centralized configuration
-  - instance_generator.py: Expert algorithm for feasible instances
-  - minizinc_exporter.py: DZN export with metadata
-  - instance_validator.py: MiniZinc validation with robust timeout
-  - instance_manager.py: File management and cleanup
-  - generator_orchestrator.py: Workflow coordination
-  - generator_gui.py: Professional user interface
+  - core/instance_generator.py: Expert algorithm for feasible instances
+  - core/minizinc_exporter.py: DZN export with metadata
+  - core/instance_validator.py: MiniZinc validation with robust timeout
+  - core/instance_manager.py: File management and cleanup
+  - orchestrator.py: Workflow coordination (formerly generator_orchestrator)
+  - ui/generator_gui.py: Professional user interface
   - generator.py: Main entry point
 
 Features:
@@ -23,12 +23,18 @@ Features:
   [OK] Professional UI
 
 Author: AVISPA Research Team
-Version: 2.0.0
-Date: March 2026
+Version: 3.0.0
+Date: April 2026
 ================================================================================
 """
 
-from generator_gui import main
+import sys
+from pathlib import Path
+
+# Ensure Generator directory is in Python path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from ui.generator_gui import main
 
 if __name__ == '__main__':
     main()
