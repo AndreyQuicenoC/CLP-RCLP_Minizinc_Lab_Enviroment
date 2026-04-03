@@ -1,593 +1,510 @@
 """
-Runner Interface - Premium Dark Industrial GUI
-Fully functional, high-quality UX/UI redesign.
+Runner Interface - Professional MiniZinc Test Executor GUI
+
+Premium dark/light mode UI for executing CLP/RCLP test instances with real-time monitoring,
+result generation, and professional theme support.
+
+Architecture:
+- Dynamic theme switching (dark/light modes)
+- Modular components from .components module
+- TTK-based styling for dropdown/scrollbar consistency
+- Two-panel layout: Config (left) + Results (right)
+- Real-time execution monitoring with status indicators
 """
 
 import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
-from .themes import ThemeManager, get_theme_dict
-from .components import SectionLabel, FlatButton, StatusIndicator
-from .layouts import LayoutBuilder, LayoutConfig
+from typing import Dict, Any, Literal, Optional, Callable
 import threading
 import logging
 
-from config import RunnerConfig
-from core.executor import MiniZincExecutor
-from core.result_handler import ResultHandler
+# Import modular theme system
+from .themes import ThemeManager, get_theme_dict, DARK_PALETTE, LIGHT_PALETTE
+from .components import SectionLabel, FlatButton, Divider, StatusIndicator
+from .layouts import LayoutBuilder, LayoutConfig
+
+# Import Runner core modules
+try:
+    from config import RunnerConfig
+    from core.executor import MiniZincExecutor
+    from core.result_handler import ResultHandler
+except ImportError:
+    from ..config import RunnerConfig
+    from ..core.executor import MiniZincExecutor
+    from ..core.result_handler import ResultHandler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# ─────────────────────────────────────────────────────────────
-#  Design Tokens
-# ─────────────────────────────────────────────────────────────
-class T:
-    BG_BASE      = "#0D0F14"
-    BG_SURFACE   = "#141720"
-    BG_ELEVATED  = "#1C2030"
-    BG_HOVER     = "#232840"
+class RunnerInterface(tk.Frame):
+    """Professional MiniZinc test runner interface with theme switching support."""
 
-    ACCENT       = "#3D8EF5"
-    ACCENT_DIM   = "#1F4A8C"
-    ACCENT_GLOW  = "#5AAEFF"
-
-    SUCCESS      = "#22C55E"
-    WARNING      = "#F59E0B"
-    ERROR        = "#EF4444"
-
-    TEXT_PRIMARY = "#E8ECF4"
-    TEXT_SEC     = "#8896B3"
-    TEXT_MUTED   = "#4A5568"
-    TEXT_CODE    = "#A8C4F0"
-
-    BORDER       = "#242B3D"
-    BORDER_ACT   = "#3D8EF5"
-
-    FONT_UI      = ("Segoe UI", 10)
-    FONT_BOLD    = ("Segoe UI", 10, "bold")
-    FONT_SMALL   = ("Segoe UI", 8, "bold")
-    FONT_MONO    = ("Consolas", 9)
-    FONT_SECTION = ("Segoe UI", 8, "bold")
-
-    PAD_X        = 20
-    PAD_Y        = 16
-
-
-# ─────────────────────────────────────────────────────────────
-#  TTK Theme
-# ─────────────────────────────────────────────────────────────
-
-def apply_ttk_theme(root: tk.Tk) -> None:
-    style = ttk.Style(root)
-    style.theme_use("clam")
-
-    style.configure(
-        "Dark.TCombobox",
-        fieldbackground=T.BG_ELEVATED,
-        background=T.BG_ELEVATED,
-        foreground=T.TEXT_PRIMARY,
-        selectbackground=T.ACCENT_DIM,
-        selectforeground=T.TEXT_PRIMARY,
-        bordercolor=T.BORDER,
-        darkcolor=T.BG_ELEVATED,
-        lightcolor=T.BG_ELEVATED,
-        arrowcolor=T.TEXT_SEC,
-        arrowsize=12,
-        padding=(10, 6),
-        font=T.FONT_UI,
-        relief="flat",
-    )
-    style.map(
-        "Dark.TCombobox",
-        fieldbackground=[("focus", T.BG_ELEVATED), ("readonly", T.BG_ELEVATED)],
-        bordercolor=[("focus", T.BORDER_ACT), ("!focus", T.BORDER)],
-        foreground=[("disabled", T.TEXT_MUTED)],
-        arrowcolor=[("hover", T.ACCENT)],
-    )
-    root.option_add("*TCombobox*Listbox.background",      T.BG_ELEVATED)
-    root.option_add("*TCombobox*Listbox.foreground",      T.TEXT_PRIMARY)
-    root.option_add("*TCombobox*Listbox.selectBackground",T.ACCENT_DIM)
-    root.option_add("*TCombobox*Listbox.selectForeground",T.TEXT_PRIMARY)
-    root.option_add("*TCombobox*Listbox.font",            T.FONT_UI)
-    root.option_add("*TCombobox*Listbox.relief",          "flat")
-
-    style.configure(
-        "Dark.Vertical.TScrollbar",
-        background=T.BG_ELEVATED,
-        troughcolor=T.BG_SURFACE,
-        bordercolor=T.BG_SURFACE,
-        arrowcolor=T.TEXT_MUTED,
-        darkcolor=T.BG_ELEVATED,
-        lightcolor=T.BG_ELEVATED,
-        relief="flat",
-        width=8,
-    )
-    style.map("Dark.Vertical.TScrollbar",
-              background=[("active", T.TEXT_MUTED)])
-
-
-# ─────────────────────────────────────────────────────────────
-#  Custom Widgets
-# ─────────────────────────────────────────────────────────────
-
-class SectionLabel(tk.Frame):
-    def __init__(self, parent, text: str, bg: str = T.BG_SURFACE):
-        super().__init__(parent, bg=bg)
-        tk.Frame(self, bg=T.ACCENT, width=3).pack(side=tk.LEFT, fill=tk.Y, pady=1)
-        tk.Label(self, text=text.upper(), bg=bg, fg=T.TEXT_SEC,
-                 font=T.FONT_SECTION, padx=8).pack(side=tk.LEFT)
-
-
-class Divider(tk.Frame):
-    def __init__(self, parent, **kw):
-        super().__init__(parent, bg=T.BORDER, height=1, **kw)
-
-
-class PillRadio(tk.Frame):
-    """Segmented-control radio selector."""
-
-    def __init__(self, parent, variable: tk.StringVar, options: list):
-        super().__init__(parent, bg=T.BG_ELEVATED,
-                         highlightthickness=1, highlightbackground=T.BORDER)
-        self.var = variable
-        self._btns: dict = {}
-
-        for col, opt in enumerate(options):
-            lbl = tk.Label(self, text=opt.upper(),
-                           bg=T.BG_ELEVATED, fg=T.TEXT_SEC,
-                           font=("Segoe UI", 9, "bold"),
-                           padx=24, pady=9, cursor="hand2")
-            lbl.grid(row=0, column=col, sticky="nsew")
-            self.grid_columnconfigure(col, weight=1)
-            self._btns[opt] = lbl
-            lbl.bind("<Button-1>", lambda _e, v=opt: self._select(v))
-            lbl.bind("<Enter>",    lambda _e, b=lbl, v=opt: self._hover(b, v, True))
-            lbl.bind("<Leave>",    lambda _e, b=lbl, v=opt: self._hover(b, v, False))
-
-        self._select(variable.get())
-
-    def _select(self, value: str) -> None:
-        self.var.set(value)
-        for k, btn in self._btns.items():
-            btn.config(bg=T.ACCENT if k == value else T.BG_ELEVATED,
-                       fg="#FFFFFF" if k == value else T.TEXT_SEC)
-
-    def _hover(self, btn, value: str, entering: bool) -> None:
-        if value == self.var.get():
-            return
-        btn.config(bg=T.BG_HOVER if entering else T.BG_ELEVATED,
-                   fg=T.TEXT_PRIMARY if entering else T.TEXT_SEC)
-
-
-class FlatButton(tk.Label):
-    """Button implemented as tk.Label — avoids ttk dark-mode issues."""
-
-    def __init__(self, parent, text: str, command,
-                 accent: bool = False, enabled: bool = True, **kw):
-        self._accent  = accent
-        self._command = command
-        self._enabled = enabled
-
-        if accent:
-            self._bg, self._fg, self._hover_bg = T.ACCENT, "#FFFFFF", T.ACCENT_GLOW
-        else:
-            self._bg, self._fg, self._hover_bg = T.BG_ELEVATED, T.TEXT_SEC, T.BG_HOVER
-
-        super().__init__(
-            parent,
-            text=text,
-            bg=self._bg if enabled else T.BG_ELEVATED,
-            fg=self._fg if enabled else T.TEXT_MUTED,
-            font=("Segoe UI", 9, "bold"),
-            padx=0, pady=11,
-            cursor="hand2" if enabled else "arrow",
-            relief="flat",
-            highlightthickness=1,
-            highlightbackground=T.ACCENT if accent else T.BORDER,
-            **kw,
-        )
-
-        self._setup_bindings()
-
-    # ✅ RENAMED
-    def _setup_bindings(self):
-        if self._enabled:
-            self.bind("<Enter>",           self._on_enter)
-            self.bind("<Leave>",           self._on_leave)
-            self.bind("<Button-1>",        self._on_press)
-            self.bind("<ButtonRelease-1>", self._on_release)
-
-    # ✅ RENAMED
-    def _remove_bindings(self):
-        for s in ("<Enter>", "<Leave>", "<Button-1>", "<ButtonRelease-1>"):
-            self.unbind(s)
-
-    def _on_enter(self, _e):
-        self.config(bg=self._hover_bg, fg="#FFFFFF")
-
-    def _on_leave(self, _e):
-        self.config(bg=self._bg, fg=self._fg)
-
-    def _on_press(self, _e):
-        self.config(bg=T.ACCENT_DIM if self._accent else T.BORDER)
-
-    def _on_release(self, _e):
-        self.config(bg=self._bg, fg=self._fg)
-        if self._command:
-            self._command()
-
-    def set_enabled(self, enabled: bool):
-        self._enabled = enabled
-        self._remove_bindings()
-
-        if enabled:
-            self.config(
-                bg=self._bg,
-                fg=self._fg,
-                cursor="hand2",
-                highlightbackground=T.ACCENT if self._accent else T.BORDER
-            )
-            self._setup_bindings()
-        else:
-            self.config(
-                bg=T.BG_ELEVATED,
-                fg=T.TEXT_MUTED,
-                cursor="arrow",
-                highlightbackground=T.BORDER
-            )
-
-class StatusDot(tk.Canvas):
-    _COLORS = {"idle": T.TEXT_MUTED, "running": T.ACCENT,
-               "success": T.SUCCESS, "error": T.ERROR, "warning": T.WARNING}
-
-    def __init__(self, parent, **kw):
-        super().__init__(parent, width=10, height=10,
-                         bg=T.BG_SURFACE, highlightthickness=0, **kw)
-        self._state = "idle"
-        self._dot   = self.create_oval(1, 1, 9, 9, fill=T.TEXT_MUTED, outline="")
-        self._job   = None
-
-    def set_state(self, state: str):
-        self._state = state
-        if self._job:
-            self.after_cancel(self._job)
-            self._job = None
-        self.itemconfig(self._dot, fill=self._COLORS.get(state, T.TEXT_MUTED))
-        if state == "running":
-            self._blink()
-
-    def _blink(self):
-        cur = self.itemcget(self._dot, "fill")
-        self.itemconfig(self._dot, fill=T.ACCENT if cur != T.ACCENT else T.BG_SURFACE)
-        if self._state == "running":
-            self._job = self.after(500, self._blink)
-
-
-# ─────────────────────────────────────────────────────────────
-#  Main Application
-# ─────────────────────────────────────────────────────────────
-
-class RunnerInterface:
     def __init__(self, root: tk.Tk):
+        """
+        Initialize the Runner interface.
+
+        Sets up theming, observes theme changes, builds UI, and applies styling.
+        """
+        super().__init__(root)
         self.root = root
-        self.root.title("CLP Runner  v1.2")
+        self.master = root
+        self.pack(fill=tk.BOTH, expand=True)
+
+        # Initialize theme system
+        self._init_theme()
+
+        # Setup window properties
+        self.root.title("CLP-RCLP Test Runner v1.3.0")
         self.root.geometry("940x730")
         self.root.resizable(False, False)
-        self.root.configure(bg=T.BG_BASE)
+        self.configure(bg=self.theme_dict["bg_base"])
 
-        apply_ttk_theme(root)
+        # Initialize core modules
+        self.executor: Optional[MiniZincExecutor] = None
+        self.result_handler: Optional[ResultHandler] = None
+        self.execution_thread: Optional[threading.Thread] = None
+        self.is_running = False
 
-        self.config       = RunnerConfig()
+        # Find project root for file operations
         self.project_root = self._find_project_root()
-        self.is_running   = False
 
+        # Build UI
         self._build_ui()
+        self._apply_ttk_theme()
 
-    def _find_project_root(self) -> Path:
-        current = Path(__file__).parent.parent
-        while current != current.parent:
-            if (current / "Models" / "clp_model.mzn").exists():
-                return current
+    def _init_theme(self) -> None:
+        """Initialize theme system and register observer for dynamic switching."""
+        self.theme_dict = get_theme_dict("dark")
+        ThemeManager.register_observer(self._on_theme_change)
+
+    def _on_theme_change(self, mode: Literal["dark", "light"]) -> None:
+        """
+        Called when theme mode changes (dark ↔ light).
+
+        Refreshes the theme dictionary and updates all UI colors dynamically.
+        """
+        self.theme_dict = get_theme_dict(mode)
+        self._refresh_ui_colors()
+
+    def _find_project_root(self) -> str:
+        """Find the CLP-RCLP Minizinc project root directory."""
+        current = Path(__file__).parent.absolute()
+        while current.name != "CLP-RCLP Minizinc" and current.parent != current:
             current = current.parent
-        return Path.cwd()
+        return str(current) if current.name == "CLP-RCLP Minizinc" else str(Path(__file__).parent.parent.parent)
 
-    # ── build UI ─────────────────────────────────────────────
+    def _build_ui(self) -> None:
+        """Build the complete user interface with two-panel layout."""
+        # Main container
+        container = tk.Frame(self, bg=self.theme_dict["bg_base"])
+        container.pack(fill=tk.BOTH, expand=True)
 
-    def _build_ui(self):
-        self._build_header()
-        self._build_footer()          # anchor footer first
+        # Header
+        self._build_header(container)
 
-        body = tk.Frame(self.root, bg=T.BG_BASE)
-        body.pack(fill=tk.BOTH, expand=True,
-                  padx=T.PAD_X, pady=(T.PAD_Y // 2, T.PAD_Y))
+        # Content area (two panels)
+        content = tk.Frame(container, bg=self.theme_dict["bg_base"])
+        content.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
 
-        left = tk.Frame(body, bg=T.BG_BASE, width=300)
-        left.pack(side=tk.LEFT, fill=tk.Y)
-        left.pack_propagate(False)
-        self._build_config_panel(left)
+        # Left panel (config)
+        self._build_left_panel(content)
 
-        tk.Frame(body, bg=T.BG_BASE, width=14).pack(side=tk.LEFT)
+        # Right panel (results)
+        self._build_right_panel(content)
 
-        right = tk.Frame(body, bg=T.BG_BASE)
-        right.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self._build_results_panel(right)
+        # Footer
+        self._build_footer(container)
 
-    def _build_header(self):
-        bar = tk.Frame(self.root, bg=T.BG_SURFACE,
-                       highlightthickness=1, highlightbackground=T.BORDER)
-        bar.pack(fill=tk.X)
+    def _build_header(self, parent: tk.Widget) -> None:
+        """Build the header with title and status indicator."""
+        header = tk.Frame(parent, bg=self.theme_dict["bg_surface"], height=70)
+        header.pack(fill=tk.X, padx=0, pady=0)
+        header.pack_propagate(False)
 
-        inner = tk.Frame(bar, bg=T.BG_SURFACE)
-        inner.pack(fill=tk.X, padx=T.PAD_X, pady=13)
+        # Left side: Title with accent bar
+        left = tk.Frame(header, bg=self.theme_dict["bg_surface"])
+        left.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=20, pady=15)
 
-        tk.Frame(inner, bg=T.ACCENT, width=4).pack(side=tk.LEFT, fill=tk.Y)
-        tk.Label(inner, text="  CLP RUNNER",
-                 bg=T.BG_SURFACE, fg=T.TEXT_PRIMARY,
-                 font=("Segoe UI", 13, "bold")).pack(side=tk.LEFT)
-        tk.Label(inner, text="v1.2",
-                 bg=T.BG_SURFACE, fg=T.TEXT_MUTED,
-                 font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=(6, 0), pady=(4, 0))
-
-        sf = tk.Frame(inner, bg=T.BG_SURFACE)
-        sf.pack(side=tk.RIGHT)
-        self._status_dot = StatusDot(sf)
-        self._status_dot.pack(side=tk.LEFT, padx=(0, 6))
-        self._status_lbl = tk.Label(sf, text="IDLE",
-                                    bg=T.BG_SURFACE, fg=T.TEXT_MUTED,
-                                    font=("Segoe UI", 8, "bold"))
-        self._status_lbl.pack(side=tk.LEFT)
-
-    def _build_footer(self):
-        bar = tk.Frame(self.root, bg=T.BG_SURFACE,
-                       highlightthickness=1, highlightbackground=T.BORDER)
-        bar.pack(fill=tk.X, side=tk.BOTTOM)
-
-        inner = tk.Frame(bar, bg=T.BG_SURFACE)
-        inner.pack(fill=tk.X, padx=T.PAD_X, pady=5)
-        tk.Label(inner, text="MiniZinc Executor  ·  CLP/RCLP Solver",
-                 bg=T.BG_SURFACE, fg=T.TEXT_MUTED, font=("Segoe UI", 8)).pack(side=tk.LEFT)
-        tk.Label(inner, text="Runner Interface  ·  v1.2.0",
-                 bg=T.BG_SURFACE, fg=T.TEXT_MUTED, font=("Segoe UI", 8)).pack(side=tk.RIGHT)
-
-    def _build_config_panel(self, parent):
-        card = tk.Frame(parent, bg=T.BG_SURFACE,
-                        highlightthickness=1, highlightbackground=T.BORDER)
-        card.pack(fill=tk.X, pady=(T.PAD_Y // 2, 0))
-
-        p = dict(padx=16)
-
-        # Directory
-        SectionLabel(card, "Directory").pack(anchor="w", pady=(14, 6), **p)
-        self._dir_var = tk.StringVar(value=self.config.DATA_DIRECTORIES[0])
-        dir_cb = ttk.Combobox(card, textvariable=self._dir_var,
-                               values=self.config.DATA_DIRECTORIES,
-                               state="readonly", style="Dark.TCombobox")
-        dir_cb.pack(fill=tk.X, pady=(0, 2), **p)
-        self._dir_var.trace_add("write", lambda *_: self._on_dir_changed())
-
-        Divider(card).pack(fill=tk.X, pady=12, **p)
-
-        # Test Instance
-        SectionLabel(card, "Test Instance").pack(anchor="w", pady=(0, 6), **p)
-        row = tk.Frame(card, bg=T.BG_SURFACE)
-        row.pack(fill=tk.X, pady=(0, 2), **p)
-
-        self._file_var = tk.StringVar()
-        self._file_cb  = ttk.Combobox(row, textvariable=self._file_var,
-                                       state="readonly", style="Dark.TCombobox")
-        self._file_cb.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-        ref = tk.Label(row, text=" ↺ ", bg=T.BG_ELEVATED, fg=T.TEXT_SEC,
-                       font=("Segoe UI", 12), cursor="hand2",
-                       highlightthickness=1, highlightbackground=T.BORDER,
-                       padx=4, pady=3)
-        ref.pack(side=tk.LEFT, padx=(6, 0))
-        ref.bind("<Button-1>", lambda _e: self._refresh_files())
-        ref.bind("<Enter>",    lambda _e: ref.config(fg=T.ACCENT, highlightbackground=T.BORDER_ACT))
-        ref.bind("<Leave>",    lambda _e: ref.config(fg=T.TEXT_SEC, highlightbackground=T.BORDER))
-
-        Divider(card).pack(fill=tk.X, pady=12, **p)
-
-        # Model
-        SectionLabel(card, "Model").pack(anchor="w", pady=(0, 8), **p)
-        self._model_var = tk.StringVar(value=self.config.MODELS[0])
-        PillRadio(card, self._model_var, self.config.MODELS).pack(
-            fill=tk.X, pady=(0, 16), **p)
-
-        # Actions
-        Divider(card).pack(fill=tk.X, **p)
-        actions = tk.Frame(card, bg=T.BG_SURFACE)
-        actions.pack(fill=tk.X, padx=16, pady=14)
-
-        self._run_btn = FlatButton(actions, "▶   RUN TEST",
-                                   command=self._run_test, accent=True)
-        self._run_btn.pack(fill=tk.X)
-
-        self._stop_btn = FlatButton(actions, "■   STOP",
-                                    command=self._stop_test,
-                                    accent=False, enabled=False)
-        self._stop_btn.pack(fill=tk.X, pady=(8, 0))
-
-        self._refresh_files()
-
-    def _build_results_panel(self, parent):
-        hdr = tk.Frame(parent, bg=T.BG_SURFACE,
-                       highlightthickness=1, highlightbackground=T.BORDER)
-        hdr.pack(fill=tk.X)
-
-        hi = tk.Frame(hdr, bg=T.BG_SURFACE)
-        hi.pack(fill=tk.X, padx=14, pady=9)
-        tk.Label(hi, text="OUTPUT LOG", bg=T.BG_SURFACE, fg=T.TEXT_SEC,
-                 font=T.FONT_SECTION).pack(side=tk.LEFT)
-
-        clr = tk.Label(hi, text="CLEAR", bg=T.BG_SURFACE, fg=T.TEXT_MUTED,
-                       font=("Segoe UI", 8, "bold"), cursor="hand2")
-        clr.pack(side=tk.RIGHT)
-        clr.bind("<Button-1>", lambda _e: self._clear_log())
-        clr.bind("<Enter>",    lambda _e: clr.config(fg=T.ACCENT))
-        clr.bind("<Leave>",    lambda _e: clr.config(fg=T.TEXT_MUTED))
-
-        wrap = tk.Frame(parent, bg=T.BG_BASE,
-                        highlightthickness=1, highlightbackground=T.BORDER)
-        wrap.pack(fill=tk.BOTH, expand=True, pady=(1, 0))
-
-        vsb = ttk.Scrollbar(wrap, orient="vertical",
-                             style="Dark.Vertical.TScrollbar")
-        vsb.pack(side=tk.RIGHT, fill=tk.Y, padx=(0, 2), pady=4)
-
-        self._log_text = tk.Text(
-            wrap, bg=T.BG_BASE, fg=T.TEXT_CODE, font=T.FONT_MONO,
-            relief="flat", bd=0, padx=14, pady=12,
-            yscrollcommand=vsb.set,
-            insertbackground=T.ACCENT,
-            selectbackground=T.ACCENT_DIM,
-            selectforeground=T.TEXT_PRIMARY,
-            wrap=tk.WORD, cursor="arrow",
+        tk.Frame(left, bg=self.theme_dict["accent_primary"], width=4, height=24).pack(
+            side=tk.LEFT, padx=(0, 12)
         )
-        self._log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        vsb.config(command=self._log_text.yview)
 
-        self._log_text.tag_config("success", foreground=T.SUCCESS, font=("Consolas", 9, "bold"))
-        self._log_text.tag_config("error",   foreground=T.ERROR,   font=("Consolas", 9, "bold"))
-        self._log_text.tag_config("warning", foreground=T.WARNING)
-        self._log_text.tag_config("info",    foreground=T.TEXT_CODE)
-        self._log_text.tag_config("muted",   foreground=T.TEXT_MUTED)
-        self._log_text.tag_config("key",     foreground=T.TEXT_SEC)
-        self._log_text.tag_config("value",   foreground=T.ACCENT_GLOW)
-        self._log_text.tag_config("section", foreground=T.TEXT_MUTED, font=("Consolas", 8))
+        tk.Label(
+            left,
+            text="CLP-RCLP TEST RUNNER",
+            font=self.theme_dict["font_bold"],
+            fg=self.theme_dict["text_primary"],
+            bg=self.theme_dict["bg_surface"],
+        ).pack(side=tk.LEFT)
 
-        self._log("System ready.  Select a directory, instance and model — then press RUN TEST.", "muted")
+        # Right side: Status and theme toggle
+        right = tk.Frame(header, bg=self.theme_dict["bg_surface"])
+        right.pack(side=tk.RIGHT, fill=tk.Y, padx=20, pady=10)
 
-    # ── events ───────────────────────────────────────────────
+        # StatusIndicator (modular component)
+        self.status_indicator = StatusIndicator(right, "Ready", self.theme_dict)
+        self.status_indicator.pack(side=tk.LEFT, padx=(0, 16))
 
-    def _on_dir_changed(self):
-        self._refresh_files()
+        # Theme toggle button
+        toggle_text = "🌙 Dark" if ThemeManager.get_mode() == "light" else "☀ Light"
+        self.theme_toggle_btn = FlatButton(
+            right,
+            toggle_text,
+            command=self._toggle_theme,
+            theme=self.theme_dict,
+            accent=False,
+        )
+        self.theme_toggle_btn.pack(side=tk.LEFT)
 
-    def _refresh_files(self):
-        try:
-            dir_name = self._dir_var.get()
-            dir_path = self.project_root / dir_name
-            if not dir_path.exists():
-                self._file_cb.config(values=[])
-                self._file_var.set("")
-                return
-            files = sorted(f.stem for f in dir_path.glob("*.dzn")
-                           if not f.stem.endswith("_meta"))
-            self._file_cb.config(values=files)
-            if files:
-                self._file_cb.current(0)
-            else:
-                self._file_var.set("")
-        except Exception as exc:
-            logger.error("Error refreshing files: %s", exc)
+    def _build_left_panel(self, parent: tk.Widget) -> None:
+        """Build left configuration panel."""
+        left_panel = tk.Frame(parent, bg=self.theme_dict["bg_surface"], width=300)
+        left_panel.pack(side=tk.LEFT, fill=tk.Y, padx=0, pady=0)
+        left_panel.pack_propagate(False)
 
-    def _run_test(self):
-        if not self._file_var.get():
-            messagebox.showwarning("Selection Required",
-                                   "Please select a test instance.")
+        # Scrollable content area
+        canvas = tk.Canvas(
+            left_panel,
+            bg=self.theme_dict["bg_surface"],
+            highlightthickness=0,
+            bd=0,
+        )
+        scrollbar = ttk.Scrollbar(
+            left_panel, orient=tk.VERTICAL, command=canvas.yview
+        )
+        scrollable_frame = tk.Frame(canvas, bg=self.theme_dict["bg_surface"])
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda _: canvas.configure(scrollregion=canvas.bbox("all")),
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Config card
+        card = tk.Frame(
+            scrollable_frame,
+            bg=self.theme_dict["bg_elevated"],
+            relief=tk.FLAT,
+            bd=0,
+        )
+        card.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
+
+        p = {"padx": 12, "pady": 0}
+
+        # Directory selection
+        SectionLabel(card, "Directory", self.theme_dict).pack(anchor="w", pady=(14, 6), **p)
+        self.dir_var = tk.StringVar()
+        dirs = ["Battery Own", "Battery Generated", "Battery Project Integer", "Battery Project Variant"]
+        self.dir_combo = ttk.Combobox(
+            card,
+            textvariable=self.dir_var,
+            values=dirs,
+            state="readonly",
+            style="Dark.TCombobox",
+        )
+        self.dir_combo.current(0)
+        self.dir_combo.pack(fill=tk.X, padx=12, pady=(0, 12))
+
+        Divider(card, self.theme_dict).pack(fill=tk.X, pady=12, **p)
+
+        # Test instance selection
+        SectionLabel(card, "Instance", self.theme_dict).pack(anchor="w", pady=(0, 6), **p)
+        inst_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
+        inst_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+
+        self.instance_var = tk.StringVar()
+        self.instance_combo = ttk.Combobox(
+            inst_frame,
+            textvariable=self.instance_var,
+            state="readonly",
+            style="Dark.TCombobox",
+            width=25,
+        )
+        self.instance_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        refresh_btn = FlatButton(inst_frame, "Refresh", command=self._refresh_instances,
+                                theme=self.theme_dict, accent=False)
+        refresh_btn.pack(side=tk.LEFT, padx=(6, 0))
+
+        Divider(card, self.theme_dict).pack(fill=tk.X, pady=12, **p)
+
+        # Model selection
+        SectionLabel(card, "Model", self.theme_dict).pack(anchor="w", pady=(0, 8), **p)
+        self.model_var = tk.StringVar(value="CLP")
+
+        model_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
+        model_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+
+        for model in ["CLP", "RCLP"]:
+            rb = tk.Radiobutton(
+                model_frame,
+                text=model,
+                variable=self.model_var,
+                value=model,
+                bg=self.theme_dict["bg_elevated"],
+                fg=self.theme_dict["text_primary"],
+                selectcolor=self.theme_dict["accent_primary"],
+                activebackground=self.theme_dict["bg_hover"],
+            )
+            rb.pack(side=tk.LEFT, padx=8)
+
+        Divider(card, self.theme_dict).pack(fill=tk.X, pady=12, **p)
+
+        # Action buttons
+        btn_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
+        btn_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+
+        self.run_btn = FlatButton(
+            btn_frame,
+            "Run Test",
+            command=self._start_execution,
+            theme=self.theme_dict,
+            accent=True,
+        )
+        self.run_btn.pack(fill=tk.X, pady=(0, 8))
+
+        self.stop_btn = FlatButton(
+            btn_frame,
+            "Stop",
+            command=self._stop_execution,
+            theme=self.theme_dict,
+            accent=False,
+            disabled=True,
+        )
+        self.stop_btn.pack(fill=tk.X)
+
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    def _build_right_panel(self, parent: tk.Widget) -> None:
+        """Build right results display panel."""
+        right_panel = tk.Frame(parent, bg=self.theme_dict["bg_base"])
+        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Output log header
+        log_header = tk.Frame(right_panel, bg=self.theme_dict["bg_surface"], height=40)
+        log_header.pack(fill=tk.X, padx=12, pady=(12, 0))
+        log_header.pack_propagate(False)
+
+        tk.Label(
+            log_header,
+            text="OUTPUT LOG",
+            font=self.theme_dict["font_section"],
+            fg=self.theme_dict["text_secondary"],
+            bg=self.theme_dict["bg_surface"],
+        ).pack(side=tk.LEFT, anchor="w")
+
+        clear_btn = tk.Label(
+            log_header,
+            text="[Clear]",
+            font=self.theme_dict["font_ui"],
+            fg=self.theme_dict["accent_glow"],
+            bg=self.theme_dict["bg_surface"],
+            cursor="hand2",
+        )
+        clear_btn.pack(side=tk.RIGHT, anchor="e")
+        clear_btn.bind("<Button-1>", lambda _: self._clear_log())
+
+        # Log display
+        wrap = tk.Frame(right_panel, bg=self.theme_dict["bg_base"])
+        wrap.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
+
+        self.log_text = tk.Text(
+            wrap,
+            height=25,
+            width=60,
+            bg=self.theme_dict["bg_elevated"],
+            fg=self.theme_dict["text_code"],
+            font=self.theme_dict["font_mono"],
+            relief=tk.FLAT,
+            bd=0,
+            insertbackground=self.theme_dict["accent_primary"],
+        )
+        self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        scrollbar = ttk.Scrollbar(wrap, orient=tk.VERTICAL, command=self.log_text.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.log_text.config(yscrollcommand=scrollbar.set)
+
+        # Configure log text tags for colored output
+        self.log_text.tag_configure("success", foreground=self.theme_dict["success"], font=(self.theme_dict["font_mono"][0], self.theme_dict["font_mono"][1], "bold"))
+        self.log_text.tag_configure("error", foreground=self.theme_dict["error"], font=(self.theme_dict["font_mono"][0], self.theme_dict["font_mono"][1], "bold"))
+        self.log_text.tag_configure("warning", foreground=self.theme_dict["warning"])
+        self.log_text.tag_configure("info", foreground=self.theme_dict["accent_glow"])
+        self.log_text.tag_configure("muted", foreground=self.theme_dict["text_muted"])
+        self.log_text.tag_configure("key", foreground=self.theme_dict["text_secondary"])
+        self.log_text.tag_configure("value", foreground=self.theme_dict["accent_glow"])
+
+    def _build_footer(self, parent: tk.Widget) -> None:
+        """Build the footer with project info."""
+        footer = tk.Frame(parent, bg=self.theme_dict["bg_surface"], height=40)
+        footer.pack(fill=tk.X, padx=0, pady=0)
+        footer.pack_propagate(False)
+
+        tk.Label(
+            footer,
+            text="MiniZinc Test Executor · CLP/RCLP Solver",
+            font=self.theme_dict["font_small"],
+            fg=self.theme_dict["text_secondary"],
+            bg=self.theme_dict["bg_surface"],
+        ).pack(side=tk.LEFT, padx=12, pady=8)
+
+        tk.Label(
+            footer,
+            text="v1.3.0",
+            font=self.theme_dict["font_small"],
+            fg=self.theme_dict["text_muted"],
+            bg=self.theme_dict["bg_surface"],
+        ).pack(side=tk.RIGHT, padx=12, pady=8)
+
+    def _apply_ttk_theme(self) -> None:
+        """Apply TTK styling based on current theme."""
+        style = ttk.Style(self.root)
+        style.theme_use("clam")
+
+        # Combobox styling
+        style.configure(
+            "Dark.TCombobox",
+            fieldbackground=self.theme_dict["bg_elevated"],
+            background=self.theme_dict["bg_elevated"],
+            foreground=self.theme_dict["text_primary"],
+            selectbackground=self.theme_dict["accent_dim"],
+            selectforeground=self.theme_dict["text_primary"],
+            bordercolor=self.theme_dict["border_normal"],
+            darkcolor=self.theme_dict["bg_elevated"],
+            lightcolor=self.theme_dict["bg_elevated"],
+            arrowcolor=self.theme_dict["text_secondary"],
+            padding=(10, 6),
+            font=self.theme_dict["font_ui"],
+            relief="flat",
+        )
+        style.map(
+            "Dark.TCombobox",
+            fieldbackground=[("focus", self.theme_dict["bg_elevated"])],
+            bordercolor=[("focus", self.theme_dict["border_active"])],
+            foreground=[("disabled", self.theme_dict["text_muted"])],
+        )
+
+        # Scrollbar styling
+        style.configure(
+            "Dark.Vertical.TScrollbar",
+            background=self.theme_dict["bg_elevated"],
+            troughcolor=self.theme_dict["bg_surface"],
+            bordercolor=self.theme_dict["bg_surface"],
+            arrowcolor=self.theme_dict["text_muted"],
+            width=8,
+            relief="flat",
+        )
+
+    def _toggle_theme(self) -> None:
+        """Toggle between dark and light theme modes."""
+        current_mode = ThemeManager.get_mode()
+        new_mode = "light" if current_mode == "dark" else "dark"
+        ThemeManager.set_mode(new_mode)
+
+    def _refresh_ui_colors(self) -> None:
+        """Refresh all UI colors after theme change (full UI rebuild recommended)."""
+        # Update backgrounds
+        self.configure(bg=self.theme_dict["bg_base"])
+        self.root.configure(bg=self.theme_dict["bg_base"])
+
+        # Update theme toggle button text
+        toggle_text = "☀ Light" if ThemeManager.get_mode() == "dark" else "🌙 Dark"
+        self.theme_toggle_btn.configure(text=toggle_text)
+
+        # For comprehensive color update, UI rebuild would be ideal
+        # This is a simplified approach; full refresh requires widget tree traversal
+
+    def _refresh_instances(self) -> None:
+        """Refresh the list of available test instances."""
+        directory = self.dir_var.get()
+        if not directory:
             return
+
+        data_path = Path(self.project_root) / "Data" / directory
+        instances = sorted([f.stem for f in data_path.glob("*.dzn")]) if data_path.exists() else []
+
+        self.instance_combo["values"] = instances
+        if instances:
+            self.instance_combo.current(0)
+
+        self._log(f"Found {len(instances)} instances in {directory}", "info")
+
+    def _log(self, message: str, tag: str = "muted") -> None:
+        """Add a message to the output log."""
+        self.log_text.insert(tk.END, message + "\n", tag)
+        self.log_text.see(tk.END)
+
+    def _clear_log(self) -> None:
+        """Clear the output log."""
+        self.log_text.delete("1.0", tk.END)
+
+    def _start_execution(self) -> None:
+        """Start execution of the selected test instance."""
+        instance = self.instance_var.get()
+        model = self.model_var.get()
+        directory = self.dir_var.get()
+
+        if not instance or not model or not directory:
+            messagebox.showwarning("Missing Selection", "Please select directory, instance, and model.")
+            return
+
+        self._log(f"Starting execution: {instance} ({model})", "info")
+        self.status_indicator.set_status("running", "Running...")
+        self.run_btn.set_disabled(True)
+        self.stop_btn.set_disabled(False)
         self.is_running = True
-        self._run_btn.set_enabled(False)
-        self._stop_btn.set_enabled(True)
-        self._set_status("running", "RUNNING")
-        self._log_text.delete("1.0", tk.END)
-        threading.Thread(target=self._execute_test, daemon=True).start()
 
-    def _execute_test(self):
+        self.execution_thread = threading.Thread(
+            target=self._execute_test,
+            args=(directory, instance, model),
+            daemon=True
+        )
+        self.execution_thread.start()
+
+    def _execute_test(self, directory: str, instance: str, model: str) -> None:
+        """Execute test in background thread."""
         try:
-            dir_name  = self._dir_var.get()
-            file_name = self._file_var.get()
-            model     = self._model_var.get()
+            config = RunnerConfig()
+            executor = MiniZincExecutor(config)
 
-            dzn_path   = self.project_root / dir_name / f"{file_name}.dzn"
-            model_path = self.project_root / "Models" / f"{model}_model.mzn"
-            out_dir    = self.project_root / "Tests" / "Output" / dir_name.split("/")[-1]
+            data_path = Path(self.project_root) / "Data" / directory
+            instance_path = data_path / f"{instance}.dzn"
 
-            self._log("─" * 52, "section")
-            self._log_kv("Instance",  file_name)
-            self._log_kv("Directory", dir_name)
-            self._log_kv("Model",     model.upper())
-            self._log("─" * 52, "section")
-            self._log("")
+            if not instance_path.exists():
+                self._log(f"Instance not found: {instance_path}", "error")
+                self.status_indicator.set_status("error", "Error")
+                return
 
-            executor = MiniZincExecutor(str(model_path))
-            success, result = executor.execute(str(dzn_path))
+            self._log(f"Executing: {model} solver on {instance}", "key")
+            result = executor.execute(str(instance_path), model)
 
-            if success and result:
-                self._log("  ✓  TEST PASSED", "success")
-                self._log("")
-                self._log_kv("Buses",     result["num_buses"])
-                self._log_kv("Stations",  result["num_stations"])
-                self._log_kv("Charged",   result["charged_stations"])
-                self._log_kv("Deviation", f"{result['time_deviation'] / 10} min")
-
-                handler = ResultHandler(str(out_dir))
-                ok, json_path, txt_path = handler.save_results(file_name, result)
-                if ok:
-                    self._log("")
-                    self._log("  Saved:", "muted")
-                    self._log_kv("  JSON", json_path)
-                    self._log_kv("  TXT",  txt_path)
-
-                self._set_status("success", "PASSED")
+            if result["success"]:
+                self._log("Execution completed successfully", "success")
+                self.status_indicator.set_status("success", "Success")
+                handler = ResultHandler(str(Path(self.project_root) / "Tests" / "Output"))
+                handler.save_results(instance, result, directory)
             else:
-                self._log("  ✗  TEST FAILED — UNSATISFIABLE", "error")
-                self._set_status("error", "FAILED")
+                self._log(f"Execution failed: {result.get('error', 'Unknown error')}", "error")
+                self.status_indicator.set_status("error", "Error")
 
-        except Exception as exc:
-            self._log(f"  ✗  ERROR: {exc}", "error")
-            self._set_status("error", "ERROR")
+        except Exception as e:
+            self._log(f"Exception during execution: {e}", "error")
+            self.status_indicator.set_status("error", "Error")
         finally:
             self.is_running = False
-            self._log("")
-            self._log("─" * 52, "section")
-            self._restore_buttons()
+            self.run_btn.set_disabled(False)
+            self.stop_btn.set_disabled(True)
+            self.status_indicator.set_status("idle", "Ready")
 
-    def _stop_test(self):
-        self.is_running = False
-        self._log("  ⚠  Execution stopped by user.", "warning")
-        self._set_status("warning", "STOPPED")
-        self._restore_buttons()
-
-    def _clear_log(self):
-        self._log_text.delete("1.0", tk.END)
-        self._set_status("idle", "IDLE")
-
-    # ── helpers ──────────────────────────────────────────────
-
-    def _restore_buttons(self):
-        self._run_btn.set_enabled(True)
-        self._stop_btn.set_enabled(False)
-
-    def _set_status(self, state: str, label: str):
-        _c = {"idle": T.TEXT_MUTED, "running": T.ACCENT,
-              "success": T.SUCCESS, "error": T.ERROR, "warning": T.WARNING}
-        self._status_dot.set_state(state)
-        self._status_lbl.config(text=label, fg=_c.get(state, T.TEXT_MUTED))
-
-    def _log(self, msg: str, tag: str = "info"):
-        self._log_text.insert(tk.END, msg + "\n", tag)
-        self._log_text.see(tk.END)
-        self.root.update_idletasks()
-
-    def _log_kv(self, key: str, value):
-        self._log_text.insert(tk.END, f"  {key:<14}", "key")
-        self._log_text.insert(tk.END, f"  {value}\n",  "value")
-        self._log_text.see(tk.END)
-        self.root.update_idletasks()
-
-
-# ─────────────────────────────────────────────────────────────
-#  Entry Point
-# ─────────────────────────────────────────────────────────────
-
-def main():
-    root = tk.Tk()
-    RunnerInterface(root)
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
+    def _stop_execution(self) -> None:
+        """Stop the currently running test execution."""
+        if self.is_running:
+            self._log("Execution stopped by user", "warning")
+            self.is_running = False
+            self.run_btn.set_disabled(False)
+            self.stop_btn.set_disabled(True)
+            self.status_indicator.set_status("idle", "Ready")
