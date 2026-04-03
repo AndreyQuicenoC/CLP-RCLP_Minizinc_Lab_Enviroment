@@ -9,6 +9,9 @@ Clean, professional GUI for instance generation with real-time logging.
 import tkinter as tk
 from tkinter import ttk, messagebox
 from pathlib import Path
+from .themes import ThemeManager, get_theme_dict
+from .components import SectionLabel, FlatButton, StatusIndicator
+from .layouts import LayoutBuilder, LayoutConfig
 import threading
 from datetime import datetime
 
