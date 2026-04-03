@@ -1,5 +1,7 @@
 """
 Runner - Test Execution Interface for CLP Instances
 
-Professional interface for running CLP/RCLP tests and managing results.
+This __init__.py sets up the module paths correctly for proper imports.
 """
+
+# This file makes Runner a proper Python package

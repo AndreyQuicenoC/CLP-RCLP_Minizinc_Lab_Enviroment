@@ -10,11 +10,8 @@ from pathlib import Path
 import threading
 import logging
 from typing import Optional
-import sys
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
+# Import from parent Runner directory
 from config import RunnerConfig
 from core.executor import MiniZincExecutor
 from core.result_handler import ResultHandler
@@ -43,7 +40,7 @@ class RunnerInterface:
 
     def _find_project_root(self) -> Path:
         """Find project root directory."""
-        current = Path(__file__).parent
+        current = Path(__file__).parent.parent
         while current != current.parent:
             if (current / "Models" / "clp_model.mzn").exists():
                 return current
@@ -335,14 +332,3 @@ class RunnerInterface:
         self.results_text.insert(tk.END, f"{message}\n")
         self.results_text.see(tk.END)
         self.root.update()
-
-
-def main():
-    """Entry point for Runner GUI."""
-    root = tk.Tk()
-    app = RunnerInterface(root)
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
