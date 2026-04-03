@@ -75,8 +75,8 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 - `Scripts/` - Python and shell scripts (organized by function)
 - `Docs/` - Documentation and technical guides
 - `Tests/` - Test results and benchmarks
-- `Generator/` - Instance generator with modular architecture (v3.0)
-- `Runner/` - Test execution interface (v1.2.0)
+- `Generator/` - GUI-based instance generator
+- `JITS2022/` - Reference implementation from paper
 
 ### Testing
 
@@ -117,8 +117,7 @@ python Scripts/testing/run_battery_project_tests.py
 ### Scope
 
 Scope should specify what is affected:
-- `generator` - Instance generator GUI and core modules
-- `runner` - Test execution interface (NEW v1.2.0)
+- `generator` - Instance generator GUI
 - `scripts` - Python/shell scripts
 - `models` - MiniZinc model files
 - `data` - Data processing or test instances
@@ -211,4 +210,4 @@ Feel free to open an issue with the `question` label for any clarification.
 
 ---
 
-**Last Updated**: April 2026
+**Last Updated**: 2026-03-25

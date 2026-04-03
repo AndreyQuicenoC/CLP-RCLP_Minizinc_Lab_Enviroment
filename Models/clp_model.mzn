@@ -63,11 +63,6 @@ array[B,B,1..max_stops,1..max_stops] of var 0..1: zbdi;
 % A. CAPACIDAD DE BATERÍA
 % -----------------------------
 
-% Initial battery condition: Start with full charge
-constraint forall(b in B) (
-    cbi[b,1] = Cmax
-);
-
 % La batería debe permanecer dentro de límites seguros
 constraint forall(b in B, i in 1..num_stops[b]) (
     cbi[b,i] >= Cmin /\                     % nivel mínimo
@@ -103,10 +98,17 @@ constraint forall(b in B, i in 1..num_stops[b]) (
 % -----------------------------
 
 % Solo se puede cargar si hay estación instalada
-% NOTA: st_bi es 1-indexed (1..num_stations), válido para todos los stops en num_stops[b]
-constraint forall(b in B, i in 1..num_stops[b]) (
+% NOTA: Se filtra st_bi[b,i] > 0 para manejar depot (índice 0 en datos Cork)
+constraint forall(b in B, i in 1..num_stops[b] where st_bi[b,i] > 0) (
     beta * xbi[b,i] >= ctbi[b,i] /\          % límite de tiempo de carga
     xst[st_bi[b,i]] >= xbi[b,i]              % la estación debe existir
+);
+
+% Las paradas con índice 0 (depot/padding inválido) no pueden tener carga
+constraint forall(b in B, i in 1..num_stops[b] where st_bi[b,i] == 0) (
+    xbi[b,i] == 0 /\
+    ebi[b,i] == 0 /\
+    ctbi[b,i] == 0
 );
 
 % -----------------------------
@@ -116,7 +118,7 @@ constraint forall(b in B, i in 1..num_stops[b]) (
 % Evita que dos buses carguen simultáneamente en la misma estación
 constraint forall(b,d in B where b < d)(
     forall(i in 1..num_stops[b], j in 1..num_stops[d]
-    where st_bi[b,i] == st_bi[d,j])(
+    where st_bi[b,i] == st_bi[d,j] /\ st_bi[b,i] > 0)(
 
         Zbdij[b,d,i,j] <= xbi[b,i] /\
         Zbdij[b,d,i,j] <= xbi[d,j] /\

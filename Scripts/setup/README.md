@@ -1,49 +1,49 @@
 # Setup & Diagnosis Scripts
 
-Scripts for initial configuration, diagnostics, and troubleshooting of the CLP-RCLP project.
+Scripts para configuración inicial, diagnóstico y resolución de problemas del proyecto CLP-RCLP.
 
-## Contents
+## Contenido
 
 ### `setup_and_validate.py`
-Initial configuration script that verifies all requirements and prepares the environment.
+Script de configuración inicial que verifica todos los requisitos y prepara el entorno.
 
-**Usage**:
+**Uso**:
 ```bash
 python setup_and_validate.py
 ```
 
-**Validations**:
-- Correct directory structure
-- Python 3.8+ installation
-- MiniZinc availability
-- Model files present
-- Base data available
+**Validaciones**:
+- Estructura de directorios correcta
+- Instalación de Python 3.8+
+- Disponibilidad de MiniZinc
+- Archivos de modelo presentes
+- Datos base disponibles
 
-**Output**: Configuration report with steps to resolve issues
+**Salida**: Reporte de configuración con pasos para resolver problemas
 
 ## Setup Workflow
 
-1. **First Time**:
+1. **Primera vez**:
    ```bash
-   python setup_and_validate.py    # Validate requirements
+   python setup_and_validate.py    # Validará requisitos
    ```
 
-2. **If Cork Issues**:
+2. **Si hay problemas con Cork**:
    ```bash
-   bash ../utilities/diagnose_cork.sh           # Diagnose
-   python ../generation/create_cork_variants.py  # Regenerate
+   bash ../utilities/diagnose_cork.sh           # Diagnosticará
+   python ../generation/create_cork_variants.py  # Regenerará
    ```
 
-3. **Verify Everything Works**:
+3. **Verificar todo funciona**:
    ```bash
-   bash ../testing/test_generator.sh  # Complete test
+   bash ../testing/test_generator.sh  # Test completo
    ```
 
 ## Dependencies
 - Python 3.8+
-- bash (for .sh scripts)
+- bash (para scripts .sh)
 - MiniZinc 2.5+ (https://www.minizinc.org)
-- git (for cloning/updating)
+- git (para clonar/actualizar)
 
 ## Troubleshooting
 
@@ -56,7 +56,7 @@ sudo apt install minizinc
 brew install minizinc
 
 # Windows
-# Download from https://www.minizinc.org/software.html
+# Descargar desde https://www.minizinc.org/software.html
 ```
 
 ### Python version too old

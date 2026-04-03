@@ -38,10 +38,10 @@ max_stops = 9;
 num_stops = [9, 8];
 
 % --- Station Sequence (st_bi) ---
-% Maps each bus stop to a physical station ID (1-indexed)
+% Maps each bus stop to a physical station ID (0-indexed)
 st_bi = array2d(1..2, 1..9, [
-  1,2,3,4,5,6,7,8,12,  % Bus 1
-  9,10,7,11,9,10,7,11,11  % Bus 2
+  0,1,2,3,4,5,6,7,11,  % Bus 1
+  8,9,6,10,8,9,6,10,10  % Bus 2
 ]);
 
 % --- Energy Consumption (D) ---

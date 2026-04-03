@@ -5,95 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-04-03
-
-### Added
-
-- **Generator Directory Reorganization**
-  - Create modular `core/` subdirectory for generation and export logic
-  - Create modular `ui/` subdirectory for user interface components
-  - Rename configuration modules to follow consistent patterns
-  - Improved code organization with clear separation of concerns
-  - Architecture documentation added
-
-- **Output Path Consolidation**
-  - Consolidate all generated instances to `Data/Battery Generated/`
-  - Remove fragmented output directories
-  - Centralized management of test results
-  - Automatic directory creation based on source directory names
-
-- **Scripts Documentation Translation**
-  - Translate all README.md files in Scripts/ to English
-  - Translate data-processing, generation, testing, setup, and utilities content
-  - Professional, concise documentation without emojis
-  - Clear usage instructions and examples
-
-- **Test Runner Interface (NEW)**
-  - Create `Runner/` module for professional test execution
-  - Professional Tkinter GUI for running CLP/RCLP tests
-  - Directory selector supporting Battery Own, Battery Project Integer/Variant, Battery Generated
-  - File selector for .dzn test instances with refresh capability
-  - Model selector (CLP/RCLP radio buttons)
-  - Real-time status display and execution monitoring
-  - Automatic result generation in JSON and TXT formats
-  - Automatic `Tests/Output/{DirectoryName}/` creation
-  - Senior-level code with exception handling and logging
-  - Professional color palette: Gray (#CCCCCC), Dark Blue (#1E3A5F), Black (#000000)
-
-- **Root Documentation Updates**
-  - Update README.md to v1.2.0 with new Runner section
-  - Remove all emojis for professional documentation
-  - Add Test Runner workflow documentation
-  - Update project structure to include Runner module
-  - Update documentation references
-
-- **Version Bump**
-  - Update VERSION file to 1.2.0
-  - Update documentation headers to reflect v1.2.0
-
-### Changed
-
-- **Generator Module Structure**
-  - `Generator/orchestrator.py`: Renamed from `generator_orchestrator.py`
-  - Output default path: `Tests/Output/Generator/` → `Data/Battery Generated/`
-  - All imports updated for new modular structure
-
-- **Documentation Style**
-  - Remove emojis throughout all markdown files
-  - Standardize professional documentation format
-  - Maintain technical clarity with concise language
-  - English-only documentation
-
-### Removed
-
-- `Generator/generator_old.py` - Obsolete v2.0 implementation
-
-### Technical Details
-
-- **New Modules**:
-  - `Runner/core/executor.py` - MiniZinc execution management
-  - `Runner/core/result_handler.py` - JSON/TXT result formatting
-  - `Runner/ui/interface.py` - Professional Tkinter GUI
-
-- **Output Format**:
-  - JSON: Structured result data with num_buses, num_stations, charged_stations, charging_locations, time_deviation
-  - TXT: Human-readable formatted results
-
-- **Backward Compatibility**:
-  - All existing functionality preserved
-  - Generator v3.0 continues to work as production ready
-  - All test suites remain functional
-
-### Quality Metrics
-
-- Lines of Code: 2500+
-- New UI Module: 500+ lines
-- Documentation: 3500+ lines (updated)
-- Test Coverage: Maintained at 7 test suites
-- Code Organization: Improved modular structure
-
----
-
 ## [1.0.0] - 2026-03-25
 
 ### Added
@@ -138,38 +49,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Original validated instances in `Data/Battery Own/`
 
 - **Professional Organization**
-  - Organized Scripts into 5 functional categories
-  - Organized Docs into 3 technical categories
+  - Organized Scripts into 5 functional categories (data-processing, generation, testing, setup, utilities)
+  - Organized Docs into 3 technical categories (generated-system, model, analysis)
   - Professional .gitignore
   - LICENSE (MIT)
   - CONTRIBUTING.md guidelines
 
 ### Technical Details
 
-- Overconsumption Factor: 1.1-1.4x forcing strategic charging
-- Route Diversity: Multiple strategies (sequential, reverse, zigzag, weighted-random)
-- Consumption Model: Gaussian(18kWh, σ=4kWh) per stop, scaled x10 for integer arithmetic
-- Temporal Feasibility: Staggered start times (7:00 AM + 5 min/bus)
-- Auto-Validation: MiniZinc integration with subprocess control
-- Encoding: UTF-8 support with Windows/Linux/macOS compatibility
+- **Overconsumption Factor**: 1.1-1.4x forcing strategic charging
+- **Route Diversity**: Multiple strategies (sequential, reverse, zigzag, weighted-random)
+- **Consumption Model**: Gaussian(18kWh, σ=4kWh) per stop, scaled ×10 for integer arithmetic
+- **Temporal Feasibility**: Staggered start times (7:00 AM + 5 min/bus)
+- **Auto-Validation**: MiniZinc integration with subprocess control and 5-attempt self-correction
+- **Encoding**: UTF-8 support with Windows/Linux/macOS compatibility
 
 ### Test Results
 
 - 7/7 system tests passing (100% success rate)
 - All instances validated as SATISFIABLE or properly flagged
-- Cork variants successfully extracted and reduced
+- Cork variants successfully extracted and reduced from ~378 stops to ~42 stops
 - Generated instances use expert algorithm patterns
+- Performance verified with Chuffed solver (v2.9.4)
+
+### Test Instances Available
+
+- 5 Cork variants (from full-day multi-cycle to single-cycle)
+- 3 generated test instances (5 buses/8 stations, variable complexity)
+- 2 noncity original instances
+- All instances with complete documentation and expected results
 
 ### Quality Metrics
 
-- Lines of Code: 1500+
-- Documentation: 600+ lines
+- Lines of Code: 1500+ (generator.py)
+- Documentation: 600+ lines (README.md)
 - Test Coverage: 7 test cases covering all major components
 - Code Organization: 5 script categories + 3 doc categories
 - Compatibility: Windows, Linux, macOS
 
+### Known Limitations
+
+- Cork single-cycle variants are structurally complex (expected WARN on tests)
+- Large instances (>20 buses) may timeout with default 5-minute limit
+- GUI requires tkinter (included in standard Python installation)
+
+### Dependencies
+
+- Python 3.8+
+- MiniZinc 2.6+
+- Chuffed solver (recommended)
+- Standard library modules
+
+### Files Overview
+
+```
+CLP-RCLP Minizinc/
+├── Generator/                          # GUI application
+│   ├── generator.py (1500+ lines)
+│   └── README_BUILD.md
+├── Scripts/
+│   ├── data-processing/ (2 scripts)
+│   ├── generation/ (2 scripts)
+│   ├── testing/ (4 scripts)
+│   ├── setup/ (1 script)
+│   └── utilities/ (1 script)
+├── Docs/
+│   ├── generated-system/ (600+ lines)
+│   ├── model/
+│   └── analysis/
+├── Data/
+│   ├── Battery Project Integer/        # Cork instances
+│   ├── Battery Project Variant/        # Generated Cork variants
+│   ├── Battery Generated/              # User-generated instances
+│   └── Battery Own/                    # Original validated instances
+├── Models/                             # MiniZinc model files
+├── Tests/                              # Execution results
+├── README.md                           # Main documentation
+├── LICENSE                             # MIT License
+├── CONTRIBUTING.md                     # Contributing guidelines
+├── CHANGELOG.md                        # This file
+└── .gitignore                          # Git ignore rules
+```
+
 ---
 
-**Version**: 1.2.0
-**Release Date**: April 2026
-**Status**: Production Ready - Generator v3.0 with Professional Test Runner
+## Future Roadmap
+
+### Planned for v1.1
+- Build .exe executable with PyInstaller
+- Batch instance generation
+- Advanced visualization of solutions
+- CLI mode for automated generation
+
+### Planned for v1.2
+- RCLP model integration
+- Constraint relaxation tools
+- Performance profiling subsystem
+- Parallel solver support
+
+### Long-term Vision
+- Web interface for remote access
+- Cloud-based instance generation
+- Integration with other optimization toolkits
+- Academic paper generation from results
+- Advanced analytics dashboard
+
+---
+
+**Version**: 1.0.0
+**Release Date**: 2026-03-25
+**Status**: Stable

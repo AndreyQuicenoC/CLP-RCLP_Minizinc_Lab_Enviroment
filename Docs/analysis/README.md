@@ -1,71 +1,71 @@
-# Detailed Project Analysis
+# Análisis Detallado del Proyecto
 
-Documentation of analysis, diagnostics, and technical issues for the CLP-RCLP project.
+Documentación de análisis, diagnóstico y problemas técnicos del proyecto CLP-RCLP.
 
-## 📁 Contents
+## 📁 Contenido
 
-### Analysis Files
+### Archivos de Análisis
 
-- **Cork_Infeasibility_Analysis.md** - Cork infeasibility analysis
-  - Issue: Cork instances have 378-568 stops
-  - Impact: Infeasible for standard CLP model
-  - Solution: Single-cycle extraction (42 stops)
+- **Cork_Infeasibility_Analysis.md** - Análisis de infactibilidad de Cork
+  - Problema: Cork instances tienen 378-568 paradas
+  - Impacto: Infactibles para modelo CLP estándar
+  - Solución: Extracción single-cycle (42 paradas)
 
-- **DataCorrections.md** - Data corrections log
-  - Issues found
-  - Adjustments made
-  - Applied validations
+- **DataCorrections.md** - Registro de correcciones de datos
+  - Problemas encontrados
+  - Ajustes realizados
+  - Validaciones aplicadas
 
-- **ModelModificationJustification.md** - Model change justification
-  - Changes to MiniZinc model
-  - Technical reasons
-  - Impact on results
+- **ModelModificationJustification.md** - Justificación de cambios del modelo
+  - Cambios al modelo MiniZinc
+  - Razones técnicas
+  - Impacto en resultados
 
-- **CHECKLIST_FINAL.md** - Final verification checklist
-  - Completed requirements
-  - Passed tests
-  - Documentation complete
+- **CHECKLIST_FINAL.md** - Lista de verificación final
+  - Requisitos completados
+  - Tests pasados
+  - Documentación lista
 
-- **ProjectSummary.md** - Project summary
-- **INSTALLATION_SUCCESS.txt** - Successful installation log
+- **ProjectSummary.md** - Resumen del proyecto
+- **INSTALLATION_SUCCESS.txt** - Registro de instalación exitosa
 
-## 🔬 Identified Technical Issues
+## 🔬 Problemas Técnicos Identificados
 
 ### Cork Infeasibility
-- **Issue**: Original Cork instances have too many stops
-- **Symptom**: MiniZinc returns UNSATISFIABLE
-- **Cause**: Overconsumption > 2x capacity
-- **Solution**: Reduce to single cycle (~42 stops)
+- **Problema**: Instancias Cork originales tienen demasiadas paradas
+- **Síntoma**: MiniZinc retorna UNSATISFIABLE
+- **Causa**: Overconsumption > 2x capacity
+- **Solución**: Reducir a single cycle (~42 paradas)
 
 ### Data Corrections
-- **Format**: JSON → .dzn conversion with ×10 scaling
-- **Validation**: Correct parameter ranges
-- **Consistency**: Dimensionally consistent arrays
+- **Formato**: Conversión JSON → .dzn con escalado ×10
+- **Validación**: Rangos de parámetros correctos
+- **Coherencia**: Arrays dimensionalmente consistentes
 
 ### Model Modifications
-- **Changes**: Added constraints for depot handling
-- **Version**: v2 with feasibility improvements
-- **Impact**: +15% SAT instances vs previous version
+- **Cambios**: Agregadas restricciones para manejo de depot
+- **Versión**: v2 con mejoras de factibilidad
+- **Impacto**: +15% instancias SAT vs versión anterior
 
 ## 📊 Key Findings
 
-| Aspect | Finding |
-|--------|---------|
-| Cork Feasibility | 0% → 100% after single-cycle reduction |
-| Generated Feasibility | 98%+ with expert algorithm |
-| Avg Resolution Time | < 5 seconds for normal instances |
-| Model Correctness | 100% of noncity instances validated |
+| Aspecto | Hallazgo |
+|---------|----------|
+| Cork Feasibility | 0% → 100% después de single-cycle reduction |
+| Generated Feasibility | 98%+ con algoritmo experto |
+| Avg Resolution Time | < 5 segundos para instancias normales |
+| Model Correctness | 100% de instancias noncity validadas |
 
-## 🔗 Related Links
+## 🔗 Links Relacionados
 
-- [Instance Generation](../generated-system/)
-- [Model Documentation](../model/)
-- [Diagnostic Scripts](../../Scripts/setup/)
+- [Generación de Instancias](../generated-system/)
+- [Documentación del Modelo](../model/)
+- [Scripts de Diagnóstico](../../Scripts/setup/)
 
-## 📚 For Further Investigation
+## 📚 Para Investigar Más
 
-1. Review Cork_Infeasibility_Analysis.md to understand the issue
-2. See DataCorrections.md for data changes
-3. Consult ModelModificationJustification.md for technical changes
+1. Revisar Cork_Infeasibility_Analysis.md para entender la problemática
+2. Ver DataCorrections.md para cambios de datos
+3. Consultar ModelModificationJustification.md para cambios técnicos
 
-**Last Updated**: 2026-03-26
+**Última Actualización**: 2026-03-25

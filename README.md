@@ -1,49 +1,49 @@
 # CLP-RCLP MiniZinc Lab Environment
 
-Version: 1.2.0 | License: MIT | Python: 3.8+ | MiniZinc: 2.5+
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Python](https://img.shields.io/badge/python-3.8+-blue)
+![MiniZinc](https://img.shields.io/badge/minizinc-2.5+-blue)
 
-## Overview
+## 📋 Descripción
 
-Professional lab environment for research and optimization of the **Charging Location Problem (CLP)** and its robust extension **(RCLP)** for electric bus fleets.
+Entorno de laboratorio profesional para investigación y optimización del **problema de ubicación de carga (CLP)** y su extensión robusta **(RCLP)** para flotas de autobuses eléctricos.
 
-This project includes:
-- Mathematical models in MiniZinc (CLP and RCLP)
-- Professional instance generation system (v3.0 - Working Pattern Replication)
-- Complete automated testing suite
-- Test execution interface (Runner)
-- Exhaustive technical documentation
-- Varied datasets (Cork, synthetic, validated)
+Este proyecto incluye:
+- ✅ Modelos matemáticos en MiniZinc (CLP y RCLP)
+- ✅ Sistema profesional de generación de instancias de prueba
+- ✅ Suite completa de testing automatizado
+- ✅ Documentación técnica exhaustiva
+- ✅ Conjuntos de datos variados (Cork, sintéticos, validados)
 
-## Key Features
+## 🎯 Características Principales
 
-### 1. Mathematical Models
-- **CLP**: Optimal charging station location under normal conditions
-- **RCLP**: Robust version with resilience against failures
+### 1. Modelos Matemáticos
+- **CLP**: Ubicación óptima de estaciones de carga bajo condiciones normales
+- **RCLP**: Versión robusta con resiliencia ante fallos
 
-### 2. Automatic Generation System (v3.0 - Production Ready)
-- Working Pattern Replication: Each bus visits every station exactly once
-- 5 Route Patterns: Sequential, Reverse, Alternate-Odd/Even, Diagonal
-- Smart Overconsumption: 1.5-1.8x for small networks, forcing strategic charging
-- Guaranteed SAT: All test cases generate satisfiable instances instantly
-- Automatic validation with MiniZinc (chuffed solver)
+### 2. Sistema de Generación Automática
+- Generador GUI con algoritmo experto
+- Validación automática con MiniZinc
+- Auto-corrección para instancias infactibles
+- Almacenamiento de resultados esperados para testing
 
-### 3. Test Runner Interface (NEW v1.2.0)
-- Professional Tkinter GUI for test execution
-- Directory and file selectors for test instances
-- Model selection (CLP/RCLP)
-- Real-time execution monitoring
-- Automatic result formatting (JSON and TXT)
+### 3. Conjuntos de Datos
+- **Cork City** (Real): Instancias del caso irlandés
+- **Noncity** (Validadas): Casos de prueba validados manualmente
+- **Sintéticos** (Escalables): Instancias generadas proceduralmente
+- **Variantas Cork** (Single-cycle): Reducción de instancias Cork
 
-### 4. Datasets
-- Cork City (Real): Irish case instances
-- Noncity (Validated): Manually validated test cases
-- Synthetic (Scalable): Procedurally generated instances
-- Cork Variants (Single-cycle): Reduced Cork instances
-- Battery Generated (User-created): Generated via Generator v3.0
+### 4. Suite de Testing
+- 7 tests del sistema completo
+- Tests preliminares y de validación
+- Reportes detallados con estadísticas
+- 100% pass rate en release
 
-## Quick Start
+## 🚀 Inicio Rápido
 
-### Prerequisites
+### 1️⃣ Prerequisitos
+
 ```bash
 # Python 3.8+
 python --version
@@ -51,269 +51,259 @@ python --version
 # MiniZinc 2.5+
 minizinc --version
 
-# Download from https://www.minizinc.org/ if needed
+# Si no lo tienes, descargar de https://www.minizinc.org/
 ```
 
-### Initial Setup
+### 2️⃣ Setup Inicial
+
 ```bash
-# Validate configuration
+# Validar configuración
 python Scripts/setup/setup_and_validate.py
 
-# Generate Cork variants (if necessary)
+# Generar variantes Cork (si es necesario)
 python Scripts/generation/create_cork_variants.py
 
-# Run tests
+# Ejecutar tests
 bash Scripts/testing/test_generator.sh
 ```
 
-### Generate New Instances
+### 3️⃣ Usar el Generador
+
 ```bash
-# Interactive GUI (recommended)
+# GUI interactivo
 python Generator/generator.py
 
-# Expected: SAT instance in ~1 second
+# O desde línea de comandos
+python Scripts/testing/test_initial_small_case.py
 ```
 
-### Run Tests with Runner
-```bash
-# Launch test execution interface
-python Runner/runner.py
+### 4️⃣ Ejecutar Modelo
 
-# Workflow:
-# 1. Select test directory
-# 2. Choose test instance (.dzn file)
-# 3. Select model (CLP or RCLP)
-# 4. Click "Run Test"
-# 5. View results in JSON/TXT formats
-```
-
-### Execute Models Directly
 ```bash
-# Quick test with validated instance
+# Test rápido con instancia validada
 minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Own/noncity_5buses-8stations.dzn
 
-# With generated instance
-minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Generated/*.dzn
+# Con instancia generada
+minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Generated/generated_1_5buses_8stations.dzn
 ```
 
-## Project Structure
+## 📁 Estructura del Proyecto
 
 ```
 CLP-RCLP Minizinc/
 │
-├── Models/                      # Mathematical models
-│   ├── clp_model.mzn            # CLP Model (primary)
-│   ├── rclp_model.mzn           # RCLP Model (robust)
-│   └── archive/                 # Backup and experimental variants
+├── 📂 Models/                      # Modelos matemáticos
+│   ├── clp_model.mzn              # Modelo CLP (principal)
+│   ├── rclp_model.mzn             # Modelo RCLP (robusto)
+│   └── clp_model_backup.mzn       # Backup
 │
-├── Data/                        # Datasets
-│   ├── Battery Project Integer/ # Cork (real instances)
-│   ├── Battery Project Variant/ # Cork single-cycle variants
-│   ├── Battery Generated/       # Generated instances
-│   └── Battery Own/             # Noncity + synthetic
+├── 📂 Data/                        # Conjuntos de datos
+│   ├── Battery Project Integer/   # Cork (instancias reales)
+│   ├── Battery Project Variant/   # Cork single-cycle
+│   ├── Battery Generated/         # Instancias generadas
+│   └── Battery Own/               # Noncity + sintéticas
 │
-├── Scripts/                     # Organized scripts
-│   ├── data-processing/         # Conversion and validation
-│   ├── generation/              # Variant generation
-│   ├── testing/                 # Test suite
-│   ├── setup/                   # Setup and initialization
-│   ├── utilities/               # Tools and diagnostics
-│   └── README.md                # Scripts guide
+├── 📂 Scripts/                     # Scripts organizados
+│   ├── data-processing/           # Conversión y validación
+│   ├── generation/                # Generación de variantes
+│   ├── testing/                   # Suite de tests
+│   ├── setup/                     # Setup e inicialización
+│   ├── utilities/                 # Herramientas y diagnóstico
+│   └── README.md                  # Guía de scripts
 │
-├── Generator/                   # Generation system (v3.0)
-│   ├── generator.py             # Interactive GUI
-│   ├── config.py                # Configuration module
-│   ├── core/                    # Core generation logic
-│   ├── ui/                      # User interface components
-│   ├── orchestrator.py          # Workflow coordinator
-│   └── README.md                # Documentation
+├── 📂 Generator/                   # Sistema de generación
+│   ├── generator.py               # GUI interactivo
+│   └── README_BUILD.md            # Instrucciones build
 │
-├── Runner/                      # Test execution interface (NEW)
-│   ├── runner.py                # Entry point
-│   ├── config.py                # UI colors and settings
-│   ├── core/                    # Executor and result handler
-│   ├── ui/                      # Tkinter interface
-│   └── README.md                # Documentation
+├── 📂 Docs/                        # Documentación
+│   ├── generated-system/          # Sistema de generación
+│   ├── model/                     # Documentación del modelo
+│   ├── analysis/                  # Análisis y diagnóstico
+│   └── README.md                  # Índice de documentación
 │
-├── Docs/                        # Documentation
-│   ├── generated-system/        # Generation system docs
-│   ├── model/                   # Model documentation
-│   ├── analysis/                # Analysis and diagnostics
-│   └── README.md                # Documentation index
+├── 📂 Tests/                       # Resultados de tests
 │
-├── Tests/                       # Test results and output
-│
-├── README.md                    # This file
-├── LICENSE                      # MIT License
-├── CONTRIBUTING.md              # Contribution guide
-├── CHANGELOG.md                 # Change history
-├── VERSION                      # Version number
-└── .gitignore                   # Git configuration
+├── 📄 README.md                    # Este archivo
+├── 📄 LICENSE                      # MIT License
+├── 📄 CONTRIBUTING.md              # Guía de contribución
+├── 📄 CHANGELOG.md                 # Historial de cambios
+└── 📄 .gitignore                   # Configuración Git
 ```
 
-## Documentation
+## 📚 Documentación
 
-### Getting Started
-- **[Generator/README.md](Generator/README.md)** - Generator v3.0 documentation
-- **[Runner/README.md](Runner/README.md)** - Test Runner interface guide
-- **[Scripts/README.md](Scripts/README.md)** - Scripts and utilities guide
-- **[Docs/README.md](Docs/README.md)** - Central documentation index
+### Inicio Rápido
+- **[Scripts/README.md](Scripts/README.md)** - Guía de scripts por funcionalidad
+- **[Docs/README.md](Docs/README.md)** - Índice central de documentación
+- **[Docs/generated-system/README.md](Docs/generated-system/README.md)** - Sistema de generación
 
-### Technical Documentation
-- **[Docs/model/](Docs/model/)** - Mathematical formulation
-- **[Docs/model/PROJECT_SUMMARY.md](Docs/model/PROJECT_SUMMARY.md)** - Project summary
-- **[Docs/analysis/](Docs/analysis/)** - Detailed analysis
+### Documentación Técnica
+- **[Docs/model/MathModel.tex](Docs/model/MathModel.tex)** - Formulación matemática
+- **[Docs/model/PROJECT_SUMMARY.md](Docs/model/PROJECT_SUMMARY.md)** - Resumen del proyecto
+- **[Docs/analysis/](Docs/analysis/)** - Análisis detallado
 
-## Typical Workflows
+### Guías Específicas
+- **[Generator/README_BUILD.md](Generator/README_BUILD.md)** - Compilar ejecutable
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Cómo contribuir
+- **[CHANGELOG.md](CHANGELOG.md)** - Historial de versiones
 
-### Generate New Instances
+## 🔄 Flujos de Trabajo Típicos
+
+### Generar Nuevas Instancias
 ```bash
-python Generator/generator.py          # Interactive GUI
-# or
-python Scripts/generation/create_cork_variants.py  # Cork variants
+python Generator/generator.py          # GUI interactivo
+# o
+python Scripts/generation/create_cork_variants.py  # Cork
 ```
 
-### Validate Existing Instances
+### Validar Instancias Existentes
 ```bash
 python Scripts/data-processing/validate_integer_dzn.py Data/Battery\ Generated/*.dzn
 ```
 
-### Run Tests
+### Ejecutar Tests Completos
 ```bash
-bash Scripts/testing/test_generator.sh    # Main suite (recommended)
-python Scripts/testing/run_battery_project_tests.py  # Battery tests
-python Runner/runner.py                   # GUI test runner (NEW)
+bash Scripts/testing/test_generator.sh    # Suite principal (recomendado)
+python Scripts/testing/run_battery_project_tests.py  # Tests Battery
 ```
 
-### Diagnose Issues
+### Diagnosticar Problemas
 ```bash
-python Scripts/setup/setup_and_validate.py  # Validate environment
-bash Scripts/utilities/diagnose_cork.sh    # Diagnose Cork
+python Scripts/setup/setup_and_validate.py  # Validar entorno
+bash Scripts/utilities/diagnose_cork.sh    # Diagnosticar Cork
 ```
 
-## Datasets
+## 📊 Conjuntos de Datos
 
-| Dataset | Origin | Instances | Status | Usage |
-|---------|--------|-----------|--------|-------|
-| Cork | Real (Ireland) | 182+ | Complex | RCLP or single cycles |
-| Cork Variants | Reduced | 5 | Feasible | Testing |
-| Noncity | Validated | 10+ | Feasible | Recommended |
-| Synthetic | Generated | Variable | Feasible | Recommended |
-| Generated | Gen. System | 3+ | Feasible | Recommended |
+| Dataset | Origen | Instancias | Estado | Recomendación |
+|---------|--------|-----------|--------|---------------|
+| **Cork** | Real (Irlanda) | 182+ | Infactible* | RCLP o Ciclos únicos |
+| **Cork Variants** | Reducido | 5 | Factible | Testing, Research |
+| **Noncity** | Validadas | 10+ | Factible✅ | **Recomendado** |
+| **Sintéticas** | Generadas | Variables | Factible✅ | **Recomendado** |
+| **Generated** | Sistema Gen. | 3+ | Factible✅ | **Recomendado** |
 
-## Testing Status
+*Cork es infactible para CLP básico. Ver [análisis](Docs/analysis/Cork_Infeasibility_Analysis.md)*
 
-Generator v3.0 Results:
-- 2 buses, 4 stations: SAT in attempt 1 [PASS]
-- 3 buses, 5 stations: SAT in attempt 1 [PASS]
-- 5 buses, 8 stations: SAT in attempt 1 [PASS]
+## 🧪 Estado de Testing
 
-System Performance:
-- Success Rate: 100%
-- Average Time to SAT: <1 second
-- Average Attempts: 1.0
+```
+Total Tests:     7
+Passed:          7 ✅
+Failed:          0
+Success Rate:    100%
 
-## Tools and Dependencies
+Instancias Validadas:
+  - Cork Variants:    5 (warning expected)
+  - Generated:        3 (SATISFIABLE)
+  - Noncity:         10+ (SATISFIABLE)
+```
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| MiniZinc | 2.5+ | Constraint modeling |
-| Python | 3.8+ | Utility scripts and Runner |
+## 🛠️ Herramientas Empleadas
+
+| Herramienta | Versión | Propósito |
+|------------|---------|----------|
+| MiniZinc | 2.5+ | Modelado de restricciones |
+| Python | 3.8+ | Scripts de utilidad |
 | Bash | Linux/macOS | Automation scripts |
-| Git | Any | Version control |
+| Git | Cualquiera | Versionamiento |
 
-### Supported Solvers
-- Chuffed (recommended)
-- Gecode
-- COIN-BC
+### Solvers Soportados
+- ✅ Chuffed (recomendado)
+- ✅ Gecode
+- ✅ COIN-BC
 
-## Key Concepts
+## 📖 Conceptos Clave
 
 ### CLP (Charging Location Problem)
-Base constraint programming problem that determines optimal charging station location, minimizing station count while guaranteeing operational feasibility.
+Problema base de programación por restricciones que determina la ubicación óptima de estaciones de carga minimizando número de estaciones mientras garantiza factibilidad operativa.
 
 ### RCLP (Robust CLP)
-Robust extension that adds resilience against potential system failures.
+Extensión robusta que agrega resiliencia ante fallos potenciales en el sistema de carga.
 
-### Scaling (x10)
-All values are scaled by 10 to use integer arithmetic in MiniZinc, improving numerical precision and reliability.
+### Escalado (×10)
+Todos los valores se escalan por 10 para usar aritmética entera en MiniZinc, mejorando precisión numérica.
 
-### Feasibility
-An instance is "feasible" if a valid solution exists where all buses complete their routes respecting all constraints.
+### Factibilidad
+Una instancia es "factible" si existe una solución válida donde todos los buses completan sus rutas respetando restricciones.
 
-## FAQ
+## ❓ Preguntas Frecuentes
 
-### Where do I start?
-1. Run `bash Scripts/testing/test_generator.sh` first
-2. Review [Docs/README.md](Docs/README.md) for documentation
-3. Use `python Generator/generator.py` to create instances
-4. Execute tests with `python Runner/runner.py`
+### ¿Dónde empiezo?
+1. Ejecutar `bash Scripts/testing/test_generator.sh` primero
+2. Revisar [Docs/README.md](Docs/README.md) para documentación
+3. Usar `python Generator/generator.py` para crear instancias
 
-### Why is Cork infeasible?
-Cork contains 13-14 daily cycles (~400-500 stops) with ~1700 kWh consumption vs 80 kWh usable capacity. Requires 3+ RCLP models or reduction to single cycles.
+### ¿Por qué Cork es infactible?
+Cork contiene 13-14 ciclos diarios (~400-500 paradas) con consumo ~1700 kWh vs 80 kWh de capacidad útil. Requiere 3+ modelos RCLP o reducción a ciclos únicos.
 
-### How do I generate custom instances?
-Use `python Generator/generator.py` (GUI) or modify `Scripts/generation/` for automation.
+### ¿Cómo genero instancias personalizadas?
+Usar `python Generator/generator.py` (GUI) o modificar `Scripts/generation/` para automatización.
 
-### How do I run tests?
-Use `python Runner/runner.py` for GUI interface or `minizinc --solver chuffed Models/clp_model.mzn Data/.../*.dzn` for command line.
+### ¿Dónde puedo ver los resultados esperados?
+Ver `Data/Battery Generated/Expected Results/*.json`
 
-### Where are results stored?
-Test results auto-save to `Tests/Output/{DirectoryName}/` in JSON and TXT formats.
+## 🤝 Contribuciones
 
-## Contributing
+¡Las contribuciones son bienvenidas! Por favor:
 
-Contributions are welcome! Please:
+1. Leer [CONTRIBUTING.md](CONTRIBUTING.md)
+2. Fork el repositorio
+3. Crear rama: `git checkout -b feature/tu-feature`
+4. Hacer commits descriptivos
+5. Pull Request con descripción clara
 
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md)
-2. Fork the repository
-3. Create a branch: `git checkout -b feature/your-feature`
-4. Make descriptive commits
-5. Submit a Pull Request with clear description
+## 📄 Licencia
 
-## License
+Este proyecto está bajo licencia MIT. Ver [LICENSE](LICENSE) para detalles.
 
-This project is licensed under MIT. See [LICENSE](LICENSE) for details.
+## 👥 Autores
 
-## Authors
+- **AVISPA Research Team** - Investigación principal
+- **Andrey Quiceño** - Development y mantenimiento
 
-- **AVISPA Research Team** - Main research
-- **Andrey Quiceño** - Development and maintenance
+## 📞 Soporte
 
-## Support
+- 🐛 **Reportar Bugs**: [GitHub Issues](../../issues)
+- 💬 **Preguntas**: Ver [Docs/README.md](Docs/README.md)
+- 📚 **Documentación**: [Docs/](Docs/)
 
-- Report Bugs: [GitHub Issues](../../issues)
-- Questions: See [Docs/README.md](Docs/README.md)
-- Documentation: [Docs/](Docs/)
-
-## Roadmap
+## 🎯 Roadmap Futuro
 
 - [ ] Batch generation mode
 - [ ] Custom parameter profiles
-- [ ] Improved CLI mode
+- [ ] CLI mode mejorado
 - [ ] Real-time visualization
-- [ ] Benchmark suite integration
-- [ ] REST API
+- [ ] Integración con benchmark suite
+- [ ] API REST
 
-## Project Statistics
+## 📊 Estadísticas del Proyecto
 
-- Lines of Code: 2500+
-- Documentation: 3500+ lines
-- Automated Tests: 7 test suites
-- Datasets: 200+ instances
-- Validated Instances: 18+
+- **Líneas de Código**: 2000+
+- **Documentación**: 3000+ líneas
+- **Tests Automatizados**: 7 test suites
+- **Conjuntos de Datos**: 200+ instancias
+- **Instancias Validadas**: 18+
 
 ---
 
-Version: 1.2.0
-Last Updated: April 2026
-Status: Production Ready - Generator v3.0 with Professional Test Runner
+**Versión**: 1.0.0
+**Última Actualización**: 2026-03-25
+**Estado**: ✅ Production Ready
 
-## Technical Note
+## 📝 Nota Técnica
 
-All numeric parameters are scaled x10 to use integer arithmetic:
-- Time: `4200` = 420.0 minutes = 7:00 AM
-- Energy: `250` = 25.0 kWh
-- Capacity: `1000` = 100.0 kWh
+Todos los parámetros numéricos están escalados ×10 para usar aritmética entera:
 
-For more details, see [Docs/](Docs/) and [Runner/README.md](Runner/README.md).
+- **Tiempo**: `4200` = 420.0 minutos = 7:00 AM
+- **Energía**: `250` = 25.0 kWh
+- **Capacidad**: `1000` = 100.0 kWh
+
+## 📚 Referencias
+
+Este proyecto se basa en la investigación publicada en:
+
+- **JITS 2022**: Journal of Intelligent Transportation Systems
+- **Modelo original**: Véase carpeta `JITS2022/`
+
+[⬆ Volver arriba](#clp-rclp-minizinc-lab-environment)

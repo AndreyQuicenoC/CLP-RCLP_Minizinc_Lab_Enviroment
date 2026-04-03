@@ -1,154 +1,147 @@
-# CLP-RCLP MiniZinc Documentation
+# Documentación del Proyecto CLP-RCLP MiniZinc
 
-Central documentation directory for technical documentation, analysis and project guides.
+Directorio central de documentación técnica, análisis y guías del proyecto CLP-RCLP.
 
-## 📁 Structure
+## 📁 Estructura
 
 ```
 Docs/
-├── generated-system/       # Instance generation system
-│   ├── README.md          # Complete generator guide
-│   └── INDEX.md           # Navigation index
+├── generated-system/       # Sistema de generación de instancias
+│   ├── README.md          # Guía completa del generador
+│   └── INDEX.md           # Índice y navegación
 │
-├── model/                 # Mathematical model documentation
-│   ├── MathModel.tex      # LaTeX formulation
-│   ├── PROJECT_SUMMARY.md # Executive summary
-│   ├── QUICKSTART.md      # Quick start guide
-│   └── README.md          # Model index
+├── model/                 # Documentación del modelo matemático
+│   ├── MathModel.tex      # Formulación LaTeX
+│   ├── PROJECT_SUMMARY.md
+│   ├── QUICKSTART.md
+│   └── README.md          # Índice del modelo
 │
-├── analysis/              # Analysis and diagnostics
+├── analysis/              # Análisis y diagnóstico
 │   ├── Cork_Infeasibility_Analysis.md
 │   ├── DataCorrections.md
 │   ├── ModelModificationJustification.md
 │   ├── CHECKLIST_FINAL.md
-│   ├── SESSION_2026_03_26_*.md # Session notes
-│   └── README.md          # Analysis index
+│   └── README.md          # Índice de análisis
 │
-└── README.md              # This file
+└── README.md              # Este archivo
 ```
 
-## 🎯 Quick Start by User Type
+## 🎯 Inicio Rápido por Tipo de Usuario
 
-### 👨‍💼 Executive / Project Manager
-1. Read: `generated-system/README.md` (Overview section)
-2. View: `model/PROJECT_SUMMARY.md`
-3. Check: `analysis/CHECKLIST_FINAL.md`
+### 👨‍💼 Ejecutivo / Project Manager
+1. Leer: `generated-system/README.md` (Overview seccion)
+2. Ver: `model/PROJECT_SUMMARY.md`
+3. Consultar: `analysis/CHECKLIST_FINAL.md`
 
-### 👨‍💻 Developer / Researcher
-1. Start: `generated-system/README.md` (Quick Start)
-2. Understand: `model/MathModel.tex`
-3. Analyze: `analysis/Cork_Infeasibility_Analysis.md`
-4. Implement: Scripts in `../Scripts/`
+### 👨‍💻 Desarrollador / Investigador
+1. Empezar: `generated-system/README.md` (Quick Start)
+2. Entender: `model/MathModel.tex`
+3. Analizar: `analysis/Cork_Infeasibility_Analysis.md`
+4. Implementar: Scripts en `../Scripts/`
 
-### 🔬 Scientist / Data Analyst
-1. Review: `model/MathModel.tex`
-2. Study: `analysis/DataCorrections.md`
-3. Investigate: `analysis/ModelModificationJustification.md`
-4. Execute: Scripts in `../Scripts/testing/`
+### 🔬 Scientífico / Data Analyst
+1. Revisar: `model/MathModel.tex`
+2. Estudiar: `analysis/DataCorrections.md`
+3. Investigar: `analysis/ModelModificationJustification.md`
+4. Ejecutar: Scripts en `../Scripts/testing/`
 
-## 📚 Documents by Functionality
+## 📚 Documentos por Funcionalidad
 
-### Generation System
-**Main File**: `generated-system/README.md`
+### Sistema de Generación
+**Archivo Principal**: `generated-system/README.md`
 
-Contains:
-- System overview
-- How to generate instances
-- Expert algorithm
+Contiene:
+- Descripción del sistema
+- Cómo generar instancias
+- Algoritmo experto
 - Troubleshooting
 - Performance metrics
 
-### Mathematical Model
-**Main File**: `model/MathModel.tex`
+### Modelo Matemático
+**Archivo Principal**: `model/MathModel.tex`
 
-Contains:
-- Complete formulation
-- Variables and constraints
-- Parameters
-- Examples
+Contiene:
+- Formulación completa
+- Variables y restricciones
+- Parámetros
+- Ejemplos
 
-Executive summary: `model/PROJECT_SUMMARY.md`
-Quick reference: `model/QUICKSTART.md`
+Resumen ejecutivo: `model/PROJECT_SUMMARY.md`
+Guía rápida: `model/QUICKSTART.md`
 
-### Technical Analysis
-**Main File**: `analysis/README.md`
+### Análisis Técnico
+**Archivo Principal**: `analysis/README.md`
 
-Contains:
-- Cork problems
-- Data corrections
-- Model modifications
-- Key findings
+Contiene:
+- Problemas de Cork
+- Correcciones de datos
+- Modificaciones del modelo
+- Hallazgos clave
 
-## 🔍 Quick Search by Topic
+## 🔍 Búsqueda Rápida por Tema
 
 ### Cork Instances
-- **Problem**: `analysis/Cork_Infeasibility_Analysis.md`
-- **Solution**: `generated-system/README.md` (Cork Variants)
+- **Problema**: `analysis/Cork_Infeasibility_Analysis.md`
+- **Solución**: `generated-system/README.md` (Cork Variants)
 
 ### Data Issues
-- **Corrections**: `analysis/DataCorrections.md`
-- **Validation**: `generated-system/README.md` (Validation)
+- **Correcciones**: `analysis/DataCorrections.md`
+- **Validación**: `generated-system/README.md` (Validation)
 
 ### Model Questions
-- **Formulation**: `model/MathModel.tex`
-- **Changes**: `analysis/ModelModificationJustification.md`
+- **Formulación**: `model/MathModel.tex`
+- **Cambios**: `analysis/ModelModificationJustification.md`
 
 ### Generation System
-- **Complete Guide**: `generated-system/README.md`
-- **Algorithm**: `generated-system/README.md` (Algorithm Design)
+- **Guía completa**: `generated-system/README.md`
+- **Algoritmo**: `generated-system/README.md` (Algorithm Design)
 
 ### First Time Setup
-- **Steps**: `model/QUICKSTART.md`
+- **Pasos**: `model/QUICKSTART.md`
 - **Checklist**: `analysis/CHECKLIST_FINAL.md`
 
-## 📋 Documents by Format
+## 📋 Documentos por Formato
 
 ### Markdown (.md)
-- `**/README.md` - Main guides
-- `**/INDEX.md` - Navigation indices
-- `analysis/*.md` - Detailed analysis
+- `**/README.md` - Guías principales
+- `**/INDEX.md` - Índices de navegación
+- `analysis/*.md` - Análisis detallados
 
 ### LaTeX (.tex)
-- `model/MathModel.tex` - Mathematical formulation
+- `model/MathModel.tex` - Formulación matemática
 
 ### Text (.txt)
-- `analysis/INSTALLATION_SUCCESS.txt` - Installation log
+- `analysis/INSTALLATION_SUCCESS.txt` - Log de instalación
 
-## 🔗 Related Links
+## 🔗 Enlaces Relacionados
 
-- [Project Scripts](../Scripts/README.md)
-- [Generator GUI](../Generator/README.md)
-- [MiniZinc Models](../Models/)
-- [Datasets](../Data/)
+- [Scripts del Proyecto](../Scripts/README.md)
+- [Generator GUI](../Generator/README_BUILD.md)
+- [Modelo MiniZinc](../Models/)
+- [Datos](../Data/)
 
-## 🤝 Contributing
+## 🤝 Contribuir
 
-To add documentation:
-1. Determine category (generated-system, model, analysis)
-2. Create Markdown file with descriptive name
-3. Add index in corresponding README.md
-4. Update this file if necessary
+Para agregar documentación:
+1. Determinar categoría (generated-system, model, analysis)
+2. Crear archivo Markdown con nombre descriptivo
+3. Agregar índice en el README.md correspondiente
+4. Actualizar este archivo si es necesario
 
-## 📊 Documentation Status
+## 📊 Estado de Documentación
 
-| Section | Complete | Updated |
-|---------|----------|---------|
-| generated-system/ | ✓ | Yes (2026-03-26) |
-| model/ | ✓ | Yes (2026-03-25) |
-| analysis/ | ✓ | Yes (2026-03-26) |
-| Navigation | ✓ | Yes (2026-03-26) |
+| Sección | Completa | Actualizada |
+|---------|----------|-------------|
+| generated-system/ | ✓ | Sí (2026-03-25) |
+| model/ | ✓ | Sí (2026-03-25) |
+| analysis/ | ✓ | Sí (2026-03-25) |
+| Índices | ✓ | Sí (2026-03-25) |
 
-## 📝 Change History
+## 📝 Historial de Cambios
 
-- **2026-03-26**: Generator enhancements and documentation updates
-  - Fixed st_bi indexing in Battery Project data
-  - Enhanced Generator v2.0 with infinite iteration
-  - Organized Models directory
-  - Translated all docs to English
+- **2026-03-25**: Reorganización profesional de documentación
+  - Estructurados en 3 categorías principales
+  - Agregados índices de navegación
+  - Actualizadas rutas de referencias
 
-- **2026-03-25**: Professional documentation restructuring
-  - Organized into 3 main categories
-  - Added navigation indices
-  - Updated reference paths
-
-**Last Updated**: 2026-03-26
+**Última Actualización**: 2026-03-25

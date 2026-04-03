@@ -1,111 +1,111 @@
 # Scripts Directory
 
-Collection of scripts for generation, validation, testing, and utilities of the CLP-RCLP MiniZinc project.
+Colección de scripts para generación, validación, testing y utilidades del proyecto CLP-RCLP MiniZinc.
 
-## Directory Structure
+## 📁 Estructura
 
 ```
 Scripts/
-├── data-processing/        # Data conversion and validation
+├── data-processing/        # Conversión y validación de datos
 │   ├── convert_json_to_integer_dzn.py
 │   ├── validate_integer_dzn.py
 │   └── README.md
 │
-├── generation/            # Instance variant and synthetic generation
+├── generation/            # Generación de variantes e instancias
 │   ├── create_cork_variants.py
 │   ├── generate_synthetic_data.py
 │   └── README.md
 │
-├── testing/              # Testing suite and validation
-│   ├── test_generator.sh              (MAIN)
+├── testing/              # Suite de tests y validación
+│   ├── test_generator.sh              ⭐ PRINCIPAL
 │   ├── test_clp_preliminary.sh
 │   ├── run_battery_project_tests.py
 │   ├── test_initial_small_case.py
 │   └── README.md
 │
-├── setup/               # Initial configuration
+├── setup/               # Configuración inicial
 │   ├── setup_and_validate.py
 │   └── README.md
 │
-├── utilities/           # Diagnostic and utility scripts
+├── utilities/           # Scripts de diagnóstico y utilidad
 │   ├── diagnose_cork.sh
 │   └── README.md
 │
-└── README.md            # This file
+└── README.md            # Este archivo
 ```
 
-## Quick Start Workflow
+## 🚀 Workflow Rápido
 
-### First Time Using the Project
+### Primera vez usando el proyecto
 ```bash
-# 1. Initial setup
+# 1. Setup inicial
 python setup/setup_and_validate.py
 
-# 2. Generate Cork variants (if needed)
+# 2. Generar variantes Cork (si es necesario)
 python generation/create_cork_variants.py
 
-# 3. Run test suite
+# 3. Ejecutar suite de tests
 bash testing/test_generator.sh
 ```
 
-### Using the Interactive Generator
+### Uso del generador interactivo
 ```bash
 cd .. && python Generator/generator.py
 ```
 
-### Development and Testing
+### Desarrollo y testing
 ```bash
-# Individual tests
+# Tests individuales
 bash testing/test_clp_preliminary.sh
 python testing/run_battery_project_tests.py
 
-# Cork diagnostics
+# Diagnóstico Cork
 bash utilities/diagnose_cork.sh
 
-# Validate existing data
+# Validar datos existentes
 python data-processing/validate_integer_dzn.py ../Data/Battery\ Generated/*.dzn
 ```
 
-## Modules by Functionality
+## 📋 Módulos por Funcionalidad
 
-### Conversion & Validation (data-processing/)
-Convert between formats and validate data integrity.
+### 🔄 Conversión & Validación (data-processing/)
+Convierte entre formatos y valida integridad de datos.
 - `convert_json_to_integer_dzn.py` - JSON → .dzn (scaled ×10)
-- `validate_integer_dzn.py` - Verify .dzn correctness
+- `validate_integer_dzn.py` - Verifica correctness de .dzn
 
-**Input**: JSON, unvalidated `.dzn`
-**Output**: Validated data, correct `.dzn` files
+**Entrada**: JSON, `.dzn` sin validar
+**Salida**: Datos validados, `.dzn` correctos
 
-### Generation (generation/)
-Create instance variants and synthetic instances.
-- `create_cork_variants.py` - Extract Cork single-cycle from full-day
-- `generate_synthetic_data.py` - Generate random synthetic instances
+### 🎲 Generación (generation/)
+Crea variantes de instancias existentes e instancias sintéticas.
+- `create_cork_variants.py` - Crea Cork single-cycle desde full-day
+- `generate_synthetic_data.py` - Genera instancias sintéticas aleatorias
 
-**Input**: Full-day instances, custom parameters
-**Output**: Feasible variants (single cycle), synthetic instances
+**Entrada**: Instancias full-day, parámetros personalizados
+**Salida**: Variantes factible (cycle único), instancias sintéticas
 
-### Testing (testing/)
-Validate the complete system.
-- `test_generator.sh` (MAIN) - Main suite (7 tests)
-- `test_clp_preliminary.sh` - Basic preliminary tests
-- `run_battery_project_tests.py` - Battery project tests
-- `test_initial_small_case.py` - Small case tests
+### ✅ Testing (testing/)
+Valida el sistema completo.
+- `test_generator.sh` ⭐ - Suite principal (7 tests)
+- `test_clp_preliminary.sh` - Tests iniciales básicos
+- `run_battery_project_tests.py` - Tests Battery project
+- `test_initial_small_case.py` - Tests de caso pequeño
 
-**Input**: .dzn instances
-**Output**: Test report
+**Entrada**: Instancias .dzn
+**Salida**: Reporte de tests
 
-### Setup (setup/)
-Configure the environment.
-- `setup_and_validate.py` - Validate requirements and structure
+### ⚙️ Setup (setup/)
+Configura el entorno.
+- `setup_and_validate.py` - Valida requisitos y estructura
 
-**Input**: System environment
-**Output**: Configuration report and suggestions
+**Entrada**: Entorno del sistema
+**Salida**: Reporte de configuración y sugerencias
 
-### Utilities (utilities/)
-Diagnostic functions.
-- `diagnose_cork.sh` - Analyze Cork instance issues
+### 🛠️ Utilidades (utilities/)
+Funciones de diagnóstico.
+- `diagnose_cork.sh` - Analiza problemas con instancias Cork
 
-## Global Dependencies
+## 🔧 Dependencias Globales
 
 ```bash
 # Python 3.8+
@@ -114,75 +114,75 @@ python --version
 # MiniZinc 2.5+
 minizinc --version
 
-# Git (for versioning)
+# Git (para versionamiento)
 git --version
 ```
 
-## Runbook: Use Cases
+## 📚 Runbook: Casos de Uso
 
-### Case 1: Generate New Cork Variants
+### Caso 1: Generar nuevas instancias Cork
 ```bash
-# If variants don't exist:
+# Si no existen variantes:
 python generation/create_cork_variants.py
 
-# Verify creation:
+# Verificar que se crearon:
 ls ../Data/Battery\ Project\ Variant/cork-*_1cycle.dzn
 ```
 
-### Case 2: Validate Existing Data
+### Caso 2: Validar datos existentes
 ```bash
-# Validate single .dzn file
+# Validar un archivo .dzn
 python data-processing/validate_integer_dzn.py ../Data/sample.dzn
 
-# Validate all files in directory
+# Validar todos en un directorio
 for f in ../Data/Battery\ Generated/*.dzn; do
   python data-processing/validate_integer_dzn.py "$f"
 done
 ```
 
-### Case 3: Complete Testing
+### Caso 3: Testing completo
 ```bash
-# Main suite (recommended)
+# Suite principal (recomendado)
 bash testing/test_generator.sh
 
-# If failed, diagnose
-bash utilities/diagnose_cork.sh
+# Si falla, diagnosticar
+bash setup/diagnose_cork.sh
 ```
 
-### Case 4: Develop New Instances
+### Caso 4: Desarrollo de nuevas instancias
 ```bash
-# 1. Generate synthetic data
+# 1. Generar datos sintéticos
 python generation/generate_synthetic_data.py --buses 8 --stations 10 --output test.dzn
 
-# 2. Validate
+# 2. Validar
 python data-processing/validate_integer_dzn.py test.dzn
 
-# 3. Test with MiniZinc
+# 3. Probar con MiniZinc
 minizinc --solver chuffed ../Models/clp_model.mzn test.dzn
 ```
 
-## Documentation
+## 📖 Documentación
 
-For detailed information about each module:
+Para información detallada de cada módulo, ver:
 - [data-processing/README.md](data-processing/README.md)
 - [generation/README.md](generation/README.md)
 - [testing/README.md](testing/README.md)
 - [setup/README.md](setup/README.md)
 - [utilities/README.md](utilities/README.md)
 
-## Maintenance
+## 🔄 Mantenimiento
 
-- **Paths**: All scripts use relative paths from Scripts/
-- **Encoding**: Python scripts use UTF-8 by default
-- **Compatibility**: Windows (bash via Git Bash), Linux, macOS
+- **Rutas**: Todos los scripts usan rutas relativas desde Scripts/
+- **Encoding**: Scripts Python usan UTF-8 por defecto
+- **Compatibilidad**: Windows (bash vía Git Bash), Linux, macOS
 
-## Contributing
+## 🤝 Contributing
 
-To add new scripts:
-1. Determine category (data-processing, generation, testing, setup, utilities)
-2. Create file in corresponding subdirectory
-3. Add documentation in subdirectory README.md
-4. Update relative paths if needed
-5. Follow existing naming conventions
+Para agregar nuevos scripts:
+1. Determinar categoría (data-processing, generation, testing, setup, utilities)
+2. Crear archivo en subdirectorio correspondiente
+3. Agregar documentación en README.md del subdirectorio
+4. Actualizar rutas relativas si es necesario
+5. Seguir convenciones de naming existentes
 
-**Last Updated**: April 2026
+**Última Actualización**: 2026-03-25

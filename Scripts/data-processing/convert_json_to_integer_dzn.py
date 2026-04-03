@@ -161,14 +161,11 @@ def process_bus_line(line_data: Dict[str, Any]) -> Dict[str, List]:
                     path[i-1]['lat'], path[i-1]['lon'],
                     path[i]['lat'], path[i]['lon']
                 )
-                # Scale distance to energy consumption (realistic estimation)
-                # Typical: 100m → 0.5-1 kWh depending on bus type
-                energy = (dist * 0.01) * 10  # 100m ≈ 0.1 kWh base
+                # Scale distance to energy consumption (assuming 1 dist_unit ≈ 1 kWh)
+                energy = dist * 100  # Scaling factor for realistic energy values
             else:
-                # Approximate energy based on time
-                # Realistic consumption: 1.5-2 kWh per minute for electric bus
-                time_minutes = time_deltas[i]  # Already in minutes
-                energy = time_minutes * 0.20  # ~0.2 kWh per minute (realistic for bus operation)
+                # Approximate energy based on time (rough estimate)
+                energy = time_deltas[i] * 0.15  # ~0.15 kWh per minute of travel
 
             distances.append(energy)
 
@@ -213,9 +210,8 @@ def convert_json_to_dzn(json_file: Path, output_file: Path, variant_name: str = 
         for bus in all_buses:
             all_stations.update(bus['station_ids'])
 
-        # Create station mapping (1-indexed for MiniZinc compatibility)
-        # Stations are enumerated starting from 1, not 0
-        station_to_idx = {st: idx + 1 for idx, st in enumerate(sorted(all_stations))}
+        # Create station mapping (0-indexed)
+        station_to_idx = {st: idx for idx, st in enumerate(sorted(all_stations))}
 
         # Determine dimensions
         num_buses = len(all_buses)
@@ -302,7 +298,7 @@ def convert_json_to_dzn(json_file: Path, output_file: Path, variant_name: str = 
 
             # Station sequence (st_bi)
             f.write("% --- Station Sequence (st_bi) ---\n")
-            f.write("% Maps each bus stop to a physical station ID (1-indexed)\n")
+            f.write("% Maps each bus stop to a physical station ID (0-indexed)\n")
             f.write(f"st_bi = array2d(1..{num_buses}, 1..{max_stops}, [\n")
             for i in range(num_buses):
                 start_idx = i * max_stops
