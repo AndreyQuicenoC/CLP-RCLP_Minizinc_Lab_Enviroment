@@ -1,48 +1,48 @@
 # Testing Scripts
 
-Scripts para validar, prueba y verificación del sistema completo CLP-RCLP.
+Scripts for validation, testing, and verification of the complete CLP-RCLP system.
 
-## Contenido
+## Contents
 
-### `test_generator.sh` ⭐ PRINCIPAL
-Script de testing comprehensivo del sistema de generación de instancias.
+### `test_generator.sh` (MAIN)
+Comprehensive testing script for the instance generation system.
 
-**Uso**:
+**Usage**:
 ```bash
 bash test_generator.sh
 ```
 
-**Tests Incluidos**:
-1. Verificar existencia de variantes Cork
-2. Verificar disponibilidad del script generador
-3. Verificar instalación de MiniZinc
-4. Validar variante Cork con modelo CLP
-5. Verificar estructura de directorios generados
-6. Validar instancia generada existente
-7. Verificar documentación completa
+**Tests Included**:
+1. Verify Cork variants exist
+2. Verify generator script availability
+3. Verify MiniZinc installation
+4. Validate Cork variant with CLP model
+5. Verify generated directory structure
+6. Validate existing generated instance
+7. Verify complete documentation
 
-**Salida**: Reporte detallado con color y estadísticas
+**Output**: Detailed report with color and statistics
 
 ### `test_clp_preliminary.sh`
-Tests preliminares para validar funcionamiento básico del modelo CLP.
+Preliminary tests to validate basic CLP model functionality.
 
-**Uso**:
+**Usage**:
 ```bash
 bash test_clp_preliminary.sh
 ```
 
 ### `run_battery_project_tests.py`
-Suite de tests para las instancias del proyecto Battery.
+Test suite for Battery project instances.
 
-**Uso**:
+**Usage**:
 ```bash
-python run_battery_project_tests.py [opciones]
+python run_battery_project_tests.py [options]
 ```
 
 ### `test_initial_small_case.py`
-Tests de caso pequeño inicial para verificar funcionalidad básica.
+Initial small case tests to verify basic functionality.
 
-**Uso**:
+**Usage**:
 ```bash
 python test_initial_small_case.py
 ```
@@ -51,26 +51,26 @@ python test_initial_small_case.py
 
 ```
 test_generator.sh (MAIN)
-├── Validar Cork variants
-├── Validar installation (MiniZinc)
-├── Resolver instancias
-└── Reporte final
+├── Validate Cork variants
+├── Validate installation (MiniZinc)
+├── Solve instances
+└── Final report
 
-Después:
-├── run_battery_project_tests.py (validación completa)
-└── test_clp_preliminary.sh (diagnóstico)
+Then:
+├── run_battery_project_tests.py (complete validation)
+└── test_clp_preliminary.sh (diagnostics)
 ```
 
 ## Dependencies
-- bash (para scripts .sh)
-- Python 3.8+ (para scripts .py)
-- MiniZinc 2.5+ (para validación)
-- minizinc Python module (para algunos scripts)
+- bash (for .sh scripts)
+- Python 3.8+ (for .py scripts)
+- MiniZinc 2.5+ (for validation)
+- minizinc Python module (for some scripts)
 
 ## Expected Results
-- **SUCCESS**: 100% test pass rate, todas las instancias SATISFIABLE
-- **INFO**: Warnings esperados para Cork (instancias complejas)
-- **TIMEOUT**: Aceptable para instancias muy grandes (>20 buses)
+- **SUCCESS**: 100% test pass rate, all instances SATISFIABLE
+- **INFO**: Expected warnings for Cork (complex instances)
+- **TIMEOUT**: Acceptable for very large instances (>20 buses)
 
 ## Related Documentation
 - Main test guide: `../../Docs/generated-system/README.md`

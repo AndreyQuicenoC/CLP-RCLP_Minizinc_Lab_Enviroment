@@ -1,59 +1,59 @@
-# Documentación del Modelo Matemático
+# Mathematical Model Documentation
 
-Documentación técnica y formación matemática del modelo CLP-RCLP.
+Technical documentation and mathematical formulation of the CLP-RCLP model.
 
-## 📁 Contenido
+## 📁 Contents
 
-### Archivos Principales
+### Main Files
 
-- **MathModel.tex** - Formulación matemática completa en LaTeX
-  - Definición de variables
-  - Función objetivo
-  - Restricciones
-  - Parámetros
+- **MathModel.tex** - Complete mathematical formulation in LaTeX
+  - Variable definitions
+  - Objective function
+  - Constraints
+  - Parameters
 
-- **PROJECT_SUMMARY.md** - Resumen ejecutivo del proyecto
-  - Objetivos
-  - Alcance
-  - Resultados
+- **PROJECT_SUMMARY.md** - Executive project summary
+  - Objectives
+  - Scope
+  - Results
 
-- **QUICKSTART.md** - Guía rápida para empezar
-  - Instalación
-  - Primer test
-  - Ejemplos básicos
+- **QUICKSTART.md** - Quick start guide
+  - Installation
+  - First test
+  - Basic examples
 
-## 🔬 Estructura del Modelo
+## 🔬 Model Structure
 
-### Parámetros Principales
+### Main Parameters
 
-| Parámetro | Valor | Significado |
-|-----------|-------|-----------|
-| Cmax | 1000 | Capacidad máxima (100 kWh) |
-| Cmin | 200 | Reserva mínima (20 kWh) |
-| alpha | 100 | Tasa de carga (10 kWh/min) |
-| mu | 50 | Máximo retraso (5 min) |
+| Parameter | Value | Meaning |
+|-----------|-------|---------|
+| Cmax | 1000 | Maximum capacity (100 kWh) |
+| Cmin | 200 | Minimum reserve (20 kWh) |
+| alpha | 100 | Charging rate (10 kWh/min) |
+| mu | 50 | Maximum delay (5 min) |
 
-### Variables de Decisión
+### Decision Variables
 
-- `x_bi` - Binaria: ¿Se carga en parada (b,i)?
-- `e_bi` - Continua: Energía al final de parada (b,i)
-- `ct_bi` - Continua: Tiempo de carga en parada (b,i)
+- `x_bi` - Binary: Is charging performed at stop (b,i)?
+- `e_bi` - Continuous: Energy at end of stop (b,i)
+- `ct_bi` - Continuous: Charging time at stop (b,i)
 
-## 📊 Resultados Típicos
+## 📊 Typical Results
 
-Para instancia noncity_5buses-8stations:
-- **Total estaciones**: 3/8 instaladas
-- **Desviación total**: ~1564
-- **Tiempo de resolución**: < 1 segundo
+For instance noncity_5buses-8stations:
+- **Total stations**: 3/8 installed
+- **Total deviation**: ~1564
+- **Resolution time**: < 1 second
 
-## 🔗 Links Relacionados
+## 🔗 Related Links
 
-- [Sistema de Generación](../generated-system/)
-- [Análisis Detallado](../analysis/)
-- [Modelo MiniZinc](../../Models/)
+- [Generation System](../generated-system/)
+- [Detailed Analysis](../analysis/)
+- [MiniZinc Model](../../Models/)
 
-## 📚 Para Más Información
+## 📚 For More Information
 
-Ver la formulación completa en MathModel.tex (compilar con LaTeX).
+See the complete formulation in MathModel.tex (compile with LaTeX).
 
-**Última Actualización**: 2026-03-25
+**Last Updated**: 2026-03-26

@@ -1,45 +1,45 @@
 # Utility Scripts
 
-Scripts para utilidades generales, diagnóstico y funciones auxiliares.
+Scripts for general utilities, diagnostics, and auxiliary functions.
 
-## Contenido
+## Contents
 
 ### `diagnose_cork.sh`
-Script de diagnóstico para analizar y resolver problemas con instancias Cork.
+Diagnostic script for analyzing and resolving Cork instance issues.
 
-**Uso**:
+**Usage**:
 ```bash
 bash diagnose_cork.sh
 ```
 
-**Funcionalidad**:
-- Verificar formato de archivos Cork
-- Analizar tamaño y estructura
-- Reportar parámetros principales
-- Sugerir acciones correctivas
-- Validar integridad de datos
+**Functionality**:
+- Check Cork file format
+- Analyze size and structure
+- Report main parameters
+- Suggest corrective actions
+- Validate data integrity
 
 ## Utilities Module
 
-Este módulo puede expandirse con funciones auxiliares útiles:
-- Conversión de formatos
-- Análisis de instancias
-- Visualización
-- Post-procesamiento
+This module can be expanded with useful auxiliary functions:
+- Format conversion
+- Instance analysis
+- Visualization
+- Post-processing
 
 ## Related Scripts
 
-- Generation: `../generation/` (generación de variantes Cork)
-- Data Processing: `../data-processing/` (validación y procesamiento)
-- Testing: `../testing/` (verificación de salidas)
+- Generation: `../generation/` (Cork variant generation)
+- Data Processing: `../data-processing/` (validation and processing)
+- Testing: `../testing/` (output verification)
 
 ## Dependencies
 - Python 3.8+
-- numpy (para generación aleatoria)
+- numpy (for random generation)
 
 ## Development Notes
 
-Para agregar nuevos scripts de utilidad:
-1. Crear archivo en este directorio
-2. Agregarse a la sección "Contenido"
-3. Actualizar este README
+To add new utility scripts:
+1. Create file in this directory
+2. Add to "Contents" section
+3. Update this README
