@@ -1,7 +1,10 @@
 """
-CLP-RCLP Test Runner v1.2.0
+CLP-RCLP Test Runner v1.3.0
 
-Professional interface for executing and managing CLP/RCLP test instances.
+Professional interface for executing and managing CLP/RCLP test instances
+with real-time monitoring, dark/light theme support, and result generation.
+
+Authors: Andrey Quiceno and Juan Francesco García (AVISPA Team)
 
 Usage: python Runner/runner.py (from project root)
 """

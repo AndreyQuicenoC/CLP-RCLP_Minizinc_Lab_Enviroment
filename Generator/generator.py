@@ -22,7 +22,7 @@ Features:
   [OK] Modular, maintainable design
   [OK] Professional UI
 
-Author: AVISPA Research Team
+Author: Andrey Quiceno and Juan Francesco García (AVISPA Team)
 Version: 3.0.0
 Date: April 2026
 ================================================================================
