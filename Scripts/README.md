@@ -27,6 +27,11 @@ Scripts/
 │   ├── setup_and_validate.py
 │   └── README.md
 │
+├── ui-testing/         # UI interface validation and theme testing
+│   ├── test_runner_ui.py
+│   ├── test_generator_ui.py
+│   └── README.md
+│
 ├── utilities/           # Diagnostic and utility scripts
 │   ├── diagnose_cork.sh
 │   └── README.md
@@ -93,6 +98,15 @@ Validate the complete system.
 
 **Input**: .dzn instances
 **Output**: Test report
+
+### UI Testing (ui-testing/)
+Validate user interface functionality and theme system.
+- `test_runner_ui.py` - Runner interface validation (8 test scenarios)
+- `test_generator_ui.py` - Generator interface validation (9 test scenarios)
+
+**Input**: None (tests system directly)
+**Output**: Theme system verification, component rendering confirmation
+**Features Tested**: Dark/light mode switching, design tokens, component styling, window centering
 
 ### Setup (setup/)
 Configure the environment.
@@ -168,6 +182,7 @@ For detailed information about each module:
 - [generation/README.md](generation/README.md)
 - [testing/README.md](testing/README.md)
 - [setup/README.md](setup/README.md)
+- [ui-testing/README.md](ui-testing/README.md)
 - [utilities/README.md](utilities/README.md)
 
 ## Maintenance
