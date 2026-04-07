@@ -41,21 +41,25 @@ Validates the CLP-RCLP Generator interface:
 ## Features Tested
 
 ✓ **Theme System**
+
 - Default dark mode activation
 - Light mode switching and activation
 - Theme design tokens (colors, fonts, spacing)
 
 ✓ **Component Rendering**
+
 - All UI component creation and accessibility
 - Theme-aware styling application
 - Component visib ility and functionality
 
 ✓ **User Interactions**
+
 - Window startup and centering
 - Mode toggle functionality
 - Parameter value modification
 
 ✓ **Design System**
+
 - 27 design tokens available per theme
 - Typography coverage (ui, bold, section, mono, small)
 - Color palette consistency (dark and light modes)
@@ -73,6 +77,7 @@ Validates the CLP-RCLP Generator interface:
 ## Design Tokens Validated
 
 **Color Palette** (16 tokens):
+
 - Backgrounds: base, surface, elevated, hover
 - Accents: primary, dim, glow
 - Status: success, warning, error
@@ -80,26 +85,32 @@ Validates the CLP-RCLP Generator interface:
 - Borders: normal, active
 
 **Typography** (5 tokens):
+
 - font_ui, font_bold, font_section, font_mono, font_small
 
 **Spacing** (5+ tokens):
+
 - padding_large, padding_medium, padding_small, padding_tiny, header_height
 
 ## Running Tests
 
 ### Single Test
+
 ```bash
 python test_runner_ui.py
 python test_generator_ui.py
 ```
 
 ### All Tests
+
 ```bash
 python test_runner_ui.py && python test_generator_ui.py
 ```
 
 ### With Logging
+
 The test scripts provide detailed output showing:
+
 - Component checks ✓
 - Theme token validation ✓
 - Mode switching tests ✓
@@ -109,6 +120,7 @@ The test scripts provide detailed output showing:
 ## Test Results
 
 Successful tests output:
+
 ```
 ===============================================================
 ALL TESTS PASSED ✓

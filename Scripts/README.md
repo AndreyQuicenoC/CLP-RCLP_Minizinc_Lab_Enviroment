@@ -42,6 +42,7 @@ Scripts/
 ## Quick Start Workflow
 
 ### First Time Using the Project
+
 ```bash
 # 1. Initial setup
 python setup/setup_and_validate.py
@@ -54,11 +55,13 @@ bash testing/test_generator.sh
 ```
 
 ### Using the Interactive Generator
+
 ```bash
 cd .. && python Generator/generator.py
 ```
 
 ### Development and Testing
+
 ```bash
 # Individual tests
 bash testing/test_clp_preliminary.sh
@@ -74,7 +77,9 @@ python data-processing/validate_integer_dzn.py ../Data/Battery\ Generated/*.dzn
 ## Modules by Functionality
 
 ### Conversion & Validation (data-processing/)
+
 Convert between formats and validate data integrity.
+
 - `convert_json_to_integer_dzn.py` - JSON → .dzn (scaled ×10)
 - `validate_integer_dzn.py` - Verify .dzn correctness
 
@@ -82,7 +87,9 @@ Convert between formats and validate data integrity.
 **Output**: Validated data, correct `.dzn` files
 
 ### Generation (generation/)
+
 Create instance variants and synthetic instances.
+
 - `create_cork_variants.py` - Extract Cork single-cycle from full-day
 - `generate_synthetic_data.py` - Generate random synthetic instances
 
@@ -90,7 +97,9 @@ Create instance variants and synthetic instances.
 **Output**: Feasible variants (single cycle), synthetic instances
 
 ### Testing (testing/)
+
 Validate the complete system.
+
 - `test_generator.sh` (MAIN) - Main suite (7 tests)
 - `test_clp_preliminary.sh` - Basic preliminary tests
 - `run_battery_project_tests.py` - Battery project tests
@@ -100,7 +109,9 @@ Validate the complete system.
 **Output**: Test report
 
 ### UI Testing (ui-testing/)
+
 Validate user interface functionality and theme system.
+
 - `test_runner_ui.py` - Runner interface validation (8 test scenarios)
 - `test_generator_ui.py` - Generator interface validation (9 test scenarios)
 
@@ -109,14 +120,18 @@ Validate user interface functionality and theme system.
 **Features Tested**: Dark/light mode switching, design tokens, component styling, window centering
 
 ### Setup (setup/)
+
 Configure the environment.
+
 - `setup_and_validate.py` - Validate requirements and structure
 
 **Input**: System environment
 **Output**: Configuration report and suggestions
 
 ### Utilities (utilities/)
+
 Diagnostic functions.
+
 - `diagnose_cork.sh` - Analyze Cork instance issues
 
 ## Global Dependencies
@@ -135,6 +150,7 @@ git --version
 ## Runbook: Use Cases
 
 ### Case 1: Generate New Cork Variants
+
 ```bash
 # If variants don't exist:
 python generation/create_cork_variants.py
@@ -144,6 +160,7 @@ ls ../Data/Battery\ Project\ Variant/cork-*_1cycle.dzn
 ```
 
 ### Case 2: Validate Existing Data
+
 ```bash
 # Validate single .dzn file
 python data-processing/validate_integer_dzn.py ../Data/sample.dzn
@@ -155,6 +172,7 @@ done
 ```
 
 ### Case 3: Complete Testing
+
 ```bash
 # Main suite (recommended)
 bash testing/test_generator.sh
@@ -164,6 +182,7 @@ bash utilities/diagnose_cork.sh
 ```
 
 ### Case 4: Develop New Instances
+
 ```bash
 # 1. Generate synthetic data
 python generation/generate_synthetic_data.py --buses 8 --stations 10 --output test.dzn
@@ -178,6 +197,7 @@ minizinc --solver chuffed ../Models/clp_model.mzn test.dzn
 ## Documentation
 
 For detailed information about each module:
+
 - [data-processing/README.md](data-processing/README.md)
 - [generation/README.md](generation/README.md)
 - [testing/README.md](testing/README.md)
@@ -194,6 +214,7 @@ For detailed information about each module:
 ## Contributing
 
 To add new scripts:
+
 1. Determine category (data-processing, generation, testing, setup, utilities)
 2. Create file in corresponding subdirectory
 3. Add documentation in subdirectory README.md
