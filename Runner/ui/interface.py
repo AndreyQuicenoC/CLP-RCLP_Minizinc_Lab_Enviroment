@@ -492,15 +492,18 @@ class RunnerInterface(tk.Frame):
                 return
 
             self._log(f"Executing: {model} solver on {instance}", "key")
-            result = executor.execute(str(instance_path), model)
 
-            if result["success"]:
+            # execute() returns tuple: (success: bool, result: Optional[Dict])
+            success, result_dict = executor.execute(str(instance_path))
+
+            if success and result_dict:
                 self._log("Execution completed successfully", "success")
                 self.status_indicator.set_status("success", "Success")
-                handler = ResultHandler(str(Path(self.project_root) / "Tests" / "Output"))
-                handler.save_results(instance, result, directory)
+                handler = ResultHandler(str(Path(self.project_root) / "Tests" / "Output" / directory))
+                handler.save_results(instance, result_dict)
             else:
-                self._log(f"Execution failed: {result.get('error', 'Unknown error')}", "error")
+                error_msg = result_dict.get("error", "Unknown error") if isinstance(result_dict, dict) else "MiniZinc failed"
+                self._log(f"Execution failed: {error_msg}", "error")
                 self.status_indicator.set_status("error", "Error")
 
         except Exception as e:
