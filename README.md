@@ -30,12 +30,14 @@ This project includes:
 - Guaranteed SAT: All test cases generate satisfiable instances instantly
 - Automatic validation with MiniZinc (chuffed solver)
 
-### 3. Test Runner Interface (NEW v1.2.0)
-- Professional Tkinter GUI for test execution
+### 3. Test Runner Interface (v1.3.0)
+- Professional Tkinter GUI with dark/light theme support
 - Directory and file selectors for test instances
 - Model selection (CLP/RCLP)
 - Real-time execution monitoring
 - Automatic result formatting (JSON and TXT)
+- Centered window positioning on all screens
+- Complete theme system with 27 design tokens
 
 ### 4. Datasets
 - Cork City (Real): Irish case instances
@@ -308,9 +310,9 @@ This project is licensed under MIT. See [LICENSE](LICENSE) for details.
 
 ---
 
-Version: 1.2.0
+Version: 1.3.0
 Last Updated: April 2026
-Status: Production Ready - Generator v3.0 with Professional Test Runner
+Status: Production Ready - UI v1.3.0 with Theme System & Professional Interfaces
 
 ## Technical Note
 
