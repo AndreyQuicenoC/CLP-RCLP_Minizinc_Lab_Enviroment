@@ -60,6 +60,7 @@ class GeneratorInterface(tk.Frame):
         self.root.title("AVISPA CLP Instance Generator v1.3.0")
         self.root.geometry("750x600")
         self.root.resizable(False, False)
+        self._center_window()
         self.configure(bg=self.theme_dict["bg_base"])
 
         # Find project root for file operations
@@ -99,6 +100,17 @@ class GeneratorInterface(tk.Frame):
         while current.name != "CLP-RCLP Minizinc" and current.parent != current:
             current = current.parent
         return str(current) if current.name == "CLP-RCLP Minizinc" else str(Path(__file__).parent.parent.parent)
+
+    def _center_window(self) -> None:
+        """Center window on screen (horizontal and vertical)."""
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        self.root.geometry(f'{width}x{height}+{x}+{y}')
 
     def _build_ui(self) -> None:
         """Build the complete user interface."""
@@ -384,13 +396,14 @@ class GeneratorInterface(tk.Frame):
 
     def _refresh_ui_colors(self) -> None:
         """Refresh UI colors after theme change."""
-        # Update backgrounds
-        self.configure(bg=self.theme_dict["bg_base"])
-        self.root.configure(bg=self.theme_dict["bg_base"])
+        # Destruir todo
+        for widget in self.winfo_children():
+            widget.destroy()
 
-        # Update theme toggle button text (access internal Label)
-        toggle_text = "☀ Light" if ThemeManager.get_mode() == "dark" else "🌙 Dark"
-        self.theme_toggle_btn.btn.configure(text=toggle_text)
+        # Reconstruir UI con nuevo tema
+        self._build_ui()
+        self._apply_ttk_theme()
+    
 
     def _log(self, message: str, tag: str = "muted") -> None:
         """Add a message to the generation log."""
