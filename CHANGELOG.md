@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-04-07
+
+### Added
+
+- **Modular Theme System**
+  - Complete dark/light theme support for all interfaces
+  - ThemeManager singleton for global theme state management
+  - 27 design tokens per theme (colors, typography, spacing)
+  - Theme observer pattern for real-time UI updates
+  - Professional color palettes (dark default, light alternative)
+  - Consistent design language across Generator and Runner
+
+- **UI Improvements**
+  - Window centering on screen startup (both Runner and Generator)
+  - Improved window sizing for better display (850x650 Runner, 750x600 Generator)
+  - Fixed FlatButton theme switching widget accessibility
+  - Enhanced component styling with theme-aware rendering
+
+- **Script Organization**
+  - Created `Scripts/ui-testing/` subdirectory for UI validation tests
+  - Added `/test_runner_ui.py` with 8 comprehensive test scenarios
+  - Added `test_generator_ui.py` with 9 comprehensive test scenarios
+  - Created `Scripts/ui-testing/README.md` with complete documentation
+  - Updated `Scripts/README.md` with ui-testing reference
+
+- **Documentation Updates**
+  - Updated README.md to v1.3.0 with theme system features
+  - Comprehensive CHANGELOG entry documenting all changes
+  - Professional authorship attribution (Andrey Quiceno and Juan Francesco García)
+
+### Fixed
+
+- **Runner Execution Error**
+  - Fixed TypeError in MiniZincExecutor initialization
+  - Changed from passing RunnerConfig object to model path string
+  - Proper model file path mapping (CLP/RCLP → .mzn files)
+  - Instances now execute without PathLike argument errors
+
+- **Generator Theme Switching**
+  - Fixed unknown option "-text" error during theme toggle
+  - Proper FlatButton internal Label widget access
+  - Theme observer now correctly updates UI components
+
+- **Minor Issues**
+  - Updated authorship to include student developer names
+  - Synchronized VERSION file (1.3.0) with documentation
+
 ## [1.2.0] - 2026-04-03
 
 ### Added

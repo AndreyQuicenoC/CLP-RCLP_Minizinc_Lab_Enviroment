@@ -11,7 +11,7 @@ Architecture (v3.0 - Modular):
   - core/instance_validator.py: MiniZinc validation with robust timeout
   - core/instance_manager.py: File management and cleanup
   - orchestrator.py: Workflow coordination (formerly generator_orchestrator)
-  - ui/generator_gui.py: Professional user interface
+  - ui/interface.py: Professional user interface
   - generator.py: Main entry point
 
 Features:
@@ -22,7 +22,7 @@ Features:
   [OK] Modular, maintainable design
   [OK] Professional UI
 
-Author: AVISPA Research Team
+Author: Andrey Quiceno and Juan Francesco García (AVISPA Team)
 Version: 3.0.0
 Date: April 2026
 ================================================================================
@@ -34,7 +34,7 @@ from pathlib import Path
 # Ensure Generator directory is in Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from ui.generator_gui import main
+from ui.interface import main
 
 if __name__ == '__main__':
     main()

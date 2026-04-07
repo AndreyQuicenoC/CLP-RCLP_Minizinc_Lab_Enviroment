@@ -76,7 +76,7 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 - `Docs/` - Documentation and technical guides
 - `Tests/` - Test results and benchmarks
 - `Generator/` - Instance generator with modular architecture (v3.0)
-- `Runner/` - Test execution interface (v1.2.0)
+- `Runner/` - Test execution interface with theme system (v1.3.0)
 
 ### Testing
 
@@ -117,8 +117,9 @@ python Scripts/testing/run_battery_project_tests.py
 ### Scope
 
 Scope should specify what is affected:
+
 - `generator` - Instance generator GUI and core modules
-- `runner` - Test execution interface (NEW v1.2.0)
+- `runner` - Test execution interface with dark/light theme (v1.3.0)
 - `scripts` - Python/shell scripts
 - `models` - MiniZinc model files
 - `data` - Data processing or test instances
@@ -140,6 +141,7 @@ Scope should specify what is affected:
 ### Footer
 
 Reference issues with keywords:
+
 - `Closes #123`
 - `Fixes #456`
 - `Resolves #789`
@@ -170,10 +172,10 @@ Resolves #55
 def validate_instance(dzn_file):
     """
     Validate a DZN instance file for correctness.
-    
+
     Args:
         dzn_file (str): Path to the .dzn file
-        
+
     Returns:
         tuple: (is_valid, error_message)
     """
@@ -201,6 +203,7 @@ def validate_instance(dzn_file):
 ## Recognition
 
 Contributors will be recognized in:
+
 - README.md contributors section
 - GitHub contributors page
 - Project releases
