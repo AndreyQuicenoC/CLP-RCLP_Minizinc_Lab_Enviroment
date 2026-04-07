@@ -4,6 +4,8 @@ Runner Interface - Professional MiniZinc Test Executor GUI
 Premium dark/light mode UI for executing CLP/RCLP test instances with real-time monitoring,
 result generation, and professional theme support.
 
+Authors: Andrey Quiceno and Juan Francesco García (AVISPA Team)
+
 Architecture:
 - Dynamic theme switching (dark/light modes)
 - Modular components from .components module
@@ -57,7 +59,7 @@ class RunnerInterface(tk.Frame):
 
         # Setup window properties
         self.root.title("CLP-RCLP Test Runner v1.3.0")
-        self.root.geometry("940x730")
+        self.root.geometry("850x650")
         self.root.resizable(False, False)
         self.configure(bg=self.theme_dict["bg_base"])
 
@@ -192,10 +194,8 @@ class RunnerInterface(tk.Frame):
         )
         card.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
 
-        p = {"padx": 12, "pady": 0}
-
         # Directory selection
-        SectionLabel(card, "Directory", self.theme_dict).pack(anchor="w", pady=(14, 6), **p)
+        SectionLabel(card, "Directory", self.theme_dict).pack(anchor="w", padx=12, pady=(14, 6))
         self.dir_var = tk.StringVar()
         dirs = ["Battery Own", "Battery Generated", "Battery Project Integer", "Battery Project Variant"]
         self.dir_combo = ttk.Combobox(
@@ -208,10 +208,10 @@ class RunnerInterface(tk.Frame):
         self.dir_combo.current(0)
         self.dir_combo.pack(fill=tk.X, padx=12, pady=(0, 12))
 
-        Divider(card, self.theme_dict).pack(fill=tk.X, pady=12, **p)
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
         # Test instance selection
-        SectionLabel(card, "Instance", self.theme_dict).pack(anchor="w", pady=(0, 6), **p)
+        SectionLabel(card, "Instance", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 6))
         inst_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
         inst_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
 
@@ -229,10 +229,10 @@ class RunnerInterface(tk.Frame):
                                 theme=self.theme_dict, accent=False)
         refresh_btn.pack(side=tk.LEFT, padx=(6, 0))
 
-        Divider(card, self.theme_dict).pack(fill=tk.X, pady=12, **p)
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
         # Model selection
-        SectionLabel(card, "Model", self.theme_dict).pack(anchor="w", pady=(0, 8), **p)
+        SectionLabel(card, "Model", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 8))
         self.model_var = tk.StringVar(value="CLP")
 
         model_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
@@ -251,7 +251,7 @@ class RunnerInterface(tk.Frame):
             )
             rb.pack(side=tk.LEFT, padx=8)
 
-        Divider(card, self.theme_dict).pack(fill=tk.X, pady=12, **p)
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
         # Action buttons
         btn_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])

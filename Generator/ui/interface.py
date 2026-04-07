@@ -4,6 +4,8 @@ Generator Interface - Professional Instance Generation GUI
 Premium dark/light mode UI for generating feasible CLP/RCLP test instances with MiniZinc validation,
 real-time logging, and professional theme support.
 
+Authors: Andrey Quiceno and Juan Francesco García (AVISPA Team)
+
 Architecture:
 - Dynamic theme switching (dark/light modes, dark default)
 - Modular components from .components module
@@ -56,7 +58,7 @@ class GeneratorInterface(tk.Frame):
 
         # Setup window properties
         self.root.title("AVISPA CLP Instance Generator v1.3.0")
-        self.root.geometry("850x750")
+        self.root.geometry("750x600")
         self.root.resizable(False, False)
         self.configure(bg=self.theme_dict["bg_base"])
 
@@ -381,14 +383,14 @@ class GeneratorInterface(tk.Frame):
         ThemeManager.set_mode(new_mode)
 
     def _refresh_ui_colors(self) -> None:
-        """Refresh all UI colors after theme change."""
+        """Refresh UI colors after theme change."""
         # Update backgrounds
         self.configure(bg=self.theme_dict["bg_base"])
         self.root.configure(bg=self.theme_dict["bg_base"])
 
-        # Update theme toggle button text
+        # Update theme toggle button text (access internal Label)
         toggle_text = "☀ Light" if ThemeManager.get_mode() == "dark" else "🌙 Dark"
-        self.theme_toggle_btn.configure(text=toggle_text)
+        self.theme_toggle_btn.btn.configure(text=toggle_text)
 
     def _log(self, message: str, tag: str = "muted") -> None:
         """Add a message to the generation log."""
