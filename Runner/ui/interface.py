@@ -61,6 +61,7 @@ class RunnerInterface(tk.Frame):
         self.root.title("CLP-RCLP Test Runner v1.3.0")
         self.root.geometry("850x650")
         self.root.resizable(False, False)
+        self._center_window()
         self.configure(bg=self.theme_dict["bg_base"])
 
         # Initialize core modules
@@ -97,6 +98,17 @@ class RunnerInterface(tk.Frame):
             current = current.parent
         return str(current) if current.name == "CLP-RCLP Minizinc" else str(Path(__file__).parent.parent.parent)
 
+    def _center_window(self) -> None:
+        """Center window on screen (horizontal and vertical)."""
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - width) // 2
+        y = (screen_height - height) // 2
+        self.root.geometry(f'{width}x{height}+{x}+{y}')
+
     def _build_ui(self) -> None:
         """Build the complete user interface with two-panel layout."""
         # Main container
@@ -108,7 +120,7 @@ class RunnerInterface(tk.Frame):
 
         # Content area (two panels)
         content = tk.Frame(container, bg=self.theme_dict["bg_base"])
-        content.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+        content.pack(fill=tk.BOTH, expand=True, padx=15, pady=0)
 
         # Left panel (config)
         self._build_left_panel(content)
@@ -192,7 +204,7 @@ class RunnerInterface(tk.Frame):
             relief=tk.FLAT,
             bd=0,
         )
-        card.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
+        card.pack(fill=tk.BOTH, expand=True, padx=0, pady=12)
 
         # Directory selection
         SectionLabel(card, "Directory", self.theme_dict).pack(anchor="w", padx=12, pady=(14, 6))
@@ -405,19 +417,15 @@ class RunnerInterface(tk.Frame):
         new_mode = "light" if current_mode == "dark" else "dark"
         ThemeManager.set_mode(new_mode)
 
-    def _refresh_ui_colors(self) -> None:
-        """Refresh all UI colors after theme change (full UI rebuild recommended)."""
-        # Update backgrounds
-        self.configure(bg=self.theme_dict["bg_base"])
-        self.root.configure(bg=self.theme_dict["bg_base"])
+    def _refresh_ui_colors(self):
+        # Destruir todo
+        for widget in self.winfo_children():
+            widget.destroy()
 
-        # Update theme toggle button text
-        toggle_text = "☀ Light" if ThemeManager.get_mode() == "dark" else "🌙 Dark"
-        self.theme_toggle_btn.configure(text=toggle_text)
-
-        # For comprehensive color update, UI rebuild would be ideal
-        # This is a simplified approach; full refresh requires widget tree traversal
-
+        # Reconstruir UI con nuevo tema
+        self._build_ui()
+        self._apply_ttk_theme()
+    
     def _refresh_instances(self) -> None:
         """Refresh the list of available test instances."""
         directory = self.dir_var.get()
@@ -468,8 +476,12 @@ class RunnerInterface(tk.Frame):
     def _execute_test(self, directory: str, instance: str, model: str) -> None:
         """Execute test in background thread."""
         try:
-            config = RunnerConfig()
-            executor = MiniZincExecutor(config)
+            # Map model name to .mzn file path
+            model_map = {"CLP": "clp_model.mzn", "RCLP": "rclp_model.mzn"}
+            model_filename = model_map.get(model, "clp_model.mzn")
+            model_path = Path(self.project_root) / "Models" / model_filename
+
+            executor = MiniZincExecutor(str(model_path))
 
             data_path = Path(self.project_root) / "Data" / directory
             instance_path = data_path / f"{instance}.dzn"
