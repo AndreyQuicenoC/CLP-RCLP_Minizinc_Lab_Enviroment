@@ -8,7 +8,7 @@ Runner provides a clean, user-friendly interface to:
 
 - Select test instances from Data directories
 - Choose between CLP and RCLP models
-- **Select from 6 solvers** (Chuffed, Gecode, COIN-BC, Globalizer, CPLEX, Gurobi)
+- **Select from 6 solvers** (Chuffed, Gecode, COIN-BC, OR-Tools CP-SAT, CPLEX, Gurobi)
 - View solver information and capabilities
 - Execute tests with chosen solver
 - Save results organized by solver in JSON and TXT formats
@@ -38,9 +38,9 @@ python Runner/runner.py
    - **Chuffed** (Default) - Fast constraint solver
    - **Gecode** - General-purpose constraint programming
    - **COIN-BC** - Linear/mixed-integer programming
-   - **Globalizer** - Global optimization
+   - **OR-Tools CP-SAT** - Google's modern CP solver
    - **CPLEX** (Commercial) - High-performance optimizer
-   - **Gurobi** (Commercial) - Cutting-edge optimization
+   - **Gurobi** (Commercial) - Requires valid license
 
 5. **Get Solver Info**: Click the "?" button to learn about the selected solver
 
@@ -221,5 +221,6 @@ Results are saved to `Tests/solver_tests/` with detailed timing information.
 ## Architecture Documentation
 
 For detailed technical information about the v1.4.0 multi-solver implementation, see:
+
 - `Docs/ARCHITECTURE_v1_4_0.md` - Complete technical architecture
 - `Scripts/solvers/README.md` - Solver scripts documentation

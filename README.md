@@ -10,6 +10,7 @@
 Professional lab environment for research and optimization of the **Charging Location Problem (CLP)** and its robust extension **(RCLP)** for electric bus fleets.
 
 This project includes:
+
 - Mathematical models in MiniZinc (CLP and RCLP)
 - Professional instance generation system (v3.0 - Working Pattern Replication)
 - Complete automated testing suite with **multi-solver support**
@@ -20,10 +21,12 @@ This project includes:
 ## Key Features
 
 ### 1. Mathematical Models
+
 - **CLP**: Optimal charging station location under normal conditions
 - **RCLP**: Robust version with resilience against failures
 
 ### 2. Automatic Generation System (v3.0 - Production Ready)
+
 - Working Pattern Replication: Each bus visits every station exactly once
 - 5 Route Patterns: Sequential, Reverse, Alternate-Odd/Even, Diagonal
 - Smart Overconsumption: 1.5-1.8x for small networks, forcing strategic charging
@@ -31,6 +34,7 @@ This project includes:
 - Automatic validation with MiniZinc (chuffed solver)
 
 ### 3. Test Runner Interface (v1.4.0 - Multi-Solver Support)
+
 - Professional Tkinter GUI with dark/light theme support
 - **Multiple solver selection** (chuffed, gecode, coin-bc, globalizer, cplex, gurobi)
 - Solver information modal with capabilities and use cases
@@ -44,6 +48,7 @@ This project includes:
 - Complete theme system with 27 design tokens
 
 ### 4. Datasets
+
 - Cork City (Real): Irish case instances
 - Noncity (Validated): Manually validated test cases
 - Synthetic (Scalable): Procedurally generated instances
@@ -53,6 +58,7 @@ This project includes:
 ## Quick Start
 
 ### Prerequisites
+
 ```bash
 # Python 3.8+
 python --version
@@ -64,6 +70,7 @@ minizinc --version
 ```
 
 ### Initial Setup
+
 ```bash
 # Validate configuration
 python Scripts/setup/setup_and_validate.py
@@ -76,6 +83,7 @@ bash Scripts/testing/test_generator.sh
 ```
 
 ### Generate New Instances
+
 ```bash
 # Interactive GUI (recommended)
 python Generator/generator.py
@@ -84,6 +92,7 @@ python Generator/generator.py
 ```
 
 ### Run Tests with Runner
+
 ```bash
 # Launch test execution interface
 python Runner/runner.py
@@ -97,6 +106,7 @@ python Runner/runner.py
 ```
 
 ### Execute Models Directly
+
 ```bash
 # Quick test with validated instance
 minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Own/noncity_5buses-8stations.dzn
@@ -163,12 +173,14 @@ CLP-RCLP Minizinc/
 ## Documentation
 
 ### Getting Started
+
 - **[Generator/README.md](Generator/README.md)** - Generator v3.0 documentation
 - **[Runner/README.md](Runner/README.md)** - Test Runner interface guide
 - **[Scripts/README.md](Scripts/README.md)** - Scripts and utilities guide
 - **[Docs/README.md](Docs/README.md)** - Central documentation index
 
 ### Technical Documentation
+
 - **[Docs/model/](Docs/model/)** - Mathematical formulation
 - **[Docs/model/PROJECT_SUMMARY.md](Docs/model/PROJECT_SUMMARY.md)** - Project summary
 - **[Docs/analysis/](Docs/analysis/)** - Detailed analysis
@@ -176,6 +188,7 @@ CLP-RCLP Minizinc/
 ## Typical Workflows
 
 ### Generate New Instances
+
 ```bash
 python Generator/generator.py          # Interactive GUI
 # or
@@ -183,11 +196,13 @@ python Scripts/generation/create_cork_variants.py  # Cork variants
 ```
 
 ### Validate Existing Instances
+
 ```bash
 python Scripts/data-processing/validate_integer_dzn.py Data/Battery\ Generated/*.dzn
 ```
 
 ### Run Tests
+
 ```bash
 bash Scripts/testing/test_generator.sh    # Main suite (recommended)
 python Scripts/testing/run_battery_project_tests.py  # Battery tests
@@ -195,16 +210,19 @@ python Runner/runner.py                   # GUI test runner (v1.4.0)
 ```
 
 ### Check Available Solvers
+
 ```bash
 python Scripts/solvers/check_solvers.py    # System solver verification
 ```
 
 ### Test Multiple Solvers
+
 ```bash
 python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn CLP
 ```
 
 ### Diagnose Issues
+
 ```bash
 python Scripts/setup/setup_and_validate.py  # Validate environment
 bash Scripts/utilities/diagnose_cork.sh    # Diagnose Cork
@@ -212,75 +230,87 @@ bash Scripts/utilities/diagnose_cork.sh    # Diagnose Cork
 
 ## Datasets
 
-| Dataset | Origin | Instances | Status | Usage |
-|---------|--------|-----------|--------|-------|
-| Cork | Real (Ireland) | 182+ | Complex | RCLP or single cycles |
-| Cork Variants | Reduced | 5 | Feasible | Testing |
-| Noncity | Validated | 10+ | Feasible | Recommended |
-| Synthetic | Generated | Variable | Feasible | Recommended |
-| Generated | Gen. System | 3+ | Feasible | Recommended |
+| Dataset       | Origin         | Instances | Status   | Usage                 |
+| ------------- | -------------- | --------- | -------- | --------------------- |
+| Cork          | Real (Ireland) | 182+      | Complex  | RCLP or single cycles |
+| Cork Variants | Reduced        | 5         | Feasible | Testing               |
+| Noncity       | Validated      | 10+       | Feasible | Recommended           |
+| Synthetic     | Generated      | Variable  | Feasible | Recommended           |
+| Generated     | Gen. System    | 3+        | Feasible | Recommended           |
 
 ## Testing Status
 
 Generator v3.0 Results:
+
 - 2 buses, 4 stations: SAT in attempt 1 [PASS]
 - 3 buses, 5 stations: SAT in attempt 1 [PASS]
 - 5 buses, 8 stations: SAT in attempt 1 [PASS]
 
 System Performance:
+
 - Success Rate: 100%
 - Average Time to SAT: <1 second
 - Average Attempts: 1.0
 
 ## Tools and Dependencies
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| MiniZinc | 2.5+ | Constraint modeling |
-| Python | 3.8+ | Utility scripts and Runner |
-| Bash | Linux/macOS | Automation scripts |
-| Git | Any | Version control |
+| Tool     | Version     | Purpose                    |
+| -------- | ----------- | -------------------------- |
+| MiniZinc | 2.5+        | Constraint modeling        |
+| Python   | 3.8+        | Utility scripts and Runner |
+| Bash     | Linux/macOS | Automation scripts         |
+| Git      | Any         | Version control            |
 
 ### Supported Solvers
+
 - **Chuffed** (Default) - Fast constraint solver, recommended
 - **Gecode** - General-purpose constraint programming
 - **COIN-BC** - Linear/mixed-integer programming
-- **Globalizer** - Global optimization
+- **OR-Tools CP-SAT** - Google's modern CP solver
 - **CPLEX** (Commercial) - Industry-leading optimizer
-- **Gurobi** (Commercial) - Cutting-edge optimization engine
+- **Gurobi** (Commercial) - Requires valid license
 
 ## Key Concepts
 
 ### CLP (Charging Location Problem)
+
 Base constraint programming problem that determines optimal charging station location, minimizing station count while guaranteeing operational feasibility.
 
 ### RCLP (Robust CLP)
+
 Robust extension that adds resilience against potential system failures.
 
 ### Scaling (x10)
+
 All values are scaled by 10 to use integer arithmetic in MiniZinc, improving numerical precision and reliability.
 
 ### Feasibility
+
 An instance is "feasible" if a valid solution exists where all buses complete their routes respecting all constraints.
 
 ## FAQ
 
 ### Where do I start?
+
 1. Run `bash Scripts/testing/test_generator.sh` first
 2. Review [Docs/README.md](Docs/README.md) for documentation
 3. Use `python Generator/generator.py` to create instances
 4. Execute tests with `python Runner/runner.py`
 
 ### Why is Cork infeasible?
+
 Cork contains 13-14 daily cycles (~400-500 stops) with ~1700 kWh consumption vs 80 kWh usable capacity. Requires 3+ RCLP models or reduction to single cycles.
 
 ### How do I generate custom instances?
+
 Use `python Generator/generator.py` (GUI) or modify `Scripts/generation/` for automation.
 
 ### How do I run tests?
+
 Use `python Runner/runner.py` for GUI interface or `minizinc --solver chuffed Models/clp_model.mzn Data/.../*.dzn` for command line.
 
 ### Where are results stored?
+
 Test results auto-save to `Tests/Output/{DirectoryName}/` in JSON and TXT formats.
 
 ## Contributing
@@ -334,6 +364,7 @@ Status: Production Ready - Multi-Solver Support & Enhanced UI v1.4.0
 ## Technical Note
 
 All numeric parameters are scaled x10 to use integer arithmetic:
+
 - Time: `4200` = 420.0 minutes = 7:00 AM
 - Energy: `250` = 25.0 kWh
 - Capacity: `1000` = 100.0 kWh
