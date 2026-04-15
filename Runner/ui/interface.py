@@ -25,6 +25,7 @@ import logging
 from .themes import ThemeManager, get_theme_dict, DARK_PALETTE, LIGHT_PALETTE
 from .components import SectionLabel, FlatButton, Divider, StatusIndicator
 from .layouts import LayoutBuilder, LayoutConfig
+from .tooltip import Tooltip
 
 # Import Runner core modules
 try:
@@ -221,6 +222,7 @@ class RunnerInterface(tk.Frame):
         )
         self.dir_combo.current(0)
         self.dir_combo.pack(fill=tk.X, padx=12, pady=(0, 12))
+        Tooltip(self.dir_combo, "Select test dataset directory", self.theme_dict)
 
         Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
@@ -238,10 +240,12 @@ class RunnerInterface(tk.Frame):
             width=25,
         )
         self.instance_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        Tooltip(self.instance_combo, "Select test instance file (.dzn)", self.theme_dict)
 
         refresh_btn = FlatButton(inst_frame, "Refresh", command=self._refresh_instances,
                                 theme=self.theme_dict, accent=False)
         refresh_btn.pack(side=tk.LEFT, padx=(6, 0))
+        Tooltip(refresh_btn, "Reload list of available instances", self.theme_dict)
 
         Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
@@ -262,6 +266,7 @@ class RunnerInterface(tk.Frame):
         )
         self.solver_combo.current(0)
         self.solver_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        Tooltip(self.solver_combo, "Choose MiniZinc solver backend for execution", self.theme_dict)
 
         # Solver info button
         info_btn = tk.Label(
@@ -275,6 +280,7 @@ class RunnerInterface(tk.Frame):
         )
         info_btn.pack(side=tk.LEFT, padx=(6, 0))
         info_btn.bind("<Button-1>", self._show_solver_info)
+        Tooltip(info_btn, "Show solver information and capabilities", self.theme_dict)
 
         Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
         self.model_var = tk.StringVar(value="CLP")
@@ -309,6 +315,7 @@ class RunnerInterface(tk.Frame):
             accent=True,
         )
         self.run_btn.pack(fill=tk.X, pady=(0, 8))
+        Tooltip(self.run_btn, "Execute test with selected instance and solver", self.theme_dict)
 
         self.stop_btn = FlatButton(
             btn_frame,
@@ -319,6 +326,7 @@ class RunnerInterface(tk.Frame):
             disabled=True,
         )
         self.stop_btn.pack(fill=tk.X)
+        Tooltip(self.stop_btn, "Stop the running test execution", self.theme_dict)
 
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
