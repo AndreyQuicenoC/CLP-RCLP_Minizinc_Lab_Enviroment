@@ -1,6 +1,6 @@
 # CLP-RCLP MiniZinc Lab Environment
 
-[![Version](https://img.shields.io/badge/version-1.3.0-brightgreen?style=flat-square)](.)
+[![Version](https://img.shields.io/badge/version-1.4.0-brightgreen?style=flat-square)](.)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](.)
 [![Python](https://img.shields.io/badge/python-3.8+-yellow?style=flat-square)](.)
 [![MiniZinc](https://img.shields.io/badge/minizinc-2.5+-ff69b4?style=flat-square)](.)
@@ -12,8 +12,8 @@ Professional lab environment for research and optimization of the **Charging Loc
 This project includes:
 - Mathematical models in MiniZinc (CLP and RCLP)
 - Professional instance generation system (v3.0 - Working Pattern Replication)
-- Complete automated testing suite
-- Test execution interface (Runner)
+- Complete automated testing suite with **multi-solver support**
+- Enhanced test execution interface (Runner v1.4.0)
 - Exhaustive technical documentation
 - Varied datasets (Cork, synthetic, validated)
 
@@ -30,12 +30,16 @@ This project includes:
 - Guaranteed SAT: All test cases generate satisfiable instances instantly
 - Automatic validation with MiniZinc (chuffed solver)
 
-### 3. Test Runner Interface (v1.3.0)
+### 3. Test Runner Interface (v1.4.0 - Multi-Solver Support)
 - Professional Tkinter GUI with dark/light theme support
+- **Multiple solver selection** (chuffed, gecode, coin-bc, globalizer, cplex, gurobi)
+- Solver information modal with capabilities and use cases
 - Directory and file selectors for test instances
 - Model selection (CLP/RCLP)
 - Real-time execution monitoring
 - Automatic result formatting (JSON and TXT)
+- **Results organized by solver** for easy comparison
+- Comprehensive tooltips for improved UX
 - Centered window positioning on all screens
 - Complete theme system with 27 design tokens
 
@@ -187,7 +191,17 @@ python Scripts/data-processing/validate_integer_dzn.py Data/Battery\ Generated/*
 ```bash
 bash Scripts/testing/test_generator.sh    # Main suite (recommended)
 python Scripts/testing/run_battery_project_tests.py  # Battery tests
-python Runner/runner.py                   # GUI test runner (NEW)
+python Runner/runner.py                   # GUI test runner (v1.4.0)
+```
+
+### Check Available Solvers
+```bash
+python Scripts/solvers/check_solvers.py    # System solver verification
+```
+
+### Test Multiple Solvers
+```bash
+python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn CLP
 ```
 
 ### Diagnose Issues
@@ -228,9 +242,12 @@ System Performance:
 | Git | Any | Version control |
 
 ### Supported Solvers
-- Chuffed (recommended)
-- Gecode
-- COIN-BC
+- **Chuffed** (Default) - Fast constraint solver, recommended
+- **Gecode** - General-purpose constraint programming
+- **COIN-BC** - Linear/mixed-integer programming
+- **Globalizer** - Global optimization
+- **CPLEX** (Commercial) - Industry-leading optimizer
+- **Gurobi** (Commercial) - Cutting-edge optimization engine
 
 ## Key Concepts
 
@@ -310,9 +327,9 @@ This project is licensed under MIT. See [LICENSE](LICENSE) for details.
 
 ---
 
-Version: 1.3.0
+Version: 1.4.0
 Last Updated: April 2026
-Status: Production Ready - UI v1.3.0 with Theme System & Professional Interfaces
+Status: Production Ready - Multi-Solver Support & Enhanced UI v1.4.0
 
 ## Technical Note
 
