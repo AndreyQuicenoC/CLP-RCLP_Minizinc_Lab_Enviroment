@@ -191,7 +191,7 @@ def main():
     """Main entry point."""
     if len(sys.argv) < 2:
         print("Usage: python test_multiple_solvers.py <instance_path> [model] [solvers...]")
-        print("Example: python test_multiple_solvers.py Data/Battery\ Own/instance.dzn CLP chuffed gecode")
+        print(r"Example: python test_multiple_solvers.py Data/Battery\ Own/instance.dzn CLP chuffed gecode")
         sys.exit(1)
 
     instance_path = sys.argv[1]
