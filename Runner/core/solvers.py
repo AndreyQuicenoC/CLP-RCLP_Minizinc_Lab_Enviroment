@@ -8,9 +8,9 @@ Supported Solvers:
 - chuffed: Default constraint solver (fast, good for most problems)
 - gecode: General-purpose constraint programming solver
 - coin-bc: Linear/mixed-integer programming solver
-- globalizer: Global optimization solver
+- cp-sat: Google OR-Tools CP-SAT constraint programming solver
 - cplex: IBM CPLEX (commercial, high-performance)
-- gurobi: Gurobi optimization engine (commercial, high-performance)
+- gurobi: Gurobi optimization engine (commercial, requires DLL configuration)
 
 Authors: Andrey Quiceno and Juan Francesco García (AVISPA Team)
 """
@@ -25,7 +25,7 @@ class SolverType(Enum):
     CHUFFED = "chuffed"
     GECODE = "gecode"
     COIN_BC = "coin-bc"
-    GLOBALIZER = "globalizer"
+    OR_TOOLS = "cp-sat"
     CPLEX = "cplex"
     GUROBI = "gurobi"
 
@@ -101,21 +101,21 @@ SOLVER_DATABASE: Dict[SolverType, SolverInfo] = {
         commercial=False,
         availability_status="available"
     ),
-    SolverType.GLOBALIZER: SolverInfo(
-        type=SolverType.GLOBALIZER,
-        display_name="Globalizer",
-        description="Global optimization solver for non-convex problems",
+    SolverType.OR_TOOLS: SolverInfo(
+        type=SolverType.OR_TOOLS,
+        display_name="OR-Tools CP-SAT",
+        description="Google OR-Tools Constraint Programming Solver (CP-SAT)",
         strengths=[
-            "Global optimization capability",
-            "Handles non-convex problems",
-            "Deterministic search algorithms",
-            "Rigorous bounds computation"
+            "Modern constraint programming engine",
+            "Excellent for large-scale problems",
+            "Open-source and actively maintained",
+            "Excellent search algorithms"
         ],
         use_cases=[
-            "Global optimization",
-            "Non-convex optimization",
-            "Problems requiring global optimality certificates",
-            "Bound-tight optimization"
+            "Constraint programming problems",
+            "Scheduling and resource allocation",
+            "Large-scale optimization",
+            "Vehicle routing and transportation"
         ],
         commercial=False,
         availability_status="available"
@@ -142,7 +142,7 @@ SOLVER_DATABASE: Dict[SolverType, SolverInfo] = {
     SolverType.GUROBI: SolverInfo(
         type=SolverType.GUROBI,
         display_name="Gurobi",
-        description="Gurobi - Cutting-edge commercial optimization engine",
+        description="Gurobi - Cutting-edge commercial optimization engine (requires DLL configuration)",
         strengths=[
             "State-of-the-art performance",
             "Multi-threading support",
@@ -156,7 +156,7 @@ SOLVER_DATABASE: Dict[SolverType, SolverInfo] = {
             "High-performance enterprise optimization"
         ],
         commercial=True,
-        availability_status="not_installed"
+        availability_status="requires_configuration"
     ),
 }
 
