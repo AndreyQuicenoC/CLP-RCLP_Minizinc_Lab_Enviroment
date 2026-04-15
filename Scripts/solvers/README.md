@@ -5,149 +5,93 @@ Professional scripts for managing and testing multiple solvers in the CLP-RCLP e
 ## Available Scripts
 
 ### 1. check_solvers.py
-Check which solvers are available in your system and verify installation.
-
-**Usage:**
+Verify which solvers are available on your system.
 ```bash
 python Scripts/solvers/check_solvers.py
 ```
+Output: Console report + JSON report in `Tests/solver_check_report.json`
 
-**Output:**
-- Console report with availability status
-- JSON report saved to `Tests/solver_check_report.json`
-- Version information for each solver
-
-**Example Output:**
-```
-======================================================================
-SOLVER AVAILABILITY REPORT
-======================================================================
-
-Summary: 3/6 solvers available
-
-----------------------------------------------------------------------
-✓ AVAILABLE SOLVERS
-----------------------------------------------------------------------
-
-  CHUFFED
-    Status: Ready
-    Info: MiniZinc solver chuffed 0.12.8
-
-  GECODE
-    Status: Ready
-    Info: MiniZinc solver gecode 6.3.0
-
-----------------------------------------------------------------------
-✗ UNAVAILABLE SOLVERS
-----------------------------------------------------------------------
-
-  CPLEX
-    Status: Not found
-    Details: Solver not available
-```
-
-### 2. test_multiple_solvers.py
-Execute a test instance with multiple solvers and compare performance.
-
-**Usage:**
+### 2. diagnose_solvers.py
+Comprehensive solver diagnosis with actual model execution testing.
 ```bash
-# Test with all available solvers
-python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn
-
-# Test with specific model
-python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn RCLP
-
-# Test with specific solvers
-python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn CLP chuffed gecode coin-bc
+python Scripts/solvers/diagnose_solvers.py Data/Battery\ Own/instance.dzn [model]
 ```
+Output: Detailed JSON reports in `Tests/diagnostics/`
 
-**Output:**
-- Console summary with results
-- JSON results saved to `Tests/solver_tests/instance_multi_solver_results.json`
-
-**Example Output:**
+### 3. test_multiple_solvers.py
+Execute instance with multiple solvers and compare performance.
+```bash
+python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn [model] [solvers...]
 ```
-Testing instance: instance.dzn
-Model: CLP
-Solvers: chuffed, gecode, coin-bc
+Output: JSON results in `Tests/solver_tests/`
 
-Testing chuffed... ✓ (0.123s)
-Testing gecode... ✓ (0.456s)
-Testing coin-bc... ✗ (5.000s)
-
-================================================================================
-MULTI-SOLVER TEST RESULTS
-================================================================================
-Instance: instance.dzn
-Model: CLP
---------------------------------------------------------------------------------
-
-Successful: 2/3 solvers
-
-SUCCESSFUL SOLVERS (sorted by execution time):
---------------------------------------------------------------------------------
-  chuffed          - 0.123s
-  gecode           - 0.456s
-
-FAILED SOLVERS:
---------------------------------------------------------------------------------
-  coin-bc          - Execution timed out
+### 4. test_gurobi.py
+Specific Gurobi solver diagnosis and license checking.
+```bash
+python Scripts/solvers/test_gurobi.py Data/Battery\ Own/instance.dzn [model]
 ```
+Output: Gurobi status report in `Tests/diagnostics/`
 
-## Solver Information
+## Supported Solvers
 
-### Available Solvers
+### Working Solvers (v1.4.0)
 
 1. **Chuffed** (Default)
    - Fast constraint solver
-   - Best for CLP/RCLP problems
-   - Recommended for quick testing
+   - Recommended for CLP/RCLP
+   - Performance: 0.99s on test instance
 
 2. **Gecode**
-   - General-purpose constraint solver
+   - General-purpose constraint programming
    - Good optimization capabilities
-   - Stable and well-documented
+   - Performance: 0.40s on test instance
 
 3. **COIN-BC**
    - Linear/mixed-integer programming
-   - Efficient branch-and-cut
-   - Good for LP problems
+   - Efficient branch-and-cut implementation
+   - Performance: 3.06s on test instance
 
-4. **Globalizer**
-   - Global optimization solver
-   - Non-convex problem support
-   - Rigorous bounds computation
+4. **OR-Tools CP-SAT**
+   - Google's modern constraint solver
+   - Excellent for large-scale problems
+   - Performance: 0.43s on test instance
 
 5. **CPLEX** (Commercial)
-   - Industry-leading optimizer
-   - Highest performance
-   - Requires valid license
+   - IBM's industry-leading optimizer
+   - High-performance large-scale solving
+   - Performance: 0.48s on test instance
+   - Status: Requires valid license
 
-6. **Gurobi** (Commercial)
-   - Cutting-edge optimization
-   - Multi-threading support
-   - Requires valid license
+### Gurobi Solver
+
+**Status**: Binary installed but requires valid license
+
+Gurobi is detected in the system but needs:
+1. Valid Gurobi license (free academic license available)
+2. Proper DLL path configuration
+
+**To enable Gurobi**:
+1. Get license: https://www.gurobi.com/academia/academic-program-and-licenses/
+2. Install Gurobi: https://www.gurobi.com/
+3. Set environment variable: `export GUROBI_HOME=/path/to/gurobi`
+4. Verify: `python Scripts/solvers/test_gurobi.py Data/Battery\ Own/instance.dzn`
 
 ## Installation
 
-### Check Solver Installation
+### Check Solver Status
 ```bash
 python Scripts/solvers/check_solvers.py
 ```
 
-### Install via MiniZinc (Recommended)
+### Verify with Actual Execution
 ```bash
-# Most solvers are included with MiniZinc
-# Download from: https://www.minizinc.org/
-
-# Verify MiniZinc is in PATH
-minizinc --version
+python Scripts/solvers/diagnose_solvers.py Data/Battery\ Own/noncity_5buses-8stations.dzn
 ```
 
-### Commercial Solver Licenses
-- **CPLEX**: IBM official website
-- **Gurobi**: Gurobi official website
-- Academic licenses often available free
+### Diagnose Gurobi
+```bash
+python Scripts/solvers/test_gurobi.py Data/Battery\ Own/noncity_5buses-8stations.dzn
+```
 
 ## Integration with Runner
 
@@ -164,32 +108,57 @@ The Runner UI automatically:
 - Formats: JSON and TXT
 - Contains: instance data, solution, execution time
 
-### Diagnostics (Failures/Unsatisfiable)
+### Diagnostics
 - Location: `Tests/Diagnostics/{Solver}/`
 - Formats: JSON and TXT
-- Contains: error information, stderr, execution time
+- Contains: error information, execution time, solver used
 
 ## Troubleshooting
 
 ### Solver Not Found
 ```bash
-# Check if MiniZinc is installed
-minizinc --version
-
-# Check solver availability
+# Check installation
 python Scripts/solvers/check_solvers.py
+
+# Verify MiniZinc
+minizinc --version
 
 # Verify PATH
 echo $PATH
 ```
 
 ### Timeout Issues
-- Increase timeout in Runner UI
+- Increase timeout in Runner UI (default: 300s)
 - Check system resources
 - Try different solver
 
-### Performance Comparison
-Use `test_multiple_solvers.py` to identify fastest solver for your instances.
+### Gurobi Not Working
+```bash
+# Diagnose Gurobi specifically
+python Scripts/solvers/test_gurobi.py Data/Battery\ Own/instance.dzn
+
+# Check license
+gurobi_cl --version
+
+# Set environment
+export GUROBI_HOME=/path/to/gurobi/installation
+```
+
+## Performance Comparison
+
+Current test results (noncity_5buses-8stations.dzn):
+- Gecode: 0.402s (fastest)
+- OR-Tools CP-SAT: 0.432s
+- CPLEX: 0.481s
+- Chuffed: 0.991s
+- COIN-BC: 3.055s
+
+## Recommendations
+
+- **For quick testing**: Use Chuffed or Gecode
+- **For production**: Use CPLEX or Gurobi (with valid license)
+- **For modern solving**: Use OR-Tools CP-SAT
+- **For MIP problems**: Use COIN-BC, CPLEX, or Gurobi
 
 ## Authors
 
