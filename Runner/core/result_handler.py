@@ -1,49 +1,58 @@
 """
 Result Handler - Save test results in JSON and TXT formats
 
-Manages output file generation and formatting.
+Manages output file generation and formatting for successful and failed executions.
+Organizes results by solver and stores diagnostics for failed runs.
+
+Authors: Andrey Quiceno and Juan Francesco García (AVISPA Team)
 """
 
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, List
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 
 class ResultHandler:
-    """Handle result file generation and storage."""
+    """Handle result file generation and storage with solver organization."""
 
     def __init__(self, output_dir: str):
         """
         Initialize result handler.
 
         Args:
-            output_dir: Directory to save results
+            output_dir: Base directory to save results (will be organized by solver)
         """
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-    def save_results(self, filename: str, result: Dict) -> Tuple[bool, str, str]:
+    def save_results(self, filename: str, result: Dict, solver: str) -> Tuple[bool, str, str]:
         """
-        Save results in JSON and TXT formats.
+        Save successful results in JSON and TXT formats, organized by solver.
 
         Args:
             filename: Base filename (without extension)
-            result: Result dictionary
+            result: Result dictionary (from executor)
+            solver: Solver name used for execution
 
         Returns:
             (success: bool, json_path: str, txt_path: str)
         """
         try:
+            # Create solver-specific directory
+            solver_dir = self.output_dir / solver
+            solver_dir.mkdir(parents=True, exist_ok=True)
+
             # Save JSON
-            json_path = self.output_dir / f"{filename}_result.json"
-            self._save_json(json_path, result)
+            json_path = solver_dir / f"{filename}_result.json"
+            self._save_json(json_path, result, solver)
 
             # Save TXT
-            txt_path = self.output_dir / f"{filename}_result.txt"
-            self._save_txt(txt_path, result)
+            txt_path = solver_dir / f"{filename}_result.txt"
+            self._save_txt(txt_path, result, solver)
 
             logger.info(f"Results saved: {json_path}, {txt_path}")
             return True, str(json_path), str(txt_path)
@@ -52,34 +61,76 @@ class ResultHandler:
             logger.error(f"Save error: {str(e)}")
             return False, "", ""
 
-    def _save_json(self, path: Path, result: Dict) -> None:
-        """Save result as JSON with proper formatting."""
+    def save_diagnostic(self, filename: str, result: Dict, solver: str,
+                       status: str = "error") -> Tuple[bool, str, str]:
+        """
+        Save diagnostic information for failed or unsatisfiable runs.
+
+        Args:
+            filename: Base filename (without extension)
+            result: Result dictionary with error information
+            solver: Solver name used for execution
+            status: 'error', 'unsatisfiable', or 'timeout'
+
+        Returns:
+            (success: bool, json_path: str, txt_path: str)
+        """
+        try:
+            # Create diagnostics directory structure: Tests/Diagnostics/{solver}/
+            diag_dir = Path("Tests/Diagnostics") / solver
+            diag_dir.mkdir(parents=True, exist_ok=True)
+
+            # Save JSON diagnostic
+            json_path = diag_dir / f"{filename}_diagnostic.json"
+            self._save_diagnostic_json(json_path, result, solver, status)
+
+            # Save TXT diagnostic
+            txt_path = diag_dir / f"{filename}_diagnostic.txt"
+            self._save_diagnostic_txt(txt_path, result, solver, status)
+
+            logger.info(f"Diagnostics saved: {json_path}, {txt_path}")
+            return True, str(json_path), str(txt_path)
+
+        except Exception as e:
+            logger.error(f"Diagnostic save error: {str(e)}")
+            return False, "", ""
+
+    def _save_json(self, path: Path, result: Dict, solver: str) -> None:
+        """Save result as JSON with solver and execution time."""
         json_data = {
+            "solver": solver,
+            "execution_time_seconds": round(result.get('execution_time', 0), 3),
             "num_buses": result.get('num_buses', 0),
             "num_stations": result.get('num_stations', 0),
             "charged_stations": result.get('charged_stations', 0),
             "charging_locations": result.get('charging_locations', []),
-            "time_deviation": result.get('time_deviation', 0) / 10 # convert back to minutes
+            "time_deviation_minutes": result.get('time_deviation', 0) / 10,  # convert back to minutes
+            "timestamp": datetime.now().isoformat()
         }
 
         with open(path, 'w') as f:
             json.dump(json_data, f, indent=2)
 
-    def _save_txt(self, path: Path, result: Dict) -> None:
-        """Save result as human-readable TXT format."""
+    def _save_txt(self, path: Path, result: Dict, solver: str) -> None:
+        """Save result as human-readable TXT format with solver and time info."""
         num_buses = result.get('num_buses', 0)
         num_stations = result.get('num_stations', 0)
         charged = result.get('charged_stations', 0)
         locations = result.get('charging_locations', [])
-        deviation = result.get('time_deviation', 0) / 10 # Convert back to minutes
+        deviation = result.get('time_deviation', 0) / 10  # Convert back to minutes
+        exec_time = result.get('execution_time', 0)
 
         # Format charging locations as binary array
         locations_str = "[" + ",".join(str(x) for x in locations) + "]"
 
         lines = [
-            "=" * 60,
+            "=" * 70,
             "CLP-RCLP Test Execution Result",
-            "=" * 60,
+            "=" * 70,
+            "",
+            f"Solver:                 {solver}",
+            f"Execution Time:         {exec_time:.3f} seconds",
+            f"Timestamp:              {datetime.now().isoformat()}",
             "",
             f"Number of Buses:        {num_buses}",
             f"Number of Stations:     {num_stations}",
@@ -87,7 +138,59 @@ class ResultHandler:
             f"Charging Locations:     {locations_str}",
             f"Time Deviation:         {deviation} minutes",
             "",
-            "=" * 60
+            "=" * 70
+        ]
+
+        with open(path, 'w') as f:
+            f.write("\n".join(lines))
+
+    def _save_diagnostic_json(self, path: Path, result: Dict, solver: str, status: str) -> None:
+        """Save diagnostic information as JSON."""
+        diag_data = {
+            "solver": solver,
+            "status": status,  # 'error', 'unsatisfiable', 'timeout'
+            "execution_time_seconds": result.get('execution_time', None),
+            "error_message": result.get('error_message', ''),
+            "minizinc_stderr": result.get('minizinc_stderr', ''),
+            "test_instance": result.get('test_instance', ''),
+            "model": result.get('model', ''),
+            "timestamp": datetime.now().isoformat()
+        }
+
+        with open(path, 'w') as f:
+            json.dump(diag_data, f, indent=2)
+
+    def _save_diagnostic_txt(self, path: Path, result: Dict, solver: str, status: str) -> None:
+        """Save diagnostic information in human-readable format."""
+        exec_time = result.get('execution_time', None)
+        exec_time_str = f"{exec_time:.3f} seconds" if exec_time else "N/A"
+
+        lines = [
+            "=" * 70,
+            "CLP-RCLP Test Execution Diagnostic Report",
+            "=" * 70,
+            "",
+            f"Status:                 {status.upper()}",
+            f"Solver:                 {solver}",
+            f"Execution Time:         {exec_time_str}",
+            f"Timestamp:              {datetime.now().isoformat()}",
+            "",
+            f"Test Instance:          {result.get('test_instance', 'N/A')}",
+            f"Model:                  {result.get('model', 'N/A')}",
+            "",
+            "-" * 70,
+            "Error Information:",
+            "-" * 70,
+            "",
+            result.get('error_message', 'No error message available'),
+            "",
+            "-" * 70,
+            "MiniZinc Output:",
+            "-" * 70,
+            "",
+            result.get('minizinc_stderr', 'No stderr available'),
+            "",
+            "=" * 70
         ]
 
         with open(path, 'w') as f:
