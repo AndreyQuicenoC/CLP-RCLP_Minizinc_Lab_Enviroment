@@ -14,6 +14,12 @@ import sys
 import json
 from pathlib import Path
 from typing import Dict, Tuple
+import io
+import os
+
+# Configure output encoding for Windows
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 
 class SolverChecker:
@@ -90,7 +96,7 @@ class SolverChecker:
 
         # Print available solvers
         print("-" * 70)
-        print("✓ AVAILABLE SOLVERS")
+        print("[OK] AVAILABLE SOLVERS")
         print("-" * 70)
         for solver, info in results.items():
             if info["available"]:
@@ -100,7 +106,7 @@ class SolverChecker:
 
         # Print unavailable solvers
         print("\n" + "-" * 70)
-        print("✗ UNAVAILABLE SOLVERS")
+        print("[NOT FOUND] UNAVAILABLE SOLVERS")
         print("-" * 70)
         for solver, info in results.items():
             if not info["available"]:

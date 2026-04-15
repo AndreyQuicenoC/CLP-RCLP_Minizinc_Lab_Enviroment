@@ -120,7 +120,7 @@ class MultipleSolverTester:
             result = self.test_solver(solver)
             results.append(result)
 
-            status = "✓" if result["success"] else "✗"
+            status = "[OK]" if result["success"] else "[FAIL]"
             time_str = f"{result['execution_time']:.3f}s" if result["execution_time"] else "N/A"
             print(f"{status} ({time_str})")
 
