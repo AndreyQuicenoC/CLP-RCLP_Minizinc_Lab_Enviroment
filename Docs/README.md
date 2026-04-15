@@ -24,6 +24,8 @@ Docs/
 │   ├── SESSION_2026_03_26_*.md # Session notes
 │   └── README.md          # Analysis index
 │
+├── ARCHITECTURE_v1_4_0.md # v1.4.0 multi-solver architecture
+│
 └── README.md              # This file
 ```
 
@@ -101,6 +103,10 @@ Contains:
 - **Steps**: `model/QUICKSTART.md`
 - **Checklist**: `analysis/CHECKLIST_FINAL.md`
 
+### Multi-Solver Architecture (v1.4.0)
+- **Architecture Guide**: `ARCHITECTURE_v1_4_0.md`
+- **Solver Scripts**: `../Scripts/solvers/README.md`
+
 ## 📋 Documents by Format
 
 ### Markdown (.md)
@@ -137,8 +143,15 @@ To add documentation:
 | model/ | ✓ | Yes (2026-03-25) |
 | analysis/ | ✓ | Yes (2026-03-26) |
 | Navigation | ✓ | Yes (2026-03-26) |
+| Architecture (v1.4.0) | ✓ | Yes (2026-04-15) |
 
 ## 📝 Change History
+
+- **2026-04-15**: Multi-Solver Architecture (v1.4.0)
+  - Added ARCHITECTURE_v1_4_0.md with comprehensive technical documentation
+  - Documented solver management and result organization
+  - Added troubleshooting guide for multi-solver setup
+  - Updated navigation and status table
 
 - **2026-03-26**: Generator enhancements and documentation updates
   - Fixed st_bi indexing in Battery Project data
@@ -151,4 +164,4 @@ To add documentation:
   - Added navigation indices
   - Updated reference paths
 
-**Last Updated**: 2026-03-26
+**Last Updated**: 2026-04-15
