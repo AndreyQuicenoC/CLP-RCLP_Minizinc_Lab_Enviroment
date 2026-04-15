@@ -172,7 +172,7 @@ class SolverManager:
         SolverType.CHUFFED,
         SolverType.GECODE,
         SolverType.COIN_BC,
-        SolverType.GLOBALIZER,
+        SolverType.OR_TOOLS,
         SolverType.CPLEX,
         SolverType.GUROBI
     }
