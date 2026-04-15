@@ -1,6 +1,6 @@
-# Runner - CLP/RCLP Test Interface
+# Runner - CLP/RCLP Test Interface (v1.4.0 - Multi-Solver Edition)
 
-Professional GUI interface for executing CLP and RCLP tests on generated or existing instances.
+Professional GUI interface for executing CLP and RCLP tests on generated or existing instances with support for multiple constraint solvers.
 
 ## Overview
 
@@ -8,9 +8,11 @@ Runner provides a clean, user-friendly interface to:
 
 - Select test instances from Data directories
 - Choose between CLP and RCLP models
-- Execute tests with MiniZinc solver
-- Save results in JSON and TXT formats
-- View real-time execution status
+- **Select from 6 solvers** (Chuffed, Gecode, COIN-BC, Globalizer, CPLEX, Gurobi)
+- View solver information and capabilities
+- Execute tests with chosen solver
+- Save results organized by solver in JSON and TXT formats
+- View real-time execution status and diagnostics
 
 ## Usage
 
@@ -32,32 +34,49 @@ python Runner/runner.py
 
 3. **Choose Model**: Select either CLP or RCLP model
 
-4. **Run Test**: Click "Run Test" button to execute
+4. **Select Solver**: Pick from 6 available solvers
+   - **Chuffed** (Default) - Fast constraint solver
+   - **Gecode** - General-purpose constraint programming
+   - **COIN-BC** - Linear/mixed-integer programming
+   - **Globalizer** - Global optimization
+   - **CPLEX** (Commercial) - High-performance optimizer
+   - **Gurobi** (Commercial) - Cutting-edge optimization
 
-5. **View Results**: Monitor progress in the results panel
+5. **Get Solver Info**: Click the "?" button to learn about the selected solver
+
+6. **Run Test**: Click "Run Test" button to execute
+
+7. **View Results**: Monitor progress in the results panel
 
 ### Result Output
 
-Results are automatically saved to `Tests/Output/{DirectoryName}/` in two formats:
+Results are automatically organized by solver in `Tests/Output/{DirectoryName}/{Solver}/` in two formats:
 
 #### JSON Format (`{filename}_result.json`)
 
 ```json
 {
+  "solver": "Chuffed",
+  "execution_time_seconds": 0.234,
   "num_buses": 5,
   "num_stations": 8,
   "charged_stations": 2,
   "charging_locations": [0, 1, 0, 0, 1, 0, 0, 0],
-  "time_deviation": 45
+  "time_deviation_minutes": 45,
+  "timestamp": "2026-04-15T10:30:45.123456"
 }
 ```
 
 #### TXT Format (`{filename}_result.txt`)
 
 ```
-============================================================
+======================================================================
 CLP-RCLP Test Execution Result
-============================================================
+======================================================================
+
+Solver:                 Chuffed
+Execution Time:         0.234 seconds
+Timestamp:              2026-04-15T10:30:45.123456
 
 Number of Buses:        5
 Number of Stations:     8
@@ -65,8 +84,12 @@ Charged Stations:       2
 Charging Locations:     [0,1,0,0,1,0,0,0]
 Time Deviation:         45 minutes
 
-============================================================
+======================================================================
 ```
+
+### Diagnostics
+
+Failed or unsatisfiable runs are stored in `Tests/Diagnostics/{Solver}/` with detailed error information in both JSON and TXT formats.
 
 ## Architecture
 
@@ -78,12 +101,18 @@ Runner/
 │
 ├── core/
 │   ├── __init__.py
-│   ├── executor.py        (MiniZinc execution)
-│   └── result_handler.py  (Output file generation)
+│   ├── executor.py        (MiniZinc execution with solver support)
+│   ├── result_handler.py  (Result organization and file generation)
+│   └── solvers.py         (Solver management and metadata)
 │
 ├── ui/
 │   ├── __init__.py
-│   └── interface.py       (Tkinter GUI)
+│   ├── interface.py       (Tkinter GUI with solver selection)
+│   ├── themes.py          (Theme system - dark/light)
+│   ├── components.py      (Reusable UI components)
+│   ├── layouts.py         (Layout builders)
+│   ├── tooltip.py         (Tooltip component)
+│   └── ...
 │
 └── README.md              (This file)
 ```
@@ -94,27 +123,46 @@ Runner/
 
 Handles MiniZinc model execution with:
 
+- **Multi-solver support** (6 solvers)
 - Process management and timeout handling
+- Execution time measurement (millisecond precision)
 - Output parsing and solution extraction
 - Error handling and logging
+- Support for all available solvers via SolverType parameter
 
 ### core/result_handler.py
 
-Manages result file generation:
+Manages result file generation with:
 
-- JSON export with structured data
-- Human-readable TXT format
+- **Solver-specific result organization** (Tests/Output/{Battery}/{Solver}/)
+- **Diagnostic storage** (Tests/Diagnostics/{Solver}/)
+- JSON export with solver information and execution time
+- Human-readable TXT format with solver details
+- Support for success, unsatisfiable, and error statuses
 - Directory creation and file management
+
+### core/solvers.py
+
+Solver management and metadata:
+
+- SolverType enum (6 solvers)
+- SolverInfo dataclass with descriptions and capabilities
+- SolverManager utility class for solver operations
+- Solver information database for UI tooltips
 
 ### ui/interface.py
 
 Professional Tkinter interface featuring:
 
+- **Solver selection dropdown** with all 6 solvers
+- **Solver information modal** (triggered by "?" button)
 - Directory and file selection dropdowns
 - Model selector (radio buttons)
+- Comprehensive tooltips on all controls
 - Real-time status display
 - Run/Stop controls
-- Color scheme: Gray, Dark Blue, Black
+- Dark/Light theme support
+- Professional window centering
 
 ### config.py
 
@@ -128,43 +176,50 @@ Centralized configuration with:
 ## Requirements
 
 - Python 3.8+
-- MiniZinc 2.5+ with Chuffed solver
+- MiniZinc 2.5+ with at least one solver installed
 - tkinter (usually included with Python)
+- Supported solvers:
+  - Chuffed (included with MiniZinc)
+  - Gecode (included with MiniZinc)
+  - COIN-BC (included with MiniZinc)
+  - Globalizer (included with MiniZinc)
+  - CPLEX (requires license)
+  - Gurobi (requires license)
 
-## Color Scheme
+## Theme Support
 
-Professional palette selected for clarity and aesthetics:
+Runner features a professional theme system with:
 
-- **Background**: Light Gray (#CCCCCC)
-- **Accents**: Dark Blue (#1E3A5F)
-- **Text**: Black (#000000)
-- **Highlights**: White (#FFFFFF)
+- **Dark Mode** (Default) - Optimized for extended use
+- **Light Mode** - High contrast alternative
+- 27 design tokens per theme
+- Real-time theme switching
+- Dynamic UI updates
 
-## Status Indicators
+Theme toggle available in header bar (☀ Light / 🌙 Dark)
 
-- **[OK]**: Test passed - instance is satisfiable
-- **[ERROR]**: Test failed - instance not satisfiable
-- **[WARN]**: Warning messages during execution
+## Solver Verification
 
-## Limitations
+Check available solvers on your system:
 
-- Timeout: 5 minutes per test (configurable)
-- Supports CLP and RCLP models only
-- Results directory auto-created based on source directory name
-
-## Development Notes
-
-To modify colors or settings, edit `config.py`:
-
-```python
-class RunnerConfig:
-    COLOR_GRAY = "#CCCCCC"
-    COLOR_DARK_BLUE = "#1E3A5F"
-    # ... etc
+```bash
+python Scripts/solvers/check_solvers.py
 ```
 
-All imports use absolute paths from Runner root for compatibility.
+This generates a report in `Tests/solver_check_report.json` listing which solvers are installed.
 
-## Version
+## Multi-Solver Testing
 
-Runner v1.2.0 - Part of CLP-RCLP MiniZinc Lab Environment
+Run a single instance with multiple solvers to compare performance:
+
+```bash
+python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn CLP
+```
+
+Results are saved to `Tests/solver_tests/` with detailed timing information.
+
+## Architecture Documentation
+
+For detailed technical information about the v1.4.0 multi-solver implementation, see:
+- `Docs/ARCHITECTURE_v1_4_0.md` - Complete technical architecture
+- `Scripts/solvers/README.md` - Solver scripts documentation
