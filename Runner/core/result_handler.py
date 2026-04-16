@@ -17,21 +17,23 @@ logger = logging.getLogger(__name__)
 
 
 class ResultHandler:
-    """Handle result file generation and storage with solver organization."""
+    """Handle result file generation and storage with test-name and solver organization."""
 
-    def __init__(self, output_dir: str):
+    def __init__(self, output_dir: str, test_name: str = ""):
         """
         Initialize result handler.
 
         Args:
-            output_dir: Base directory to save results (will be organized by solver)
+            output_dir: Base directory to save results
+            test_name: Name of the test instance (optional, for organizing by test)
         """
         self.output_dir = Path(output_dir)
+        self.test_name = test_name
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def save_results(self, filename: str, result: Dict, solver: str) -> Tuple[bool, str, str]:
         """
-        Save successful results in JSON and TXT formats, organized by solver.
+        Save successful results in JSON and TXT formats, organized by test name and solver.
 
         Args:
             filename: Base filename (without extension)
@@ -42,16 +44,20 @@ class ResultHandler:
             (success: bool, json_path: str, txt_path: str)
         """
         try:
-            # Create solver-specific directory
-            solver_dir = self.output_dir / solver
-            solver_dir.mkdir(parents=True, exist_ok=True)
+            # Build directory path: output_dir/test_name/solver (if test_name provided)
+            if self.test_name:
+                result_dir = self.output_dir / self.test_name / solver
+            else:
+                result_dir = self.output_dir / solver
+
+            result_dir.mkdir(parents=True, exist_ok=True)
 
             # Save JSON
-            json_path = solver_dir / f"{filename}_result.json"
+            json_path = result_dir / f"{filename}_result.json"
             self._save_json(json_path, result, solver)
 
             # Save TXT
-            txt_path = solver_dir / f"{filename}_result.txt"
+            txt_path = result_dir / f"{filename}_result.txt"
             self._save_txt(txt_path, result, solver)
 
             logger.info(f"Results saved: {json_path}, {txt_path}")

@@ -1,0 +1,15 @@
+======================================================================
+CLP-RCLP Test Execution Result
+======================================================================
+
+Solver:                 OR-Tools CP-SAT
+Execution Time:         2.017 seconds
+Timestamp:              2026-04-16T10:23:42.438465
+
+Number of Buses:        10
+Number of Stations:     15
+Charged Stations:       0
+Charging Locations:     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+Time Deviation:         0.0 minutes
+
+======================================================================
