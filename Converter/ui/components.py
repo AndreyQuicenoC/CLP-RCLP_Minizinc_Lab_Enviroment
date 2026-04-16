@@ -13,49 +13,77 @@ from typing import Callable, Optional, Dict, Any
 
 
 class FlatButton(tk.Frame):
-    """Flat button with custom styling."""
+    """Flat button with custom styling and theme support."""
 
     def __init__(self, parent: tk.Widget, text: str, command: Callable = None,
-                 bg_color: str = "#6366f1", fg_color: str = "#ffffff",
-                 hover_color: str = "#4f46e5", **kwargs):
-        super().__init__(parent, bg=bg_color, **kwargs)
-        self.config(width=120, height=40)
-        self.pack_propagate(False)
-
-        self.bg_color = bg_color
-        self.hover_color = hover_color
+                 theme: Dict[str, Any] = None, accent: bool = False, disabled: bool = False, **kwargs):
+        super().__init__(parent, **kwargs)
+        self._theme = theme
         self.command = command
+        self._disabled = disabled
+        self._accent = accent
+
+        # Set background
+        if theme:
+            self.configure(bg=theme.get("bg_base", "#1a1a1a"), highlightthickness=0)
+        else:
+            self.configure(highlightthickness=0)
+
+        # Determine colors
+        if accent:
+            normal_bg = theme.get("accent_primary", "#6366f1") if theme else "#6366f1"
+            normal_fg = "#ffffff"
+            hover_bg = theme.get("accent_secondary", "#8b5cf6") if theme else "#8b5cf6"
+        else:
+            normal_bg = theme.get("bg_surface", "#2a2a2a") if theme else "#2a2a2a"
+            normal_fg = theme.get("text_primary", "#e0e0e0") if theme else "#e0e0e0"
+            hover_bg = theme.get("bg_hover", "#3a3a3a") if theme else "#3a3a3a"
+
+        disabled_bg = theme.get("bg_surface", "#2a2a2a") if theme else "#2a2a2a"
+        disabled_fg = theme.get("text_secondary", "#a0a0a0") if theme else "#a0a0a0"
+
+        self.normal_bg = normal_bg
+        self.normal_fg = normal_fg
+        self.hover_bg = hover_bg
+        self.disabled_bg = disabled_bg
+        self.disabled_fg = disabled_fg
 
         self.button = tk.Label(
             self,
             text=text,
-            fg=fg_color,
-            bg=bg_color,
+            fg=disabled_fg if disabled else normal_fg,
+            bg=disabled_bg if disabled else normal_bg,
             font=("Arial", 10, "bold"),
-            cursor="hand2"
+            cursor="arrow" if disabled else "hand2",
+            padx=12,
+            pady=8
         )
         self.button.pack(fill=tk.BOTH, expand=True)
 
-        self.button.bind("<Button-1>", self._on_click)
-        self.button.bind("<Enter>", self._on_hover)
-        self.button.bind("<Leave>", self._on_leave)
+        if not disabled:
+            self.button.bind("<Button-1>", self._on_click)
+            self.button.bind("<Enter>", self._on_hover)
+            self.button.bind("<Leave>", self._on_leave)
 
     def _on_click(self, event):
-        if self.command:
+        if self.command and not self._disabled:
             self.command()
 
     def _on_hover(self, event):
-        self.config(bg=self.hover_color)
-        self.button.config(bg=self.hover_color)
+        if not self._disabled:
+            self.button.config(bg=self.hover_bg)
 
     def _on_leave(self, event):
-        self.config(bg=self.bg_color)
-        self.button.config(bg=self.bg_color)
+        if not self._disabled:
+            self.button.config(bg=self.normal_bg)
 
     def set_disabled(self, disabled: bool) -> None:
         """Enable/disable button."""
-        state = tk.DISABLED if disabled else tk.NORMAL
-        self.button.config(state=state)
+        self._disabled = disabled
+        if disabled:
+            self.button.config(bg=self.disabled_bg, fg=self.disabled_fg, cursor="arrow", state=tk.DISABLED)
+        else:
+            self.button.config(bg=self.normal_bg, fg=self.normal_fg, cursor="hand2", state=tk.NORMAL)
 
 
 class SectionLabel(tk.Label):
@@ -163,3 +191,4 @@ class FormEntry(tk.Frame):
         """Set entry value."""
         self.entry.delete(0, tk.END)
         self.entry.insert(0, value)
+

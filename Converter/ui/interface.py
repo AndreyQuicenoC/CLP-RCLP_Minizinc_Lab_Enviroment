@@ -210,20 +210,22 @@ class ConverterInterface(tk.Frame):
             btn_frame,
             "Convert",
             command=self._start_conversion,
-            bg_color=self.theme_dict["accent_primary"],
-            hover_color=self.theme_dict["accent_secondary"]
+            theme=self.theme_dict,
+            accent=True
         )
-        self.convert_btn.pack(side=tk.LEFT, padx=(0, 10))
+        self.convert_btn.pack(fill=tk.X, pady=(0, 8))
+        Tooltip(self.convert_btn, "Start converting selected tests", self.theme_dict)
 
         self.stop_btn = FlatButton(
             btn_frame,
             "Stop",
             command=self._stop_conversion,
-            bg_color=self.theme_dict["error"],
-            hover_color="#d83030"
+            theme=self.theme_dict,
+            accent=False,
+            disabled=True
         )
-        self.stop_btn.pack(side=tk.LEFT)
-        self.stop_btn.set_disabled(True)
+        self.stop_btn.pack(fill=tk.X)
+        Tooltip(self.stop_btn, "Stop the conversion process", self.theme_dict)
 
     def _build_directory_selector(self, parent: tk.Widget) -> None:
         """Build directory selection controls."""
@@ -267,7 +269,7 @@ class ConverterInterface(tk.Frame):
             font=("Arial", 10, "bold")
         )
         help_label.pack(side=tk.LEFT)
-        Tooltip(help_label, "Select a directory from JITS2022/Code/Data containing JSON test files")
+        Tooltip(help_label, "Select a directory from JITS2022/Code/Data containing JSON test files", self.theme_dict)
 
         # Load JITS directories
         self._load_jits_directories()
@@ -455,8 +457,9 @@ class ConverterInterface(tk.Frame):
 
         try:
             jits_path = self.project_root / "JITS2022" / "Code" / "Data" / jits_dir
-            json_files = JITSAnalyzer.get_json_files(jits_path, "*_input.json")
-            self.available_tests = [f.stem.replace("_input", "") for f in json_files]
+            # Search for buses_input*.json files
+            json_files = JITSAnalyzer.get_json_files(jits_path, "buses_input*.json")
+            self.available_tests = [f.stem.replace("buses_input_", "").replace("buses_input", "") for f in json_files]
             self.test_combo['values'] = self.available_tests
             if self.available_tests:
                 self.test_combo.current(0)
