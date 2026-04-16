@@ -13,7 +13,7 @@ from typing import Callable, Optional, Dict, Any
 
 
 class FlatButton(tk.Frame):
-    """Flat button with custom styling and theme support."""
+    """Flat button with custom styling and theme support - matching Runner design."""
 
     def __init__(self, parent: tk.Widget, text: str, command: Callable = None,
                  theme: Dict[str, Any] = None, accent: bool = False, disabled: bool = False, **kwargs):
@@ -25,22 +25,22 @@ class FlatButton(tk.Frame):
 
         # Set background
         if theme:
-            self.configure(bg=theme.get("bg_base", "#1a1a1a"), highlightthickness=0)
+            self.configure(bg=theme.get("bg_base", "#0D0F14"), highlightthickness=0)
         else:
             self.configure(highlightthickness=0)
 
         # Determine colors
         if accent:
-            normal_bg = theme.get("accent_primary", "#6366f1") if theme else "#6366f1"
-            normal_fg = "#ffffff"
-            hover_bg = theme.get("accent_secondary", "#8b5cf6") if theme else "#8b5cf6"
+            normal_bg = theme.get("accent_primary", "#3D8EF5") if theme else "#3D8EF5"
+            normal_fg = "#FFFFFF"
+            hover_bg = theme.get("accent_glow", "#5AAEFF") if theme else "#5AAEFF"
         else:
-            normal_bg = theme.get("bg_surface", "#2a2a2a") if theme else "#2a2a2a"
-            normal_fg = theme.get("text_primary", "#e0e0e0") if theme else "#e0e0e0"
-            hover_bg = theme.get("bg_hover", "#3a3a3a") if theme else "#3a3a3a"
+            normal_bg = theme.get("bg_elevated", "#1C2030") if theme else "#1C2030"
+            normal_fg = theme.get("text_primary", "#E8ECF4") if theme else "#E8ECF4"
+            hover_bg = theme.get("bg_hover", "#232840") if theme else "#232840"
 
-        disabled_bg = theme.get("bg_surface", "#2a2a2a") if theme else "#2a2a2a"
-        disabled_fg = theme.get("text_secondary", "#a0a0a0") if theme else "#a0a0a0"
+        disabled_bg = theme.get("bg_elevated", "#1C2030") if theme else "#1C2030"
+        disabled_fg = theme.get("text_muted", "#4A5568") if theme else "#4A5568"
 
         self.normal_bg = normal_bg
         self.normal_fg = normal_fg
@@ -53,10 +53,10 @@ class FlatButton(tk.Frame):
             text=text,
             fg=disabled_fg if disabled else normal_fg,
             bg=disabled_bg if disabled else normal_bg,
-            font=("Arial", 10, "bold"),
+            font=("Segoe UI", 10, "bold") if not disabled else ("Segoe UI", 10),
             cursor="arrow" if disabled else "hand2",
-            padx=12,
-            pady=8
+            padx=16,
+            pady=10
         )
         self.button.pack(fill=tk.BOTH, expand=True)
 

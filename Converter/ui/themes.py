@@ -2,6 +2,7 @@
 Theme System for Converter UI
 
 Dark and light theme support with dynamic switching capability.
+Synchronized with Runner and Generator themes for consistent design.
 
 Author: AVISPA Research Team
 Date: April 2026
@@ -55,34 +56,42 @@ def get_theme_dict(mode: Literal["dark", "light"]) -> Dict[str, str]:
     return DARK_PALETTE if mode == "dark" else LIGHT_PALETTE
 
 
-# Dark theme palette
+# Dark theme palette - Synchronized with Runner/Generator
 DARK_PALETTE = {
-    "bg_base": "#1a1a1a",
-    "bg_surface": "#2a2a2a",
-    "bg_hover": "#3a3a3a",
-    "border": "#404040",
-    "text_primary": "#e0e0e0",
-    "text_secondary": "#a0a0a0",
-    "accent_primary": "#6366f1",
-    "accent_secondary": "#8b5cf6",
-    "success": "#10b981",
-    "error": "#ef4444",
-    "warning": "#f59e0b",
-    "info": "#3b82f6",
+    "bg_base": "#0D0F14",
+    "bg_surface": "#141720",
+    "bg_elevated": "#1C2030",
+    "bg_hover": "#232840",
+    "border": "#242B3D",
+    "border_active": "#3D8EF5",
+    "text_primary": "#E8ECF4",
+    "text_secondary": "#8896B3",
+    "text_muted": "#4A5568",
+    "accent_primary": "#3D8EF5",
+    "accent_dim": "#1F4A8C",
+    "accent_glow": "#5AAEFF",
+    "success": "#22C55E",
+    "error": "#EF4444",
+    "warning": "#F59E0B",
+    "info": "#3D8EF5",
 }
 
-# Light theme palette
+# Light theme palette - Synchronized with Runner/Generator
 LIGHT_PALETTE = {
-    "bg_base": "#f8f9fa",
-    "bg_surface": "#ffffff",
-    "bg_hover": "#f0f1f3",
-    "border": "#d0d0d0",
-    "text_primary": "#1a1a1a",
-    "text_secondary": "#666666",
-    "accent_primary": "#6366f1",
-    "accent_secondary": "#8b5cf6",
-    "success": "#059669",
-    "error": "#dc2626",
-    "warning": "#d97706",
-    "info": "#2563eb",
+    "bg_base": "#F8F9FA",
+    "bg_surface": "#FFFFFF",
+    "bg_elevated": "#F1F3F5",
+    "bg_hover": "#E9ECEF",
+    "border": "#CCCCCC",
+    "border_active": "#2E5FCC",
+    "text_primary": "#1A1A1A",
+    "text_secondary": "#555555",
+    "text_muted": "#999999",
+    "accent_primary": "#2E5FCC",
+    "accent_dim": "#5A7FD4",
+    "accent_glow": "#5A9FFF",
+    "success": "#27AE60",
+    "error": "#E74C3C",
+    "warning": "#D68910",
+    "info": "#2E5FCC",
 }

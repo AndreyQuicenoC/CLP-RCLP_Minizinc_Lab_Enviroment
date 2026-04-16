@@ -259,17 +259,29 @@ class ConverterInterface(tk.Frame):
         )
         browse_btn.pack(side=tk.LEFT, padx=(0, 5))
 
-        # Help icon - now positioned at the right of Browse
-        help_label = tk.Label(
+        # Help button - now positioned at the right of Browse
+        help_btn = tk.Button(
             jits_frame,
-            text="[?]",
+            text="?",
+            command=lambda: messagebox.showinfo(
+                "Instances Directory Help",
+                "Select a directory from JITS2022/Code/Data\n\n"
+                "This directory should contain JSON files with the format:\n"
+                "- buses_input_*.json (required)\n\n"
+                "Support files (optional):\n"
+                "- distances_input.csv\n"
+                "- stations_input.csv\n"
+                "- input_report.txt"
+            ),
+            bg=self.theme_dict["bg_elevated"],
             fg=self.theme_dict["accent_primary"],
-            bg=self.theme_dict["bg_base"],
-            cursor="hand2",
-            font=("Arial", 10, "bold")
+            relief=tk.FLAT,
+            font=("Arial", 9, "bold"),
+            padx=6,
+            pady=2
         )
-        help_label.pack(side=tk.LEFT)
-        Tooltip(help_label, "Select a directory from JITS2022/Code/Data containing JSON test files", self.theme_dict)
+        help_btn.pack(side=tk.LEFT, padx=(5, 0))
+        Tooltip(help_btn, "Show information about instance directory format", self.theme_dict)
 
         # Load JITS directories
         self._load_jits_directories()
@@ -331,16 +343,18 @@ class ConverterInterface(tk.Frame):
         # Refresh button
         self.test_refresh_btn = tk.Button(
             test_combo_frame,
-            text="↻",
+            text="Refresh",
             command=self._refresh_tests,
-            bg=self.theme_dict["bg_surface"],
+            bg=self.theme_dict["bg_elevated"],
             fg=self.theme_dict["text_primary"],
             relief=tk.FLAT,
-            font=("Arial", 10),
-            width=3,
+            font=("Arial", 9),
+            padx=8,
+            pady=4,
             state=tk.DISABLED
         )
-        self.test_refresh_btn.pack(side=tk.LEFT)
+        self.test_refresh_btn.pack(side=tk.LEFT, padx=(5, 0))
+        Tooltip(self.test_refresh_btn, "Reload available tests", self.theme_dict)
 
     def _build_output_config(self, parent: tk.Widget) -> None:
         """Build output configuration controls."""
@@ -371,15 +385,16 @@ class ConverterInterface(tk.Frame):
         # Refresh button for output batteries
         self.battery_refresh_btn = tk.Button(
             output_frame,
-            text="↻",
+            text="Refresh",
             command=self._refresh_batteries,
-            bg=self.theme_dict["bg_surface"],
+            bg=self.theme_dict["bg_elevated"],
             fg=self.theme_dict["text_primary"],
             relief=tk.FLAT,
-            font=("Arial", 10),
-            width=3
+            font=("Arial", 9),
+            padx=8,
+            pady=4
         )
-        self.battery_refresh_btn.pack(side=tk.LEFT)
+        self.battery_refresh_btn.pack(side=tk.LEFT, padx=(5, 0))
         Tooltip(self.battery_refresh_btn, "Reload available output batteries", self.theme_dict)
 
         # Directory selection options

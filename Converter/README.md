@@ -89,6 +89,7 @@ Converter/
 ### converter_engine.py
 
 Core conversion logic:
+
 - Parse JSON bus schedules
 - Calculate energy consumption
 - Generate integer DZN files with proper formatting
@@ -97,6 +98,7 @@ Core conversion logic:
 ### file_manager.py
 
 File operations:
+
 - Create output directory structure
 - Copy support files (distances, stations data)
 - Validate output paths
@@ -105,6 +107,7 @@ File operations:
 ### jits_analyzer.py
 
 JITS2022 dataset utilities:
+
 - List available test directories
 - Validate JSON file structure
 - Extract test metadata
@@ -113,6 +116,7 @@ JITS2022 dataset utilities:
 ### ui/interface.py
 
 Professional Tkinter GUI:
+
 - Directory and test selection
 - Output configuration
 - Real-time conversion monitoring
@@ -131,6 +135,7 @@ All floating-point values are multiplied by 10 and rounded to integers:
 ### Model Parameters
 
 Hardcoded scaled values for CLP model:
+
 - Cmax = 1000 (100.0 kWh)
 - Cmin = 200 (20.0 kWh)
 - alpha = 100 (10.0 kWh/min)
@@ -140,6 +145,7 @@ Hardcoded scaled values for CLP model:
 ### Support Files
 
 If available, the following files are copied to output directory:
+
 - **distances_input.csv**: Distance matrix between stations
 - **stations_input.csv**: Station coordinates and metadata
 - **input_report.txt**: Dataset statistics and information
@@ -147,12 +153,14 @@ If available, the following files are copied to output directory:
 ## Theme Support
 
 Toggle between Dark and Light modes using the button in the header:
+
 - **Dark Mode** (default): Optimized for extended use
 - **Light Mode**: High contrast alternative
 
 ## Tooltips
 
 Hover over [?] icons to get context-specific help:
+
 - Which directory to select
 - How conversion works
 - What JSON and DZN formats are
@@ -173,15 +181,18 @@ Hover over [?] icons to get context-specific help:
 ## Troubleshooting
 
 ### "No JSON files found"
+
 - Verify the selected directory contains JSON files
 - Check file names match `*_input.json` pattern
 
 ### Conversion failed
+
 - Check output directory is writable
 - Ensure JSON files are valid
 - Check available disk space
 
 ### Missing support files
+
 - Conversion works without them
 - Warnings are logged but don't prevent conversion
 

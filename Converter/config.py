@@ -79,7 +79,7 @@ FONTS = {
 # WINDOW SETTINGS
 # ============================================================================
 
-WINDOW_WIDTH = 900
+WINDOW_WIDTH = 1000
 WINDOW_HEIGHT = 700
 WINDOW_RESIZABLE = False
 
