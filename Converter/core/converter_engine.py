@@ -319,13 +319,14 @@ class ConverterEngine:
             return False, f"Conversion error: {str(e)}"
 
     @classmethod
-    def batch_convert_files(cls, json_files: List[Path], output_dir: Path) -> Tuple[int, int, List[str]]:
+    def batch_convert_files(cls, json_files: List[Path], output_dir: Path, source_dir_name: str = "") -> Tuple[int, int, List[str]]:
         """
         Convert multiple JSON files to DZN format.
 
         Args:
             json_files: List of JSON file paths
-            output_dir: Output directory for DZN files
+            output_dir: Output base directory for DZN files
+            source_dir_name: Name of the source directory (e.g., 'cork-1-line')
 
         Returns:
             (success_count: int, failure_count: int, messages: List[str])
@@ -334,15 +335,29 @@ class ConverterEngine:
         failure_count = 0
         messages = []
 
+        # Create subdirectory with source directory name
+        if source_dir_name:
+            target_dir = output_dir / source_dir_name
+        else:
+            target_dir = output_dir
+
+        target_dir.mkdir(parents=True, exist_ok=True)
+
         for json_file in json_files:
             # Extract variant name
             parts = json_file.stem.split('_')
             variant = '_'.join(parts[2:]) if len(parts) > 2 else ""
 
-            # Generate output filename
+            # Generate output filename with source directory prefix
             base_name = json_file.stem.replace('buses_input', '')
             base_name = base_name.strip('_') if base_name else 'default'
-            output_file = output_dir / f"{output_dir.name}{base_name}.dzn"
+
+            if source_dir_name:
+                filename = f"{source_dir_name}_{output_dir.name}{base_name}.dzn"
+            else:
+                filename = f"{output_dir.name}{base_name}.dzn"
+
+            output_file = target_dir / filename
 
             success, message = cls.convert_json_to_dzn(json_file, output_file, variant)
             if success:

@@ -2,14 +2,14 @@
 CLP-RCLP Test Execution Result
 ======================================================================
 
-Solver:                 Chuffed
-Execution Time:         4.740 seconds
-Timestamp:              2026-04-15T17:22:29.109946
+Solver:                 Gecode
+Execution Time:         1.029 seconds
+Timestamp:              2026-04-16T16:52:43.570375
 
 Number of Buses:        10
 Number of Stations:     15
 Charged Stations:       0
 Charging Locations:     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-Time Deviation:         376.4 minutes
+Time Deviation:         0.0 minutes
 
 ======================================================================

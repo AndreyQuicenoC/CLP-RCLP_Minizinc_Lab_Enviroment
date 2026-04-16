@@ -366,7 +366,21 @@ class ConverterInterface(tk.Frame):
             state="readonly",
             font=("Arial", 9)
         )
-        self.output_combo.pack(fill=tk.X, pady=(0, 10))
+        self.output_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+
+        # Refresh button for output batteries
+        self.battery_refresh_btn = tk.Button(
+            output_frame,
+            text="↻",
+            command=self._refresh_batteries,
+            bg=self.theme_dict["bg_surface"],
+            fg=self.theme_dict["text_primary"],
+            relief=tk.FLAT,
+            font=("Arial", 10),
+            width=3
+        )
+        self.battery_refresh_btn.pack(side=tk.LEFT)
+        Tooltip(self.battery_refresh_btn, "Reload available output batteries", self.theme_dict)
 
         # Directory selection options
         self.output_option_var = tk.StringVar(value="existing")
@@ -437,6 +451,11 @@ class ConverterInterface(tk.Frame):
             self.output_combo['values'] = batteries
             if batteries:
                 self.output_battery_var.set(batteries[0])
+
+    def _refresh_batteries(self) -> None:
+        """Refresh the list of available output batteries."""
+        self._load_batteries()
+        self._log(f"Refreshed battery list: {len(self.available_batteries)} batteries found", "info")
 
     def _update_test_selection(self) -> None:
         """Update test selection controls based on mode."""
@@ -545,9 +564,9 @@ class ConverterInterface(tk.Frame):
 
             self._log(f"Converting {len(json_files)} tests from {jits_dir}...", "info")
 
-            # Perform conversion
+            # Perform conversion with source directory name
             success_count, failure_count, messages = ConverterEngine.batch_convert_files(
-                json_files, output_path
+                json_files, output_path, jits_dir
             )
 
             # Log results
