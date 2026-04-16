@@ -19,10 +19,23 @@ from datetime import datetime
 from .themes import ThemeManager, get_theme_dict, DARK_PALETTE, LIGHT_PALETTE
 from .components import SectionLabel, FlatButton, Divider, StatusIndicator, FormEntry
 from .tooltip import Tooltip
-from ..config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
-from ..core.jits_analyzer import JITSAnalyzer
-from ..core.file_manager import FileManager
-from ..core.converter_engine import ConverterEngine
+
+# Import config - handle both relative and absolute imports
+try:
+    from ..config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
+    from ..core.jits_analyzer import JITSAnalyzer
+    from ..core.file_manager import FileManager
+    from ..core.converter_engine import ConverterEngine
+except ImportError:
+    import sys
+    from pathlib import Path
+    converter_dir = Path(__file__).parent.parent
+    if str(converter_dir) not in sys.path:
+        sys.path.insert(0, str(converter_dir))
+    from config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
+    from core.jits_analyzer import JITSAnalyzer
+    from core.file_manager import FileManager
+    from core.converter_engine import ConverterEngine
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -42,7 +55,7 @@ class ConverterInterface(tk.Frame):
         self._init_theme()
 
         # Setup window
-        self.root.title("CLP-RCLP JSON to DZN Converter v1.0")
+        self.root.title("CLP-RCLP JSON to DZN Converter v1.5.0")
         self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
         self.root.resizable(False, False)
         self._center_window()
@@ -54,6 +67,10 @@ class ConverterInterface(tk.Frame):
         # Conversion state
         self.is_converting = False
         self.conversion_thread: Optional[threading.Thread] = None
+
+        # State variables
+        self.available_tests: List[str] = []
+        self.available_batteries: List[str] = []
 
         # Build UI
         self._build_ui()
@@ -110,7 +127,7 @@ class ConverterInterface(tk.Frame):
 
     def _build_header(self, parent: tk.Widget) -> None:
         """Build header with title and theme toggle."""
-        header = tk.Frame(parent, bg=self.theme_dict["bg_surface"], height=60)
+        header = tk.Frame(parent, bg=self.theme_dict["bg_surface"], height=80)
         header.pack(fill=tk.X, padx=0, pady=0)
         header.pack_propagate(False)
 
@@ -118,7 +135,7 @@ class ConverterInterface(tk.Frame):
         left = tk.Frame(header, bg=self.theme_dict["bg_surface"])
         left.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=20, pady=15)
 
-        tk.Frame(left, bg=self.theme_dict["accent_primary"], width=4, height=24).pack(
+        tk.Frame(left, bg=self.theme_dict["accent_primary"], width=4, height=32).pack(
             side=tk.LEFT, padx=(0, 12)
         )
 
@@ -128,7 +145,7 @@ class ConverterInterface(tk.Frame):
         tk.Label(
             title_frame,
             text="JSON to DZN Converter",
-            font=("Arial", 14, "bold"),
+            font=("Arial", 16, "bold"),
             fg=self.theme_dict["text_primary"],
             bg=self.theme_dict["bg_surface"]
         ).pack()
@@ -213,10 +230,10 @@ class ConverterInterface(tk.Frame):
         frame = tk.Frame(parent, bg=self.theme_dict["bg_base"])
         frame.pack(fill=tk.X, pady=(0, 10))
 
-        # JITS directory
+        # Instances directory
         tk.Label(
             frame,
-            text="JITS2022 Directory:",
+            text="Instances to convert:",
             bg=self.theme_dict["bg_base"],
             fg=self.theme_dict["text_primary"],
             font=("Arial", 9)
@@ -226,8 +243,8 @@ class ConverterInterface(tk.Frame):
         jits_frame.pack(fill=tk.X, pady=(0, 10))
 
         self.jits_dir_var = tk.StringVar()
-        jits_combo = ttk.Combobox(jits_frame, textvariable=self.jits_dir_var, state="readonly")
-        jits_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        self.jits_dir_combo = ttk.Combobox(jits_frame, textvariable=self.jits_dir_var, state="readonly")
+        self.jits_dir_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
 
         browse_btn = tk.Button(
             jits_frame,
@@ -238,22 +255,22 @@ class ConverterInterface(tk.Frame):
             relief=tk.FLAT,
             font=("Arial", 9)
         )
-        browse_btn.pack(side=tk.LEFT)
+        browse_btn.pack(side=tk.LEFT, padx=(0, 5))
 
-        # Load JITS directories
-        self._load_jits_directories()
-
-        # Help icon
+        # Help icon - now positioned at the right of Browse
         help_label = tk.Label(
-            frame,
+            jits_frame,
             text="[?]",
             fg=self.theme_dict["accent_primary"],
             bg=self.theme_dict["bg_base"],
             cursor="hand2",
             font=("Arial", 10, "bold")
         )
-        help_label.pack(anchor=tk.W)
+        help_label.pack(side=tk.LEFT)
         Tooltip(help_label, "Select a directory from JITS2022/Code/Data containing JSON test files")
+
+        # Load JITS directories
+        self._load_jits_directories()
 
     def _build_test_selector(self, parent: tk.Widget) -> None:
         """Build test selection controls."""
@@ -282,37 +299,46 @@ class ConverterInterface(tk.Frame):
             bg=self.theme_dict["bg_base"],
             fg=self.theme_dict["text_primary"],
             selectcolor=self.theme_dict["bg_surface"],
-            command=self._update_test_list
+            command=self._update_test_selection
         ).pack(anchor=tk.W)
 
         tk.Radiobutton(
             mode_frame,
-            text="Selected tests",
+            text="Select a test",
             variable=self.test_mode_var,
             value="selected",
             bg=self.theme_dict["bg_base"],
             fg=self.theme_dict["text_primary"],
             selectcolor=self.theme_dict["bg_surface"],
-            command=self._update_test_list
+            command=self._update_test_selection
         ).pack(anchor=tk.W)
 
-        # Test list
-        list_frame = tk.Frame(frame, bg=self.theme_dict["bg_base"])
-        list_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        # Test combobox with refresh button
+        test_combo_frame = tk.Frame(frame, bg=self.theme_dict["bg_base"])
+        test_combo_frame.pack(fill=tk.X, pady=(5, 0))
 
-        scrollbar = ttk.Scrollbar(list_frame)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        self.test_listbox = tk.Listbox(
-            list_frame,
-            bg=self.theme_dict["bg_surface"],
-            fg=self.theme_dict["text_primary"],
-            selectmode=tk.MULTIPLE,
-            yscrollcommand=scrollbar.set,
+        self.test_var = tk.StringVar()
+        self.test_combo = ttk.Combobox(
+            test_combo_frame,
+            textvariable=self.test_var,
+            state="disabled",
             font=("Arial", 9)
         )
-        self.test_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.config(command=self.test_listbox.yview)
+        self.test_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+
+        # Refresh button
+        self.test_refresh_btn = tk.Button(
+            test_combo_frame,
+            text="↻",
+            command=self._refresh_tests,
+            bg=self.theme_dict["bg_surface"],
+            fg=self.theme_dict["text_primary"],
+            relief=tk.FLAT,
+            font=("Arial", 10),
+            width=3,
+            state=tk.DISABLED
+        )
+        self.test_refresh_btn.pack(side=tk.LEFT)
 
     def _build_output_config(self, parent: tk.Widget) -> None:
         """Build output configuration controls."""
@@ -332,8 +358,51 @@ class ConverterInterface(tk.Frame):
         output_frame.pack(fill=tk.X, pady=(0, 10))
 
         self.output_battery_var = tk.StringVar()
-        output_combo = ttk.Combobox(output_frame, textvariable=self.output_battery_var, state="readonly")
-        output_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        self.output_combo = ttk.Combobox(
+            output_frame,
+            textvariable=self.output_battery_var,
+            state="readonly",
+            font=("Arial", 9)
+        )
+        self.output_combo.pack(fill=tk.X, pady=(0, 10))
+
+        # Directory selection options
+        self.output_option_var = tk.StringVar(value="existing")
+
+        tk.Radiobutton(
+            frame,
+            text="Use existing directory",
+            variable=self.output_option_var,
+            value="existing",
+            bg=self.theme_dict["bg_base"],
+            fg=self.theme_dict["text_primary"],
+            selectcolor=self.theme_dict["bg_surface"],
+            command=self._update_output_option
+        ).pack(anchor=tk.W)
+
+        tk.Radiobutton(
+            frame,
+            text="Create new directory",
+            variable=self.output_option_var,
+            value="new",
+            bg=self.theme_dict["bg_base"],
+            fg=self.theme_dict["text_primary"],
+            selectcolor=self.theme_dict["bg_surface"],
+            command=self._update_output_option
+        ).pack(anchor=tk.W, pady=(0, 10))
+
+        # New directory entry (initially disabled)
+        self.new_dir_var = tk.StringVar()
+        self.new_dir_entry = tk.Entry(
+            frame,
+            textvariable=self.new_dir_var,
+            bg=self.theme_dict["bg_surface"],
+            fg=self.theme_dict["text_primary"],
+            relief=tk.FLAT,
+            state=tk.DISABLED,
+            font=("Arial", 9)
+        )
+        self.new_dir_entry.pack(fill=tk.X)
 
         # Load available batteries
         self._load_batteries()
@@ -343,24 +412,66 @@ class ConverterInterface(tk.Frame):
         jits_path = self.project_root / "JITS2022" / "Code" / "Data"
         directories = JITSAnalyzer.get_test_directories(jits_path)
 
-        self.jits_dir_var.set(directories[0] if directories else "")
-        self.jits_dir_combo = ttk.Combobox(
-            self.jits_dir_var.get() if self.jits_dir_var.get() else "",
-            values=directories,
-            state="readonly"
-        )
+        if directories:
+            self.jits_dir_var.set(directories[0])
+            # Update the combobox values if it exists
+            if hasattr(self, 'jits_dir_combo'):
+                self.jits_dir_combo['values'] = directories
 
     def _load_batteries(self) -> None:
-        """Load available battery directories."""
-        batteries = ["Battery Own", "Battery Project Integer", "Battery Project Variant", "Battery Generated"]
-        self.output_battery_var.set(batteries[0] if batteries else "")
+        """Load available battery directories from Data folder."""
+        data_path = self.project_root / "Data"
+        batteries = []
 
-    def _update_test_list(self) -> None:
-        """Update test list based on selection mode."""
+        if data_path.exists():
+            for item in data_path.iterdir():
+                if item.is_dir():
+                    batteries.append(item.name)
+
+        batteries.sort()
+        self.available_batteries = batteries
+
+        if hasattr(self, 'output_combo'):
+            self.output_combo['values'] = batteries
+            if batteries:
+                self.output_battery_var.set(batteries[0])
+
+    def _update_test_selection(self) -> None:
+        """Update test selection controls based on mode."""
         if self.test_mode_var.get() == "all":
-            self.test_listbox.config(state=tk.DISABLED)
+            self.test_combo.config(state=tk.DISABLED)
+            self.test_refresh_btn.config(state=tk.DISABLED)
         else:
-            self.test_listbox.config(state=tk.NORMAL)
+            self.test_combo.config(state="readonly")
+            self.test_refresh_btn.config(state=tk.NORMAL)
+            self._refresh_tests()
+
+    def _refresh_tests(self) -> None:
+        """Refresh available tests from selected directory."""
+        jits_dir = self.jits_dir_var.get()
+        if not jits_dir:
+            messagebox.showwarning("Warning", "Please select a directory first")
+            return
+
+        try:
+            jits_path = self.project_root / "JITS2022" / "Code" / "Data" / jits_dir
+            json_files = JITSAnalyzer.get_json_files(jits_path, "*_input.json")
+            self.available_tests = [f.stem.replace("_input", "") for f in json_files]
+            self.test_combo['values'] = self.available_tests
+            if self.available_tests:
+                self.test_combo.current(0)
+            self._log(f"Found {len(self.available_tests)} tests in {jits_dir}", "info")
+        except Exception as e:
+            self._log(f"Error loading tests: {str(e)}", "error")
+
+    def _update_output_option(self) -> None:
+        """Update output option controls."""
+        if self.output_option_var.get() == "new":
+            self.new_dir_entry.config(state=tk.NORMAL)
+            self.output_combo.config(state=tk.DISABLED)
+        else:
+            self.new_dir_entry.config(state=tk.DISABLED)
+            self.output_combo.config(state="readonly")
 
     def _browse_jits_directory(self) -> None:
         """Browse for JITS directory."""
@@ -414,9 +525,23 @@ class ConverterInterface(tk.Frame):
         self.status_indicator = StatusIndicator(right, self.theme_dict["bg_base"])
         self.status_indicator.pack(fill=tk.X, pady=(0, 15))
 
-        # Results display
-        SectionLabel(right, "Conversion Log", self.theme_dict["bg_base"],
-                     self.theme_dict["text_primary"]).pack(fill=tk.X, pady=(0, 10))
+        # Results display header with clear button
+        log_header_frame = tk.Frame(right, bg=self.theme_dict["bg_base"])
+        log_header_frame.pack(fill=tk.X, pady=(0, 10))
+
+        SectionLabel(log_header_frame, "Conversion Log", self.theme_dict["bg_base"],
+                     self.theme_dict["text_primary"]).pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        clear_btn = tk.Button(
+            log_header_frame,
+            text="Clear",
+            command=self._clear_log,
+            bg=self.theme_dict["bg_surface"],
+            fg=self.theme_dict["text_primary"],
+            relief=tk.FLAT,
+            font=("Arial", 8)
+        )
+        clear_btn.pack(side=tk.RIGHT)
 
         scrollbar = ttk.Scrollbar(right)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -442,7 +567,7 @@ class ConverterInterface(tk.Frame):
 
         tk.Label(
             footer,
-            text="v1.0 | Click [?] icons for help | Select a battery and tests to convert",
+            text="v1.5.0 | Click [?] icons for help | Select a battery and tests to convert",
             bg=self.theme_dict["bg_surface"],
             fg=self.theme_dict["text_secondary"],
             font=("Arial", 8)
@@ -463,6 +588,11 @@ class ConverterInterface(tk.Frame):
         elif level == "warning":
             self.status_indicator.set_status("warning", "Warning")
 
+    def _clear_log(self) -> None:
+        """Clear the conversion log."""
+        self.results_text.delete("1.0", tk.END)
+        self.status_indicator.set_status("idle", "Ready")
+
     def _toggle_theme(self, event=None) -> None:
         """Toggle between dark and light themes."""
         current = ThemeManager.get_current_theme()
@@ -470,8 +600,13 @@ class ConverterInterface(tk.Frame):
         ThemeManager.switch_theme(new_theme)
 
     def _refresh_ui_colors(self) -> None:
-        """Refresh UI colors after theme change."""
-        self.configure(bg=self.theme_dict["bg_base"])
+        """Refresh UI colors after theme change by rebuilding the entire interface."""
+        # Destroy all existing widgets
+        for widget in self.winfo_children():
+            widget.destroy()
+
+        # Rebuild UI with new theme
+        self._build_ui()
 
 
 def main():

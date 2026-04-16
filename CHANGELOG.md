@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-04-16
+
+### Added
+
+- **Converter Interface Improvements**
+  - Enhanced UI layout with proper component spacing and sizing
+  - Dynamic test selection with combobox for specific test selection
+  - Refresh button for test selection (consistent with Runner)
+  - Clear button for conversion log
+  - Output battery directory selection with existing/new directory options
+  - Directory existence verification before creation
+  - Better visual feedback for UI elements
+
+- **Theme System Enhancements**
+  - Full UI reconstruction on theme switch for proper color application
+  - Theme changes now fully reflected in all components
+  - Consistent theme behavior with Runner implementation
+
+### Changed
+
+- **Converter UI Layout**
+  - "JITS2022 Directory:" label changed to "Instances to convert:"
+  - "Selected tests" radio option renamed to "Select a test"
+  - Test selection changed from listbox to combobox for better UX
+  - Help icon [?] repositioned to right side of Browse button
+  - Increased header title section height for better visibility
+  - Output battery now shows all available directories in Data/
+
+- **Converter Version**
+  - Updated Converter window title to v1.5.0
+
+### Fixed
+
+- **Theme Switching**
+  - Theme toggle now properly reconstructs entire UI (matching Runner behavior)
+  - Colors now correctly update when switching between dark and light themes
+  - All widgets now properly respect theme changes
+
 ## [1.4.0] - 2026-04-15
 
 ### Added
