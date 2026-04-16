@@ -499,11 +499,70 @@ class ConverterInterface(tk.Frame):
     def _do_conversion(self) -> None:
         """Perform the actual conversion."""
         try:
-            self._log("Conversion started", "info")
-            # Conversion logic will be implemented
-            self._log("Conversion completed", "success")
+            # Validate inputs
+            jits_dir = self.jits_dir_var.get()
+            output_dir_name = self.output_battery_var.get()
+            test_mode = self.test_mode_var.get()
+
+            if not jits_dir or not output_dir_name:
+                self._log("Error: Please select directory and output battery", "error")
+                return
+
+            # Get output directory path
+            if self.output_option_var.get() == "new":
+                new_dir_name = self.new_dir_var.get().strip()
+                if not new_dir_name:
+                    self._log("Error: Please enter a name for the new directory", "error")
+                    return
+                output_path = self.project_root / "Data" / new_dir_name
+            else:
+                output_path = self.project_root / "Data" / output_dir_name
+
+            # Create output directory
+            output_path.mkdir(parents=True, exist_ok=True)
+            self._log(f"Output directory: {output_path}", "info")
+
+            # Get JSON files to convert
+            jits_path = self.project_root / "JITS2022" / "Code" / "Data" / jits_dir
+            json_files = JITSAnalyzer.get_json_files(jits_path, "buses_input*.json")
+
+            if not json_files:
+                self._log(f"No JSON files found in {jits_dir}", "error")
+                return
+
+            # Filter by test selection mode
+            if test_mode == "selected":
+                selected_test = self.test_var.get()
+                if not selected_test:
+                    self._log("Error: Please select a test", "error")
+                    return
+                # Filter files by selected test
+                json_files = [f for f in json_files if selected_test in f.stem]
+
+            if not json_files:
+                self._log("No tests selected for conversion", "error")
+                return
+
+            self._log(f"Converting {len(json_files)} tests from {jits_dir}...", "info")
+
+            # Perform conversion
+            success_count, failure_count, messages = ConverterEngine.batch_convert_files(
+                json_files, output_path
+            )
+
+            # Log results
+            for msg in messages:
+                if msg.startswith("✓"):
+                    self._log(msg, "success")
+                else:
+                    self._log(msg, "error")
+
+            # Summary
+            self._log(f"Conversion complete: {success_count} successful, {failure_count} failed", "success")
+
         except Exception as e:
             self._log(f"Error: {str(e)}", "error")
+            logger.error(f"Conversion error: {e}", exc_info=True)
         finally:
             self.is_converting = False
             self.convert_btn.set_disabled(False)
