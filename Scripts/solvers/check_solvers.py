@@ -30,7 +30,7 @@ class SolverChecker:
         "chuffed": ["minizinc", "--solver", "chuffed", "--version"],
         "gecode": ["minizinc", "--solver", "gecode", "--version"],
         "coin-bc": ["minizinc", "--solver", "coin-bc", "--version"],
-        "globalizer": ["minizinc", "--solver", "globalizer", "--version"],
+        "cp-sat": ["minizinc", "--solver", "cp-sat", "--version"],
         "cplex": ["minizinc", "--solver", "cplex", "--version"],
         "gurobi": ["minizinc", "--solver", "gurobi", "--version"],
     }

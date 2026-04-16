@@ -63,12 +63,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 
 **Solver Integration:**
+
 - All solvers compatible with MiniZinc 2.5+
 - Graceful fallback to Chuffed if solver unavailable
 - Commercial solver license handling
 - Timeout management per solver
 
 **Result Storage:**
+
 - JSON format includes: solver, execution time, timestamp, solution data
 - TXT format human-readable with clear sections
 - Diagnostic files contain error information and timestamps

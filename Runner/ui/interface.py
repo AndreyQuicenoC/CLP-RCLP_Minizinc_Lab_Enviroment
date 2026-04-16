@@ -517,8 +517,8 @@ class RunnerInterface(tk.Frame):
     def _execute_test(self, directory: str, instance: str, model: str, solver_name: str) -> None:
         """Execute test in background thread."""
         try:
-            # Get solver type
-            solver_type = SolverManager.get_solver_by_name(solver_name.lower())
+            # Get solver type from display name
+            solver_type = SolverManager.get_solver_by_display_name(solver_name)
             if not solver_type:
                 self._log(f"Invalid solver: {solver_name}", "error")
                 return
@@ -592,7 +592,7 @@ class RunnerInterface(tk.Frame):
     def _show_solver_info(self, event=None) -> None:
         """Display solver information in modal dialog."""
         solver_name = self.solver_var.get()
-        solver_type = SolverManager.get_solver_by_name(solver_name.lower())
+        solver_type = SolverManager.get_solver_by_display_name(solver_name)
 
         if not solver_type:
             messagebox.showerror("Error", "Unknown solver")

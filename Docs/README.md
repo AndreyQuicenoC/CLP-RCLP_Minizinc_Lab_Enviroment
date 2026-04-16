@@ -32,17 +32,20 @@ Docs/
 ## 🎯 Quick Start by User Type
 
 ### 👨‍💼 Executive / Project Manager
+
 1. Read: `generated-system/README.md` (Overview section)
 2. View: `model/PROJECT_SUMMARY.md`
 3. Check: `analysis/CHECKLIST_FINAL.md`
 
 ### 👨‍💻 Developer / Researcher
+
 1. Start: `generated-system/README.md` (Quick Start)
 2. Understand: `model/MathModel.tex`
 3. Analyze: `analysis/Cork_Infeasibility_Analysis.md`
 4. Implement: Scripts in `../Scripts/`
 
 ### 🔬 Scientist / Data Analyst
+
 1. Review: `model/MathModel.tex`
 2. Study: `analysis/DataCorrections.md`
 3. Investigate: `analysis/ModelModificationJustification.md`
@@ -51,9 +54,11 @@ Docs/
 ## 📚 Documents by Functionality
 
 ### Generation System
+
 **Main File**: `generated-system/README.md`
 
 Contains:
+
 - System overview
 - How to generate instances
 - Expert algorithm
@@ -61,9 +66,11 @@ Contains:
 - Performance metrics
 
 ### Mathematical Model
+
 **Main File**: `model/MathModel.tex`
 
 Contains:
+
 - Complete formulation
 - Variables and constraints
 - Parameters
@@ -73,9 +80,11 @@ Executive summary: `model/PROJECT_SUMMARY.md`
 Quick reference: `model/QUICKSTART.md`
 
 ### Technical Analysis
+
 **Main File**: `analysis/README.md`
 
 Contains:
+
 - Cork problems
 - Data corrections
 - Model modifications
@@ -84,40 +93,49 @@ Contains:
 ## 🔍 Quick Search by Topic
 
 ### Cork Instances
+
 - **Problem**: `analysis/Cork_Infeasibility_Analysis.md`
 - **Solution**: `generated-system/README.md` (Cork Variants)
 
 ### Data Issues
+
 - **Corrections**: `analysis/DataCorrections.md`
 - **Validation**: `generated-system/README.md` (Validation)
 
 ### Model Questions
+
 - **Formulation**: `model/MathModel.tex`
 - **Changes**: `analysis/ModelModificationJustification.md`
 
 ### Generation System
+
 - **Complete Guide**: `generated-system/README.md`
 - **Algorithm**: `generated-system/README.md` (Algorithm Design)
 
 ### First Time Setup
+
 - **Steps**: `model/QUICKSTART.md`
 - **Checklist**: `analysis/CHECKLIST_FINAL.md`
 
 ### Multi-Solver Architecture (v1.4.0)
+
 - **Architecture Guide**: `ARCHITECTURE_v1_4_0.md`
 - **Solver Scripts**: `../Scripts/solvers/README.md`
 
 ## 📋 Documents by Format
 
 ### Markdown (.md)
+
 - `**/README.md` - Main guides
 - `**/INDEX.md` - Navigation indices
 - `analysis/*.md` - Detailed analysis
 
 ### LaTeX (.tex)
+
 - `model/MathModel.tex` - Mathematical formulation
 
 ### Text (.txt)
+
 - `analysis/INSTALLATION_SUCCESS.txt` - Installation log
 
 ## 🔗 Related Links
@@ -130,6 +148,7 @@ Contains:
 ## 🤝 Contributing
 
 To add documentation:
+
 1. Determine category (generated-system, model, analysis)
 2. Create Markdown file with descriptive name
 3. Add index in corresponding README.md
@@ -137,13 +156,13 @@ To add documentation:
 
 ## 📊 Documentation Status
 
-| Section | Complete | Updated |
-|---------|----------|---------|
-| generated-system/ | ✓ | Yes (2026-03-26) |
-| model/ | ✓ | Yes (2026-03-25) |
-| analysis/ | ✓ | Yes (2026-03-26) |
-| Navigation | ✓ | Yes (2026-03-26) |
-| Architecture (v1.4.0) | ✓ | Yes (2026-04-15) |
+| Section               | Complete | Updated          |
+| --------------------- | -------- | ---------------- |
+| generated-system/     | ✓        | Yes (2026-03-26) |
+| model/                | ✓        | Yes (2026-03-25) |
+| analysis/             | ✓        | Yes (2026-03-26) |
+| Navigation            | ✓        | Yes (2026-03-26) |
+| Architecture (v1.4.0) | ✓        | Yes (2026-04-15) |
 
 ## 📝 Change History
 

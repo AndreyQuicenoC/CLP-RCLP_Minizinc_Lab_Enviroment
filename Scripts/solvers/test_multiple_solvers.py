@@ -20,7 +20,7 @@ from typing import Dict, List, Optional
 class MultipleSolverTester:
     """Execute tests across multiple solvers."""
 
-    SOLVERS = ["chuffed", "gecode", "coin-bc", "globalizer", "cplex", "gurobi"]
+    SOLVERS = ["chuffed", "gecode", "coin-bc", "cp-sat", "cplex", "gurobi"]
     MODELS = ["CLP", "RCLP"]
 
     def __init__(self, instance_path: str, model: str = "CLP", solvers: Optional[List[str]] = None):

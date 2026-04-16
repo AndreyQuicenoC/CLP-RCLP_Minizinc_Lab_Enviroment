@@ -2,7 +2,7 @@
 MiniZinc Executor - Run CLP/RCLP tests with multiple solvers
 
 Handles MiniZinc execution with proper timeout management, output parsing,
-and support for multiple solvers (chuffed, gecode, coin-bc, globalizer, cplex, gurobi).
+and support for multiple solvers (chuffed, gecode, coin-bc, cp-sat, cplex, gurobi).
 
 Authors: Andrey Quiceno and Juan Francesco García (AVISPA Team)
 """

@@ -194,11 +194,19 @@ class SolverManager:
 
     @staticmethod
     def get_solver_by_name(name: str) -> Optional[SolverType]:
-        """Get solver type from string name."""
+        """Get solver type from string name (enum value)."""
         try:
             return SolverType(name)
         except ValueError:
             return None
+
+    @staticmethod
+    def get_solver_by_display_name(display_name: str) -> Optional[SolverType]:
+        """Get solver type from display name (UI label)."""
+        for solver, info in SOLVER_DATABASE.items():
+            if info.display_name.lower() == display_name.lower():
+                return solver
+        return None
 
     @staticmethod
     def is_commercial(solver: SolverType) -> bool:
