@@ -1,7 +1,10 @@
 """
-MiniZinc Executor - Run CLP/RCLP tests
+MiniZinc Executor - Run CLP/RCLP tests with multiple solvers
 
-Handles MiniZinc execution with proper timeout management and output parsing.
+Handles MiniZinc execution with proper timeout management, output parsing,
+and support for multiple solvers (chuffed, gecode, coin-bc, cp-sat, cplex, gurobi).
+
+Authors: Andrey Quiceno and Juan Francesco García (AVISPA Team)
 """
 
 import subprocess
@@ -10,12 +13,15 @@ import re
 from pathlib import Path
 from typing import Dict, Tuple, Optional
 import logging
+import time
+
+from .solvers import SolverType, SolverManager
 
 logger = logging.getLogger(__name__)
 
 
 class MiniZincExecutor:
-    """Execute MiniZinc models and parse results."""
+    """Execute MiniZinc models with multiple solver support."""
 
     def __init__(self, model_path: str, timeout_seconds: int = 300):
         """
@@ -31,33 +37,39 @@ class MiniZincExecutor:
         if not self.model_path.exists():
             raise FileNotFoundError(f"Model not found: {model_path}")
 
-    def execute(self, dzn_file: str) -> Tuple[bool, Optional[Dict]]:
+    def execute(self, dzn_file: str, solver: SolverType = SolverType.CHUFFED) -> Tuple[bool, Optional[Dict], Optional[float]]:
         """
-        Execute MiniZinc with given instance.
+        Execute MiniZinc with given instance and solver.
 
         Args:
             dzn_file: Path to .dzn instance file
+            solver: Solver to use (default: chuffed)
 
         Returns:
-            (success: bool, result: dict or None)
+            (success: bool, result: dict or None, execution_time: float or None)
             Result contains: num_buses, num_stations, charged_stations,
-                           charging_locations, time_deviation
+                           charging_locations, time_deviation, solver, execution_time
         """
         dzn_path = Path(dzn_file)
         if not dzn_path.exists():
             logger.error(f"Instance file not found: {dzn_file}")
-            return False, None
+            return False, None, None
 
         try:
+            solver_name = SolverManager.get_minizinc_solver_name(solver)
+
             cmd = [
                 "minizinc",
-                "--solver", "chuffed",
+                "--solver", solver_name,
                 "--time-limit", str(self.timeout_seconds * 1000),
                 str(self.model_path),
                 str(dzn_path)
             ]
 
             logger.debug(f"Running: {' '.join(cmd)}")
+
+            # Measure execution time
+            start_time = time.time()
 
             result = subprocess.run(
                 cmd,
@@ -66,35 +78,42 @@ class MiniZincExecutor:
                 timeout=self.timeout_seconds + 10
             )
 
+            execution_time = time.time() - start_time
+
             # Parse output
             if result.returncode == 0:
-                return self._parse_solution(result.stdout, dzn_path)
+                success, parsed_result = self._parse_solution(result.stdout, dzn_path, solver)
+                if success and parsed_result:
+                    parsed_result['execution_time'] = execution_time
+                    parsed_result['solver'] = SolverManager.get_display_name(solver)
+                return success, parsed_result, execution_time
             else:
-                logger.warning(f"MiniZinc failed: {result.stderr[:200]}")
-                return False, None
+                logger.warning(f"MiniZinc failed with {solver_name}: {result.stderr[:200]}")
+                return False, None, execution_time
 
         except subprocess.TimeoutExpired:
-            logger.warning("MiniZinc execution timed out")
-            return False, None
+            logger.warning(f"MiniZinc execution timed out with {SolverManager.get_minizinc_solver_name(solver)}")
+            return False, None, self.timeout_seconds
         except Exception as e:
             logger.error(f"Execution error: {str(e)}")
-            return False, None
+            return False, None, None
 
-    def _parse_solution(self, output: str, dzn_path: Path) -> Tuple[bool, Optional[Dict]]:
+    def _parse_solution(self, output: str, dzn_path: Path, solver: SolverType) -> Tuple[bool, Optional[Dict]]:
         """
         Parse MiniZinc output to extract solution.
 
         Args:
             output: MiniZinc stdout
             dzn_path: Path to instance file (for metadata extraction)
+            solver: Solver used for this execution
 
         Returns:
             (success: bool, result: dict or None)
         """
         try:
-            # Check if satisfiable - look for actual "UNSATISFIABLE" marker, not just separators
+            # Check if satisfiable - look for actual "UNSATISFIABLE" marker
             if output.strip().startswith("UNSATISFIABLE") or "% UNSATISFIABLE" in output:
-                logger.info("Instance is UNSATISFIABLE")
+                logger.info(f"Instance is UNSATISFIABLE with {SolverManager.get_display_name(solver)}")
                 return False, None
 
             # Extract key values from solution
@@ -102,10 +121,10 @@ class MiniZincExecutor:
             result = self._extract_values(lines, dzn_path)
 
             if result is None:
-                logger.warning("Could not parse solution values")
+                logger.warning(f"Could not parse solution values for {SolverManager.get_display_name(solver)}")
                 return False, None
 
-            logger.info(f"Solution found: {result['charged_stations']} stations charged")
+            logger.info(f"Solution found with {SolverManager.get_display_name(solver)}: {result.get('charged_stations', 0)} stations charged")
             return True, result
 
         except Exception as e:

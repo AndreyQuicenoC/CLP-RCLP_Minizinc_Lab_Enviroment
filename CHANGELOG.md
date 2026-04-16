@@ -5,6 +5,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-04-15
+
+### Added
+
+- **Multi-Solver Support**
+  - Six solver options: Chuffed, Gecode, COIN-BC, Globalizer, CPLEX, Gurobi
+  - New `solvers.py` module with SolverType enum and SolverManager class
+  - Solver information database with capabilities and use cases
+  - Solver selection combobox in Runner UI
+  - Solver information modal dialog with detailed descriptions
+  - Support for commercial solvers (CPLEX and Gurobi)
+
+- **Result Organization by Solver**
+  - Results automatically organized in `Tests/Output/{Battery}/{Solver}/`
+  - Diagnostics organized in `Tests/Diagnostics/{Solver}/`
+  - Execution time tracking for all solvers
+  - Solver information in result JSON and TXT files
+  - Support for unsatisfiable and error diagnostics
+
+- **Enhanced Execution Engine**
+  - MiniZincExecutor updated to support solver parameter
+  - Execution time measurement (millisecond precision)
+  - Improved error handling and diagnostics
+  - Status tracking for different execution outcomes
+
+- **User Experience Improvements**
+  - Comprehensive tooltip system in `tooltip.py`
+  - Tooltips on all configuration controls
+  - Solver information button with "?" icon
+  - Modal dialog for solver capabilities information
+  - Window size increased to 950x650 for new controls
+  - Enhanced logging with solver information
+
+- **Solver Verification Scripts**
+  - `Scripts/solvers/check_solvers.py`: System solver availability checker
+  - `Scripts/solvers/test_multiple_solvers.py`: Multi-solver performance comparison
+  - JSON reports for solver status and test results
+  - Comprehensive solver documentation in `Scripts/solvers/README.md`
+
+### Changed
+
+- Runner version updated to 1.4.0
+- Updated project version to 1.4.0
+- ResultHandler refactored to organize results by solver
+- MiniZincExecutor.execute() now returns (success, result, execution_time) tuple
+- Enhanced error diagnostics with more detailed reporting
+
+### Documentation
+
+- Updated README.md with multi-solver features
+- Added comprehensive solver documentation
+- Updated all feature descriptions and examples
+- Added usage examples for new solver features
+- Updated project status and version badges
+
+### Technical Details
+
+**Solver Integration:**
+
+- All solvers compatible with MiniZinc 2.5+
+- Graceful fallback to Chuffed if solver unavailable
+- Commercial solver license handling
+- Timeout management per solver
+
+**Result Storage:**
+
+- JSON format includes: solver, execution time, timestamp, solution data
+- TXT format human-readable with clear sections
+- Diagnostic files contain error information and timestamps
+- Support for both successful and failed execution tracking
+
 ## [1.3.0] - 2026-04-07
 
 ### Added

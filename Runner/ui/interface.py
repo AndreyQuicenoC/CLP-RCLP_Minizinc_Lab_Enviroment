@@ -25,16 +25,19 @@ import logging
 from .themes import ThemeManager, get_theme_dict, DARK_PALETTE, LIGHT_PALETTE
 from .components import SectionLabel, FlatButton, Divider, StatusIndicator
 from .layouts import LayoutBuilder, LayoutConfig
+from .tooltip import Tooltip
 
 # Import Runner core modules
 try:
     from config import RunnerConfig
     from core.executor import MiniZincExecutor
     from core.result_handler import ResultHandler
+    from core.solvers import SolverType, SolverManager
 except ImportError:
     from ..config import RunnerConfig
     from ..core.executor import MiniZincExecutor
     from ..core.result_handler import ResultHandler
+    from ..core.solvers import SolverType, SolverManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,8 +61,8 @@ class RunnerInterface(tk.Frame):
         self._init_theme()
 
         # Setup window properties
-        self.root.title("CLP-RCLP Test Runner v1.3.0")
-        self.root.geometry("850x650")
+        self.root.title("CLP-RCLP Test Runner v1.4.0")
+        self.root.geometry("950x650")
         self.root.resizable(False, False)
         self._center_window()
         self.configure(bg=self.theme_dict["bg_base"])
@@ -219,6 +222,7 @@ class RunnerInterface(tk.Frame):
         )
         self.dir_combo.current(0)
         self.dir_combo.pack(fill=tk.X, padx=12, pady=(0, 12))
+        Tooltip(self.dir_combo, "Select test dataset directory", self.theme_dict)
 
         Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
@@ -236,15 +240,49 @@ class RunnerInterface(tk.Frame):
             width=25,
         )
         self.instance_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        Tooltip(self.instance_combo, "Select test instance file (.dzn)", self.theme_dict)
 
         refresh_btn = FlatButton(inst_frame, "Refresh", command=self._refresh_instances,
                                 theme=self.theme_dict, accent=False)
         refresh_btn.pack(side=tk.LEFT, padx=(6, 0))
+        Tooltip(refresh_btn, "Reload list of available instances", self.theme_dict)
 
         Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
-        # Model selection
-        SectionLabel(card, "Model", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 8))
+        # Solver selection
+        SectionLabel(card, "Solver", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 6))
+        solver_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
+        solver_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+
+        self.solver_var = tk.StringVar(value="chuffed")
+        solver_names = [SolverManager.get_display_name(s) for s in SolverManager.get_available_solvers()]
+        self.solver_combo = ttk.Combobox(
+            solver_frame,
+            textvariable=self.solver_var,
+            values=solver_names,
+            state="readonly",
+            style="Dark.TCombobox",
+            width=15,
+        )
+        self.solver_combo.current(0)
+        self.solver_combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+        Tooltip(self.solver_combo, "Choose MiniZinc solver backend for execution", self.theme_dict)
+
+        # Solver info button
+        info_btn = tk.Label(
+            solver_frame,
+            text="?",
+            font=("Arial", 12, "bold"),
+            fg=self.theme_dict["accent_primary"],
+            bg=self.theme_dict["bg_elevated"],
+            cursor="hand2",
+            width=2,
+        )
+        info_btn.pack(side=tk.LEFT, padx=(6, 0))
+        info_btn.bind("<Button-1>", self._show_solver_info)
+        Tooltip(info_btn, "Show solver information and capabilities", self.theme_dict)
+
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
         self.model_var = tk.StringVar(value="CLP")
 
         model_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
@@ -277,6 +315,7 @@ class RunnerInterface(tk.Frame):
             accent=True,
         )
         self.run_btn.pack(fill=tk.X, pady=(0, 8))
+        Tooltip(self.run_btn, "Execute test with selected instance and solver", self.theme_dict)
 
         self.stop_btn = FlatButton(
             btn_frame,
@@ -287,6 +326,7 @@ class RunnerInterface(tk.Frame):
             disabled=True,
         )
         self.stop_btn.pack(fill=tk.X)
+        Tooltip(self.stop_btn, "Stop the running test execution", self.theme_dict)
 
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -366,7 +406,7 @@ class RunnerInterface(tk.Frame):
 
         tk.Label(
             footer,
-            text="v1.3.0",
+            text="v1.4.0",
             font=self.theme_dict["font_small"],
             fg=self.theme_dict["text_muted"],
             bg=self.theme_dict["bg_surface"],
@@ -455,12 +495,13 @@ class RunnerInterface(tk.Frame):
         instance = self.instance_var.get()
         model = self.model_var.get()
         directory = self.dir_var.get()
+        solver_name = self.solver_var.get()
 
         if not instance or not model or not directory:
             messagebox.showwarning("Missing Selection", "Please select directory, instance, and model.")
             return
 
-        self._log(f"Starting execution: {instance} ({model})", "info")
+        self._log(f"Starting execution: {instance} ({model}) with {solver_name}", "info")
         self.status_indicator.set_status("running", "Running...")
         self.run_btn.set_disabled(True)
         self.stop_btn.set_disabled(False)
@@ -468,14 +509,20 @@ class RunnerInterface(tk.Frame):
 
         self.execution_thread = threading.Thread(
             target=self._execute_test,
-            args=(directory, instance, model),
+            args=(directory, instance, model, solver_name),
             daemon=True
         )
         self.execution_thread.start()
 
-    def _execute_test(self, directory: str, instance: str, model: str) -> None:
+    def _execute_test(self, directory: str, instance: str, model: str, solver_name: str) -> None:
         """Execute test in background thread."""
         try:
+            # Get solver type from display name
+            solver_type = SolverManager.get_solver_by_display_name(solver_name)
+            if not solver_type:
+                self._log(f"Invalid solver: {solver_name}", "error")
+                return
+
             # Map model name to .mzn file path
             model_map = {"CLP": "clp_model.mzn", "RCLP": "rclp_model.mzn"}
             model_filename = model_map.get(model, "clp_model.mzn")
@@ -491,19 +538,37 @@ class RunnerInterface(tk.Frame):
                 self.status_indicator.set_status("error", "Error")
                 return
 
-            self._log(f"Executing: {model} solver on {instance}", "key")
+            self._log(f"Executing: {model} ({solver_name}) on {instance}", "key")
 
-            # execute() returns tuple: (success: bool, result: Optional[Dict])
-            success, result_dict = executor.execute(str(instance_path))
+            # execute() now returns tuple: (success: bool, result: Optional[Dict], execution_time: Optional[float])
+            success, result_dict, exec_time = executor.execute(str(instance_path), solver_type)
 
             if success and result_dict:
-                self._log("Execution completed successfully", "success")
+                self._log(f"Execution completed successfully in {exec_time:.3f}s", "success")
                 self.status_indicator.set_status("success", "Success")
+
+                # Save results organized by solver
                 handler = ResultHandler(str(Path(self.project_root) / "Tests" / "Output" / directory))
-                handler.save_results(instance, result_dict)
+                success_save, json_path, txt_path = handler.save_results(instance, result_dict, SolverManager.get_display_name(solver_type))
+
+                if success_save:
+                    self._log(f"Results saved to {Path(json_path).parent.name}/", "info")
+            elif result_dict and result_dict.get('status') == 'unsatisfiable':
+                self._log("Instance is UNSATISFIABLE", "warning")
+                self.status_indicator.set_status("warning", "Unsatisfiable")
+
+                # Save diagnostic
+                diag_result = {
+                    'test_instance': str(instance_path),
+                    'model': str(model_path),
+                    'error_message': "Instance is unsatisfiable",
+                    'minizinc_stderr': '',
+                    'execution_time': exec_time
+                }
+                handler = ResultHandler(str(Path(self.project_root) / "Tests"))
+                handler.save_diagnostic(instance, diag_result, SolverManager.get_display_name(solver_type), "unsatisfiable")
             else:
-                error_msg = result_dict.get("error", "Unknown error") if isinstance(result_dict, dict) else "MiniZinc failed"
-                self._log(f"Execution failed: {error_msg}", "error")
+                self._log(f"Execution failed with {solver_name}", "error")
                 self.status_indicator.set_status("error", "Error")
 
         except Exception as e:
@@ -523,3 +588,153 @@ class RunnerInterface(tk.Frame):
             self.run_btn.set_disabled(False)
             self.stop_btn.set_disabled(True)
             self.status_indicator.set_status("idle", "Ready")
+
+    def _show_solver_info(self, event=None) -> None:
+        """Display solver information in modal dialog."""
+        solver_name = self.solver_var.get()
+        solver_type = SolverManager.get_solver_by_display_name(solver_name)
+
+        if not solver_type:
+            messagebox.showerror("Error", "Unknown solver")
+            return
+
+        solver_info = SolverManager.get_solver_info(solver_type)
+
+        # Create modal window
+        dialog = tk.Toplevel(self.root)
+        dialog.title(f"{solver_info.display_name} Information")
+        dialog.geometry("500x450")
+        dialog.resizable(False, False)
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        # Center on parent
+        dialog.update_idletasks()
+        x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 250
+        y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 225
+        dialog.geometry(f"+{x}+{y}")
+
+        # Configure dialog colors
+        dialog.configure(bg=self.theme_dict["bg_base"])
+
+        # Header frame
+        header = tk.Frame(dialog, bg=self.theme_dict["bg_surface"], height=50)
+        header.pack(fill=tk.X, padx=0, pady=0)
+        header.pack_propagate(False)
+
+        # Title and close button
+        title_frame = tk.Frame(header, bg=self.theme_dict["bg_surface"])
+        title_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=10)
+
+        tk.Label(
+            title_frame,
+            text=f"{solver_info.display_name}",
+            font=("Arial", 14, "bold"),
+            fg=self.theme_dict["text_primary"],
+            bg=self.theme_dict["bg_surface"],
+        ).pack(side=tk.LEFT)
+
+        close_btn = tk.Label(
+            title_frame,
+            text="✕",
+            font=("Arial", 16),
+            fg=self.theme_dict["text_secondary"],
+            bg=self.theme_dict["bg_surface"],
+            cursor="hand2",
+        )
+        close_btn.pack(side=tk.RIGHT)
+        close_btn.bind("<Button-1>", lambda e: dialog.destroy())
+
+        # Content scrollable area
+        content_frame = tk.Frame(dialog, bg=self.theme_dict["bg_base"])
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+
+        # Description
+        tk.Label(
+            content_frame,
+            text="Description",
+            font=("Arial", 10, "bold"),
+            fg=self.theme_dict["text_secondary"],
+            bg=self.theme_dict["bg_base"],
+        ).pack(anchor="w")
+
+        desc_text = tk.Text(
+            content_frame,
+            height=2,
+            wrap=tk.WORD,
+            bg=self.theme_dict["bg_elevated"],
+            fg=self.theme_dict["text_primary"],
+            relief=tk.FLAT,
+            bd=0,
+            padx=10,
+            pady=5,
+        )
+        desc_text.insert(tk.END, solver_info.description)
+        desc_text.configure(state="disabled")
+        desc_text.pack(fill=tk.X, pady=(0, 12))
+
+        # Strengths
+        tk.Label(
+            content_frame,
+            text="Key Strengths",
+            font=("Arial", 10, "bold"),
+            fg=self.theme_dict["text_secondary"],
+            bg=self.theme_dict["bg_base"],
+        ).pack(anchor="w")
+
+        strengths_text = tk.Text(
+            content_frame,
+            height=3,
+            wrap=tk.WORD,
+            bg=self.theme_dict["bg_elevated"],
+            fg=self.theme_dict["text_primary"],
+            relief=tk.FLAT,
+            bd=0,
+            padx=10,
+            pady=5,
+        )
+        strengths_text.insert(tk.END, "• " + "\n• ".join(solver_info.strengths))
+        strengths_text.configure(state="disabled")
+        strengths_text.pack(fill=tk.X, pady=(0, 12))
+
+        # Use cases
+        tk.Label(
+            content_frame,
+            text="Common Use Cases",
+            font=("Arial", 10, "bold"),
+            fg=self.theme_dict["text_secondary"],
+            bg=self.theme_dict["bg_base"],
+        ).pack(anchor="w")
+
+        use_text = tk.Text(
+            content_frame,
+            height=3,
+            wrap=tk.WORD,
+            bg=self.theme_dict["bg_elevated"],
+            fg=self.theme_dict["text_primary"],
+            relief=tk.FLAT,
+            bd=0,
+            padx=10,
+            pady=5,
+        )
+        use_text.insert(tk.END, "• " + "\n• ".join(solver_info.use_cases))
+        use_text.configure(state="disabled")
+        use_text.pack(fill=tk.X, pady=(0, 12))
+
+        # Commercial badge
+        if solver_info.commercial:
+            badge_frame = tk.Frame(content_frame, bg=self.theme_dict["bg_base"])
+            badge_frame.pack(fill=tk.X)
+
+            tk.Label(
+                badge_frame,
+                text="⚠ Commercial License Required",
+                font=("Arial", 9),
+                fg=self.theme_dict["warning"],
+                bg=self.theme_dict["bg_elevated"],
+                padx=8,
+                pady=4,
+                relief=tk.FLAT,
+                bd=0,
+            ).pack(side=tk.LEFT)
+
