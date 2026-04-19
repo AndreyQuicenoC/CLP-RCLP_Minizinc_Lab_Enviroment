@@ -10,7 +10,8 @@ The Converter tool provides an intuitive GUI to transform JSON bus schedule file
 
 - **Directory Selection**: Browse and select from JITS2022 test directories
 - **Batch Conversion**: Convert one or all tests from a selected directory
-- **Support File Handling**: Automatically copies required CSV and metadata files
+- **Data-Driven Conversion**: Reads actual instance data (stations, distances, speeds)
+- **JITS2022 Algorithm**: Calculates travel times (T) using JITS2022 speed/distance formula
 - **Flexible Output**: Create new battery directories or use existing ones
 - **Real-time Progress**: Monitor conversion status with live logging
 - **Dark/Light Themes**: Professional UI with theme switching
@@ -90,17 +91,20 @@ Converter/
 
 Core conversion logic:
 
-- Parse JSON bus schedules
-- Calculate energy consumption
+- Parse JSON bus schedules with JITS2022 format
+- Load stations and distance matrix from CSV files
+- Calculate travel times (T) using JITS2022 algorithm:
+  * T = distance / speed (constrained by speed limits)
+  * Includes rest time adjustments when applicable
 - Generate integer DZN files with proper formatting
-- Batch conversion support
+- Batch conversion support with configurable parameters
 
 ### file_manager.py
 
 File operations:
 
 - Create output directory structure
-- Copy support files (distances, stations data)
+- Copy required data files (distances, stations data)
 - Validate output paths
 - Cleanup on conversion failures
 
@@ -111,7 +115,7 @@ JITS2022 dataset utilities:
 - List available test directories
 - Validate JSON file structure
 - Extract test metadata
-- Check support file availability
+- Check required data file availability
 
 ### ui/interface.py
 
@@ -134,21 +138,40 @@ All floating-point values are multiplied by 10 and rounded to integers:
 
 ### Model Parameters
 
-Hardcoded scaled values for CLP model:
+Configurable parameters for CLP model (from experiment_config.py):
 
-- Cmax = 1000 (100.0 kWh)
-- Cmin = 200 (20.0 kWh)
-- alpha = 100 (10.0 kWh/min)
-- mu = 50 (5.0 min)
-- And others...
+- **Cmax**: 100.0 kWh (battery capacity)
+- **Cmin**: 20.0 kWh (minimum reserve)
+- **alpha**: 10.0 kWh/min (fast charging rate)
+- **mu**: 5.0 min (maximum delay allowed)
+- **model_speed**: 30 km/h (minimum speed constraint)
+- **rest_time**: 10 min (rest duration at stops)
 
-### Support Files
+All parameters are scaled by factor SCALE (default: 10) for integer arithmetic.
+Configuration can be modified via experiment_config.py or config files.
 
-If available, the following files are copied to output directory:
+### Required Data Files
+
+The converter requires the following files for correct operation:
+
+- **buses_input_<speed>_<rest>.json**: Bus routes, stops, and schedules
+  * REQUIRED for all conversions
+  * Filename pattern determines speed and rest parameters
 
 - **distances_input.csv**: Distance matrix between stations
-- **stations_input.csv**: Station coordinates and metadata
-- **input_report.txt**: Dataset statistics and information
+  * REQUIRED for calculating travel times (T)
+  * Used with actual speeds to compute journey durations
+  * Values in kilometers (converted to meters internally)
+
+- **stations_input.csv**: Station names and identifiers
+  * REQUIRED for mapping station references
+  * Defines num_stations and station names
+
+Optional/Legacy Files:
+
+- **input_report.txt**: Dataset statistics
+  * Currently not used by converter
+  * Kept for reference but does not affect conversion
 
 ## Theme Support
 
@@ -183,18 +206,27 @@ Hover over [?] icons to get context-specific help:
 ### "No JSON files found"
 
 - Verify the selected directory contains JSON files
-- Check file names match `*_input.json` pattern
+- Check file names match `buses_input_*.json` pattern
+
+### "Loading stations and distance data..." error
+
+- Ensure distances_input.csv exists in the directory
+- Ensure stations_input.csv exists in the directory
+- These files are now REQUIRED (not optional)
+- Check file names are exactly: `distances_input.csv`, `stations_input.csv`
 
 ### Conversion failed
 
 - Check output directory is writable
 - Ensure JSON files are valid
+- Verify required CSV files are present and readable
 - Check available disk space
 
-### Missing support files
+### "Zero or negative time delta" warnings
 
-- Conversion works without them
-- Warnings are logged but don't prevent conversion
+- These are normal for JITS2022 instances with consecutive duplicate stations
+- Indicates a stop where bus stays at same location (rest)
+- Converter handles this gracefully by using default 1-minute delta
 
 ## Technical Notes
 
@@ -207,4 +239,4 @@ Hover over [?] icons to get context-specific help:
 
 AVISPA Research Team
 Date: April 2026
-Version: 1.0.0
+Version: 1.5.1 (JITS2022 Algorithm Implementation)
