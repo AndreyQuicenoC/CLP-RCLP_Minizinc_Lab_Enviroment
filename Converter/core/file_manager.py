@@ -2,7 +2,7 @@
 File Manager Module
 
 Manages file operations for the converter including output directory creation,
-support file copying, and cleanup operations.
+data file copying, and cleanup operations.
 
 Author: AVISPA Research Team
 Date: April 2026
@@ -22,15 +22,15 @@ class FileManager:
     @staticmethod
     def create_output_structure(battery_dir: Path, test_name: str, source_dir: Path) -> Tuple[bool, Path]:
         """
-        Create output directory structure and copy support files.
+        Create output directory structure and copy data files.
 
         Creates: battery_dir/test_name/
-        Copies support files if they exist in source directory.
+        Copies required data files if they exist in source directory.
 
         Args:
             battery_dir: Base battery directory (e.g., Data/Battery Own)
             test_name: Name of the test (directory name)
-            source_dir: Source directory containing support files
+            source_dir: Source directory containing data files
 
         Returns:
             (success: bool, output_path: Path)
@@ -41,14 +41,14 @@ class FileManager:
             output_path.mkdir(parents=True, exist_ok=True)
             logger.info(f"Created output directory: {output_path}")
 
-            # Copy support files if they exist
-            support_files = ["distances_input.csv", "stations_input.csv", "input_report.txt"]
-            for filename in support_files:
+            # Copy required data files if they exist
+            data_files = ["distances_input.csv", "stations_input.csv", "input_report.txt"]
+            for filename in data_files:
                 source_file = source_dir / filename
                 if source_file.exists():
                     dest_file = output_path / filename
                     shutil.copy2(source_file, dest_file)
-                    logger.info(f"Copied support file: {filename}")
+                    logger.info(f"Copied data file: {filename}")
 
             return True, output_path
 

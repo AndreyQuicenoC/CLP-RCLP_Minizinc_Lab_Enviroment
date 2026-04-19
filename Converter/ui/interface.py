@@ -268,14 +268,21 @@ class ConverterInterface(tk.Frame):
             jits_frame,
             text="?",
             command=lambda: messagebox.showinfo(
-                "Instances Directory Help",
-                "Select a directory from JITS2022/Code/Data\n\n"
-                "This directory should contain JSON files with the format:\n"
-                "- buses_input_*.json (required)\n\n"
-                "Support files (optional):\n"
-                "- distances_input.csv\n"
-                "- stations_input.csv\n"
-                "- input_report.txt"
+                "Instance Directory Format",
+                "JITS2022 Instance Directory Requirements\n"
+                "=" * 50 + "\n\n"
+                "Required files:\n"
+                "✓ buses_input_<speed>_<rest>.json\n"
+                "✓ stations_input.csv\n"
+                "✓ distances_input.csv\n\n"
+                "The converter reads:\n"
+                "• Bus routes and schedules from buses_input JSON\n"
+                "• Station names and IDs from stations_input.csv\n"
+                "• Distance matrix from distances_input.csv\n\n"
+                "These are used to calculate travel times (T) and\n"
+                "energy consumption (D) using JITS2022 algorithm.\n\n"
+                "Unused files:\n"
+                "⊘ input_report.txt (ignored)"
             ),
             bg=self.theme_dict["bg_elevated"],
             fg=self.theme_dict["accent_primary"],
@@ -285,7 +292,7 @@ class ConverterInterface(tk.Frame):
             pady=2
         )
         help_btn.pack(side=tk.LEFT, padx=(5, 0))
-        Tooltip(help_btn, "Show information about instance directory format", self.theme_dict)
+        Tooltip(help_btn, "Instance directory format requirements", self.theme_dict)
 
         # Load JITS directories
         self._load_jits_directories()
@@ -585,11 +592,10 @@ class ConverterInterface(tk.Frame):
 
             # Load experiment data
             self._log("Loading stations and distance data...", "info")
-            input_path = Path(self.input_folder.get()) / jits_dir
 
             # Load stations and distances
-            stations, station_count = DataLoader.load_stations(input_path)
-            distances, dist_station_count = DataLoader.load_distances(input_path)
+            stations, station_count = DataLoader.load_stations(jits_path)
+            distances, dist_station_count = DataLoader.load_distances(jits_path)
 
             if distances:
                 self._log(f"Loaded {len(distances)} distance entries", "info")

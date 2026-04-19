@@ -2,7 +2,7 @@
 JITS2022 Analyzer Module
 
 Analyzes JITS2022 dataset structure to extract test directories and JSON files.
-Handles validation of directory structure and support files.
+Handles validation of directory structure and required data files.
 
 Author: AVISPA Research Team
 Date: April 2026
@@ -59,7 +59,10 @@ class JITSAnalyzer:
     @staticmethod
     def check_support_files(test_dir: Path) -> Dict[str, bool]:
         """
-        Check which support files exist in test directory.
+        Check which required data files exist in test directory.
+
+        Note: distances_input.csv and stations_input.csv are now REQUIRED
+        for the converter to work correctly. They are no longer optional.
 
         Args:
             test_dir: Path to test directory
@@ -68,9 +71,9 @@ class JITSAnalyzer:
             Dictionary mapping filename to existence boolean
         """
         support_files = {
-            "distances_input.csv": False,
-            "stations_input.csv": False,
-            "input_report.txt": False,
+            "distances_input.csv": False,  # REQUIRED: distance matrix
+            "stations_input.csv": False,   # REQUIRED: station names and IDs
+            "input_report.txt": False,     # Unused (legacy file)
         }
 
         for filename in support_files:
