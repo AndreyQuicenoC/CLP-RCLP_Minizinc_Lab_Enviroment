@@ -26,6 +26,8 @@ try:
     from ..core.jits_analyzer import JITSAnalyzer
     from ..core.file_manager import FileManager
     from ..core.converter_engine import ConverterEngine
+    from ..core.experiment_config import ExperimentConfig
+    from ..core.data_loader import DataLoader
 except ImportError:
     import sys
     from pathlib import Path
@@ -36,6 +38,8 @@ except ImportError:
     from core.jits_analyzer import JITSAnalyzer
     from core.file_manager import FileManager
     from core.converter_engine import ConverterEngine
+    from core.experiment_config import ExperimentConfig
+    from core.data_loader import DataLoader
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -196,15 +200,15 @@ class ConverterInterface(tk.Frame):
 
         # Output configuration
         SectionLabel(left, "3. Output Configuration", self.theme_dict["bg_base"],
-                     self.theme_dict["text_primary"]).pack(fill=tk.X, pady=(0, 10))
+                     self.theme_dict["text_primary"]).pack(fill=tk.X, pady=(0, 0))
 
         self._build_output_config(left)
 
         # Control buttons
-        tk.Frame(left, bg=self.theme_dict["bg_base"], height=20).pack(fill=tk.X, pady=15)
+        tk.Frame(left, bg=self.theme_dict["bg_base"], height=0).pack(fill=tk.X, pady=0)
 
         btn_frame = tk.Frame(left, bg=self.theme_dict["bg_base"])
-        btn_frame.pack(fill=tk.X, pady=10)
+        btn_frame.pack(fill=tk.X, pady=0)
 
         self.convert_btn = FlatButton(
             btn_frame,
@@ -213,7 +217,7 @@ class ConverterInterface(tk.Frame):
             theme=self.theme_dict,
             accent=True
         )
-        self.convert_btn.pack(fill=tk.X, pady=(0, 8))
+        self.convert_btn.pack(fill=tk.X, pady=(0, 1))
         Tooltip(self.convert_btn, "Start converting selected tests", self.theme_dict)
 
         self.stop_btn = FlatButton(
@@ -579,9 +583,26 @@ class ConverterInterface(tk.Frame):
 
             self._log(f"Converting {len(json_files)} tests from {jits_dir}...", "info")
 
-            # Perform conversion with source directory name
+            # Load experiment data
+            self._log("Loading stations and distance data...", "info")
+            input_path = Path(self.input_folder.get()) / jits_dir
+
+            # Load stations and distances
+            stations, station_count = DataLoader.load_stations(input_path)
+            distances, dist_station_count = DataLoader.load_distances(input_path)
+
+            if distances:
+                self._log(f"Loaded {len(distances)} distance entries", "info")
+            else:
+                self._log("No distance data found. Using fallback calculation.", "warning")
+
+            # Create experiment configuration
+            config = ExperimentConfig()
+            self._log(f"Using config: model_speed={config.model_speed} km/h, rest_time={config.rest_time} min", "info")
+
+            # Perform conversion with source directory name and loaded data
             success_count, failure_count, messages = ConverterEngine.batch_convert_files(
-                json_files, output_path, jits_dir
+                json_files, output_path, jits_dir, config=config, distances_dict=distances
             )
 
             # Log results
