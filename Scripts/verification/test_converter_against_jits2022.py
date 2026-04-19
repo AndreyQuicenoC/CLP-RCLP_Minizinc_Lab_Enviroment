@@ -87,10 +87,10 @@ class ConverterTest:
 
             if result['passed']:
                 passed_count += 1
-                logger.info(f"✓ {test_file.name}: PASSED")
+                logger.info(f"[OK] {test_file.name}: PASSED")
             else:
                 failed_count += 1
-                logger.error(f"✗ {test_file.name}: FAILED")
+                logger.error(f"[FAIL] {test_file.name}: FAILED")
 
         return passed_count, failed_count
 
@@ -162,8 +162,8 @@ class ConverterTest:
         total = len(self.results)
 
         print(f"\nTotal tests: {total}")
-        print(f"Passed: {passed} ✓")
-        print(f"Failed: {failed} ✗")
+        print(f"Passed: {passed} [OK]")
+        print(f"Failed: {failed} [FAIL]")
         print(f"Success rate: {(passed / total * 100):.1f}%" if total > 0 else "N/A")
 
         if failed > 0:
