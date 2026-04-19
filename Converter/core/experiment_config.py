@@ -36,7 +36,7 @@ class ExperimentConfig:
         'dt_max': 30,           # Maximum delay tolerance (min)
         'min_ct': 5,            # Minimum change time (min)
         'charging_rate': 20,    # Charging rate (kWh/min)
-        'scale': 10,            # Scaling factor for integer conversion
+        'scale': 50,            # Scaling factor for integer conversion (increased from 10 to minimize distance precision loss)
     }
 
     def __init__(self, config_file: Optional[Path] = None, **kwargs):
