@@ -67,7 +67,7 @@ class ConverterInterface(tk.Frame):
         self._init_theme()
 
         # Setup window
-        self.root.title("CLP-RCLP JSON to DZN Converter v1.5.0")
+        self.root.title("CLP-RCLP JSON to DZN Converter v2.0.0")
         self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
         self.root.resizable(False, False)
         self._center_window()
@@ -705,7 +705,7 @@ class ConverterInterface(tk.Frame):
 
         tk.Label(
             footer,
-            text="v1.5.0 | Click [?] icons for help | Select a battery and tests to convert",
+            text="v2.0.0 | Click [?] icons for help | Select a battery and tests to convert",
             bg=self.theme_dict["bg_surface"],
             fg=self.theme_dict["text_secondary"],
             font=("Arial", 8)

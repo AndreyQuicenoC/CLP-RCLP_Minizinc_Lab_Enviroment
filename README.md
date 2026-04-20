@@ -1,6 +1,6 @@
 # CLP-RCLP MiniZinc Lab Environment
 
-[![Version](https://img.shields.io/badge/version-1.5.0-brightgreen?style=flat-square)](.)
+[![Version](https://img.shields.io/badge/version-2.0.0-brightgreen?style=flat-square)](.)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](.)
 [![Python](https://img.shields.io/badge/python-3.8+-yellow?style=flat-square)](.)
 [![MiniZinc](https://img.shields.io/badge/minizinc-2.5+-ff69b4?style=flat-square)](.)
@@ -11,11 +11,12 @@ Professional lab environment for research and optimization of the **Charging Loc
 
 This project includes:
 
+- System Center (Orchestrator) - Unified entry point to all tools
 - Mathematical models in MiniZinc (CLP and RCLP)
 - Professional instance generation system (v3.0 - Working Pattern Replication)
 - Complete automated testing suite with **multi-solver support**
-- Enhanced test execution interface (Runner v1.4.0)
-- JSON to DZN conversion tool (Converter v1.5.0)
+- Enhanced test execution interface (Runner v2.0.0)
+- JSON to DZN conversion tool (Converter v2.0.0)
 - Exhaustive technical documentation
 - Varied datasets (Cork, synthetic, validated)
 
@@ -34,7 +35,7 @@ This project includes:
 - Guaranteed SAT: All test cases generate satisfiable instances instantly
 - Automatic validation with MiniZinc (chuffed solver)
 
-### 3. Test Runner Interface (v1.4.0 - Multi-Solver Support)
+### 3. Test Runner Interface (v2.0.0 - Multi-Solver Support)
 
 - Professional Tkinter GUI with dark/light theme support
 - **Multiple solver selection** (chuffed, gecode, coin-bc, or-tools cp-sat, cplex, gurobi)
@@ -48,7 +49,7 @@ This project includes:
 - Centered window positioning on all screens
 - Complete theme system with 27 design tokens
 
-### 4. JSON to DZN Converter (v1.5.0)
+### 4. JSON to DZN Converter (v2.0.0)
 
 - Professional conversion interface for JITS2022 test batteries
 - Batch convert JSON schedules to integer DZN format

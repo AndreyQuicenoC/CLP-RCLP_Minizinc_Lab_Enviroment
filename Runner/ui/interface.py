@@ -67,7 +67,7 @@ class RunnerInterface(tk.Frame):
         self._init_theme()
 
         # Setup window properties
-        self.root.title("CLP-RCLP Test Runner v1.4.0")
+        self.root.title("CLP-RCLP Test Runner v2.0.0")
         self.root.geometry("950x650")
         self.root.resizable(False, False)
         self._center_window()
@@ -426,7 +426,7 @@ class RunnerInterface(tk.Frame):
 
         tk.Label(
             footer,
-            text="v1.4.0",
+            text="v2.0.0",
             font=self.theme_dict["font_small"],
             fg=self.theme_dict["text_muted"],
             bg=self.theme_dict["bg_surface"],
