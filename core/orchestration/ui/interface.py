@@ -420,22 +420,28 @@ class OrchestratorInterface(tk.Frame):
         )
 
     def _launch_tool(self, tool_key: str) -> None:
-        """Launch specified tool."""
-        tool_scripts = {
-            "converter": "converter/converter.py",
-            "generator": "generator/generator.py",
-            "runner": "runner/runner.py",
-        }
+        """
+        Launch specified tool using dynamic path resolution.
 
-        if tool_key in tool_scripts:
-            script_path = self.project_root / "core" / tool_scripts[tool_key]
-            if script_path.exists():
-                subprocess.Popen([
-                    "python",
-                    str(script_path)
-                ])
+        Uses ToolPathResolver to find tool scripts regardless of system
+        configuration or directory naming conventions.
+
+        Args:
+            tool_key: Tool identifier ('converter', 'generator', 'runner')
+        """
+        try:
+            # Import path resolver
+            from ..shared.path_resolver import ToolPathResolver
+
+            resolver = ToolPathResolver(self.project_root)
+            script_path = resolver.get_tool_path(tool_key)
+
+            if script_path and script_path.exists():
+                subprocess.Popen(["python", str(script_path)])
             else:
-                print(f"Tool script not found: {script_path}")
+                print(f"Tool script not found for {tool_key}: {script_path}")
+        except Exception as e:
+            print(f"Error launching tool {tool_key}: {e}")
 
     def _open_github(self) -> None:
         """Open GitHub repository in browser."""
