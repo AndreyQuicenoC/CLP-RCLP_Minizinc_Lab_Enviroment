@@ -1,8 +1,8 @@
 % ============================================================================
-% CLP Test Case: 20_10 (variant: 20_10)
+% CLP Test Case: 30_5 (variant: 30_5)
 % ============================================================================
 % Source: JITS2022 Test Battery (Converted)
-% Original file: buses_input_20_10.json
+% Original file: buses_input_30_5.json
 % Converted to CLP format with COHERENT SCALING:
 %   - Energy (D, Cmax, Cmin, alpha): scaled by 10 (1 unit = 0.1 kWh)
 %   - Time (T, tau_bi, mu, SM, psi, beta): NO scaling (native minutes)

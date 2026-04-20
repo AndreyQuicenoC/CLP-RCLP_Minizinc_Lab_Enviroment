@@ -18,9 +18,11 @@ array[B,1..max_stops] of int: st_bi;
 % ESCALA NUMÉRICA
 % -----------------------------
 
-% Nota: No usamos SCALE global. Cada variable tiene su propio dominio físico coherente.
-% Energy (D): Valores enteros en unidades de 0.1 kWh (Cmax=1000 → 100 kWh)
-% Time (T, tau_bi, tbi, ctbi): Valores enteros en minutos (sin escala adicional)
+% Diferenciada por dominio (energía vs tiempo):
+% Energy (D, Cmax, Cmin, alpha): Valores enteros en unidades de 0.02 kWh (SCALE=50)
+%   Ejemplo: 100 kWh = 5000 unidades, 0.2649 km × 0.25 kWh/km × 50 = 3.31 -> 3 unidades
+% Time (T, tau_bi, tbi, ctbi): Valores enteros en minutos (sin escala, SCALE_TIME=1)
+%   Ejemplo: 420 minutos (07:00) = 420 unidades, 5 min = 5 unidades
 
 % -----------------------------
 % CONSTANTES DEL MODELO
@@ -28,9 +30,9 @@ array[B,1..max_stops] of int: st_bi;
 % NO se usa escala global - cada magnitud tiene escala propia según necesidad
 % -----------------------------
 
-int: Cmax;   % Capacidad máxima de la batería (en unidades de 0.1 kWh)
-int: Cmin;   % Nivel mínimo permitido de batería (en unidades de 0.1 kWh)
-int: alpha;  % Tasa de carga energética (en unidades de 0.1 kWh/min)
+int: Cmax;   % Capacidad máxima de la batería (en unidades de 0.02 kWh, SCALE=50)
+int: Cmin;   % Nivel mínimo permitido de batería (en unidades de 0.02 kWh, SCALE=50)
+int: alpha;  % Tasa de carga energética (en unidades de 0.02 kWh/min, SCALE=50)
 int: mu;     % Desviación máxima permitida respecto al horario (en minutos)
 int: SM;     % Margen de seguridad entre eventos de carga (en minutos)
 int: psi;    % Tiempo mínimo de carga (en minutos)
@@ -49,8 +51,8 @@ array[B,1..max_stops] of int: tau_bi; % Horario planificado de llegada
 % VARIABLES DE DECISIÓN
 % -----------------------------
 
-array[B,1..max_stops] of var 0..1600: cbi;   % Nivel de batería al llegar
-array[B,1..max_stops] of var 0..1600: ebi;   % Energía cargada en la parada
+array[B,1..max_stops] of var 0..5000: cbi;   % Nivel de batería al llegar (scaled by 50)
+array[B,1..max_stops] of var 0..5000: ebi;   % Energía cargada en la parada (scaled by 50)
 array[B,1..max_stops] of var 0..600: ctbi;   % Tiempo dedicado a cargar
 array[B,1..max_stops] of var 0..3000: tbi;   % Tiempo real de llegada
 array[B,1..max_stops] of var 0..500: d_tbi;  % Desviación respecto al horario

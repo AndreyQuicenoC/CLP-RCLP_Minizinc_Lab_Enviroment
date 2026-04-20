@@ -226,24 +226,25 @@ class ExperimentConfig:
 
     def to_scaled_dict(self) -> Dict[str, int]:
         """
-        Return all parameters with COHERENT scaling (not uniform).
+        Return all parameters with DIFFERENTIATED scaling for precision and MiniZinc compatibility.
 
-        Scaling strategy (based on JITS2022 best practices):
-        - Energy parameters (Cmax, Cmin, alpha): Scaled by 10
-          → 1 unit = 0.1 kWh (prevents precision loss, maintains readability)
-        - Time parameters (mu, SM, psi, beta): NO scaling
-          → Keep as natural minutes (no decimals in scheduling)
-        - D array: Scaled by 10 (energy consumption)
-        - T array: NO scaling (keep as fractional minutes, handled as integers)
+        Scaling strategy:
+        - Energy parameters (Cmax, Cmin, alpha, D): Scaled by 50
+          → 1 unit = 0.02 kWh (high precision for distance-based energy calculations)
+        - Time parameters (mu, SM, psi, beta, T, tau_bi): NO scaling (SCALE_TIME=1)
+          → Keep as native minutes (avoids excessive Big-M, MiniZinc compatible)
 
-        This avoids inflating Big-M and maintains numerical stability.
+        This separates concerns:
+        - Energy domain: High precision for accurate power calculations
+        - Time domain: Native units for schedule compatibility
+        - No inflation of Big-M or other multipliers
         """
-        SCALE_ENERGY = 10  # For energy: 1 unit = 0.1 kWh
+        SCALE_ENERGY = 50  # For energy: 1 unit = 0.02 kWh (high precision)
 
         return {
-            'cmax': round(self.cmax * SCALE_ENERGY),           # 100 kWh -> 1000
-            'cmin': round(self.cmin * SCALE_ENERGY),           # 20 kWh -> 200
-            'alpha': round(self.alpha * SCALE_ENERGY),         # 10 kWh/min -> 100
+            'cmax': round(self.cmax * SCALE_ENERGY),           # 100 kWh -> 5000
+            'cmin': round(self.cmin * SCALE_ENERGY),           # 20 kWh -> 1000
+            'alpha': round(self.alpha * SCALE_ENERGY),         # 10 kWh/min -> 500
             'mu': int(self.mu),                                # 5 min -> 5 (no scaling)
             'sm': int(self.sm),                                # 1 min -> 1 (no scaling)
             'psi': int(self.psi),                              # 1 min -> 1 (no scaling)
