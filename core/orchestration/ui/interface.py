@@ -19,6 +19,7 @@ from .components import SectionLabel, FlatButton, Divider
 from .layouts import LayoutBuilder, LayoutConfig
 from .tooltip import Tooltip
 from ..config import TOOLS, VIRTUES, GITHUB_URL, VERSION
+from core.shared.project_paths import ProjectPaths
 
 
 class OrchestratorInterface(tk.Frame):
@@ -43,7 +44,7 @@ class OrchestratorInterface(tk.Frame):
         self.configure(bg=self.theme_dict["bg_base"])
 
         # Find project root for file operations
-        self.project_root = self._find_project_root()
+        self.project_root = ProjectPaths.get_project_root()
 
         # Build UI
         self._build_ui()
@@ -57,13 +58,6 @@ class OrchestratorInterface(tk.Frame):
         """Called when theme mode changes."""
         self.theme_dict = get_theme_dict(mode)
         self._refresh_ui_colors()
-
-    def _find_project_root(self) -> Path:
-        """Find project root directory."""
-        current = Path(__file__).parent.parent.parent.absolute()
-        while current.name != "CLP-RCLP Minizinc" and current.parent != current:
-            current = current.parent
-        return current if current.name == "CLP-RCLP Minizinc" else Path(__file__).parent.parent.parent
 
     def _center_window(self) -> None:
         """Center window on screen."""

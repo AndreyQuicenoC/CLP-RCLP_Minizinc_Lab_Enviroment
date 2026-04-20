@@ -29,6 +29,7 @@ from .tooltip import Tooltip
 
 # Import navigation utility
 from core.shared.navigation import return_to_orchestrator
+from core.shared.project_paths import ProjectPaths
 
 # Import Runner core modules
 from core.runner.config import RunnerConfig
@@ -71,7 +72,7 @@ class RunnerInterface(tk.Frame):
         self.is_running = False
 
         # Find project root for file operations
-        self.project_root = self._find_project_root()
+        self.project_root = ProjectPaths.get_project_root()
 
         # Build UI
         self._build_ui()
@@ -90,13 +91,6 @@ class RunnerInterface(tk.Frame):
         """
         self.theme_dict = get_theme_dict(mode)
         self._refresh_ui_colors()
-
-    def _find_project_root(self) -> str:
-        """Find the CLP-RCLP Minizinc project root directory."""
-        current = Path(__file__).parent.absolute()
-        while current.name != "CLP-RCLP Minizinc" and current.parent != current:
-            current = current.parent
-        return str(current) if current.name == "CLP-RCLP Minizinc" else str(Path(__file__).parent.parent.parent)
 
     def _center_window(self) -> None:
         """Center window on screen (horizontal and vertical)."""

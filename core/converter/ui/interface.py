@@ -24,6 +24,7 @@ from .help_window import show_help
 
 # Import navigation utility
 from core.shared.navigation import return_to_orchestrator
+from core.shared.project_paths import ProjectPaths
 
 # Import config and core modules
 from core.converter.config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
@@ -58,7 +59,7 @@ class ConverterInterface(tk.Frame):
         self.configure(bg=self.theme_dict["bg_base"])
 
         # Project root
-        self.project_root = self._find_project_root()
+        self.project_root = ProjectPaths.get_project_root()
 
         # Conversion state
         self.is_converting = False
@@ -82,13 +83,6 @@ class ConverterInterface(tk.Frame):
         """Handle theme changes."""
         self.theme_dict = get_theme_dict(mode)
         self._refresh_ui_colors()
-
-    def _find_project_root(self) -> Path:
-        """Find project root directory."""
-        current = Path(__file__).parent.parent.parent.absolute()
-        while current.name != "CLP-RCLP Minizinc" and current.parent != current:
-            current = current.parent
-        return current if current.name == "CLP-RCLP Minizinc" else Path(__file__).parent.parent.parent
 
     def _center_window(self) -> None:
         """Center window on screen."""
@@ -444,7 +438,7 @@ class ConverterInterface(tk.Frame):
 
     def _load_jits_directories(self) -> None:
         """Load JITS2022 test directories."""
-        jits_path = self.project_root / "external" / "jits2022" / "Code" / "data"
+        jits_path = ProjectPaths.jits_data_dir()
         directories = JITSAnalyzer.get_test_directories(jits_path)
 
         if directories:
@@ -455,7 +449,7 @@ class ConverterInterface(tk.Frame):
 
     def _load_batteries(self) -> None:
         """Load available battery directories from experiments/instances folder."""
-        data_path = self.project_root / "experiments" / "instances"
+        data_path = ProjectPaths.instances_dir()
         batteries = []
 
         if data_path.exists():
@@ -494,7 +488,7 @@ class ConverterInterface(tk.Frame):
             return
 
         try:
-            jits_path = self.project_root / "external" / "jits2022" / "Code" / "data" / jits_dir
+            jits_path = ProjectPaths.jits_data_dir() / jits_dir
             # Search for buses_input*.json files
             json_files = JITSAnalyzer.get_json_files(jits_path, "buses_input*.json")
             self.available_tests = [f.stem.replace("buses_input_", "").replace("buses_input", "") for f in json_files]
@@ -516,7 +510,7 @@ class ConverterInterface(tk.Frame):
 
     def _browse_jits_directory(self) -> None:
         """Browse for JITS directory."""
-        initial_dir = self.project_root / "external" / "jits2022" / "Code" / "data"
+        initial_dir = ProjectPaths.jits_data_dir()
         directory = filedialog.askdirectory(initialdir=str(initial_dir))
         if directory:
             self.jits_dir_var.set(Path(directory).name)
@@ -557,16 +551,16 @@ class ConverterInterface(tk.Frame):
                 if not new_dir_name:
                     self.log_queue.put(("Error: Please enter a name for the new directory", "error"))
                     return
-                output_path = self.project_root / "Data" / new_dir_name
+                output_path = ProjectPaths.instances_dir() / new_dir_name
             else:
-                output_path = self.project_root / "Data" / output_dir_name
+                output_path = ProjectPaths.instances_dir() / output_dir_name
 
             # Create output directory
             output_path.mkdir(parents=True, exist_ok=True)
             self.log_queue.put((f"Output directory: {output_path}", "info"))
 
             # Get JSON files to convert
-            jits_path = self.project_root / "external" / "jits2022" / "Code" / "data" / jits_dir
+            jits_path = ProjectPaths.jits_data_dir() / jits_dir
             json_files = JITSAnalyzer.get_json_files(jits_path, "buses_input*.json")
 
             if not json_files:

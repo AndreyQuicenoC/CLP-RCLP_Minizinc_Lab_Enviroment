@@ -29,6 +29,7 @@ from .layouts import LayoutBuilder, LayoutConfig
 
 # Import navigation utility
 from core.shared.navigation import return_to_orchestrator
+from core.shared.project_paths import ProjectPaths
 
 # Import Generator core modules
 from core.generator.config import Config
@@ -63,7 +64,7 @@ class GeneratorInterface(tk.Frame):
         self.configure(bg=self.theme_dict["bg_base"])
 
         # Find project root for file operations
-        self.project_root = self._find_project_root()
+        self.project_root = ProjectPaths.get_project_root()
 
         # Initialize core module
         self.orchestrator = GeneratorOrchestrator(
@@ -92,13 +93,6 @@ class GeneratorInterface(tk.Frame):
         """
         self.theme_dict = get_theme_dict(mode)
         self._refresh_ui_colors()
-
-    def _find_project_root(self) -> str:
-        """Find the CLP-RCLP Minizinc project root directory."""
-        current = Path(__file__).parent.absolute()
-        while current.name != "CLP-RCLP Minizinc" and current.parent != current:
-            current = current.parent
-        return str(current) if current.name == "CLP-RCLP Minizinc" else str(Path(__file__).parent.parent.parent)
 
     def _center_window(self) -> None:
         """Center window on screen (horizontal and vertical)."""

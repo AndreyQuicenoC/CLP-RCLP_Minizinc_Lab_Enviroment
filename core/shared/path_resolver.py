@@ -26,6 +26,8 @@ from pathlib import Path
 from typing import Optional, Dict
 import logging
 
+from core.shared.project_paths import ProjectPaths
+
 logger = logging.getLogger(__name__)
 
 
@@ -54,35 +56,8 @@ class ToolPathResolver:
         Args:
             project_root: Override project root detection. If None, auto-detects.
         """
-        self.project_root = project_root or self._find_project_root()
+        self.project_root = project_root or ProjectPaths.get_project_root()
         logger.info(f"ToolPathResolver initialized with root: {self.project_root}")
-
-    @staticmethod
-    def _find_project_root() -> Path:
-        """
-        Auto-detect project root by searching for marker directories.
-
-        Looks for 'CLP-RCLP Minizinc' directory or 'core' subdirectory
-        in parent path hierarchy.
-
-        Returns:
-            Path: Project root directory
-        """
-        current = Path(__file__).parent.parent.parent.absolute()
-        max_iterations = 10  # Prevent infinite loops
-
-        for _ in range(max_iterations):
-            if (current / "core").exists() or current.name == "CLP-RCLP Minizinc":
-                logger.debug(f"Found project root: {current}")
-                return current
-
-            parent = current.parent
-            if parent == current:  # Reached filesystem root
-                break
-            current = parent
-
-        logger.warning(f"Could not auto-detect project root, using: {current}")
-        return current
 
     def get_tool_path(self, tool_name: str) -> Optional[Path]:
         """
