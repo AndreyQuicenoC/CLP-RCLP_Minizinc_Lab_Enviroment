@@ -270,14 +270,18 @@ class ConverterEngine:
                 energy_scaled += [0] * (max_stops - len(energy_scaled))
                 D.extend(energy_scaled)
 
-                # Scale and pad travel times (now correctly calculated with speed/distance)
-                times = [converter.scale_to_integer(t) for t in bus['time_deltas']]
+                # Scale and pad travel times (scale by 10 to avoid floating point)
+                # T is kept small (~1-8 range after scaling)
+                # Consistent with JITS2022: T = distance / speed in minutes
+                times = [round(t * 10) for t in bus['time_deltas']]  # Scale by 10 only
                 times += [0] * (max_stops - len(times))
                 T.extend(times)
 
-                # Scale and pad schedule times
-                schedule = [converter.scale_to_integer(t) for t in bus['times']]
-                schedule += [converter.scale_to_integer(bus['times'][-1])] * (max_stops - len(schedule))
+                # Scale and pad schedule times (NO SCALING - use raw minutes)
+                # MiniZinc tbi variable is defined as: var 0..3000: tbi
+                # So tau_bi must be in the same units (minutes, not scaled)
+                schedule = [int(t) for t in bus['times']]  # Keep as minutes, no scaling
+                schedule += [schedule[-1] if schedule else 0] * (max_stops - len(schedule))
                 tau_bi.extend(schedule)
 
             # Generate DZN file
@@ -292,18 +296,18 @@ class ConverterEngine:
                 f.write("% " + "=" * 76 + "\n")
                 f.write("% Source: JITS2022 Test Battery (Converted)\n")
                 f.write(f"% Original file: {json_file.name}\n")
-                f.write("% Converted to INTEGER CLP format with SCALE=" + str(converter.SCALE) + "\n")
+                f.write("% Converted to CLP format with selective scaling (SCALE=" + str(converter.SCALE) + ")\n")
                 f.write("%\n")
                 f.write("% CONVERSION DETAILS:\n")
-                f.write("% - All floating-point values multiplied by SCALE and rounded to integers\n")
-                f.write("% - Travel times (T) calculated using JITS2022 algorithm:\n")
-                f.write("%   T = distance / speed (constrained by model speed limits)\n")
-                f.write("%   Rest times added when previous stop has rest flag\n")
-                f.write("% - Example: 42.5 minutes -> " + str(converter.scale_to_integer(42.5)) + " (integer)\n")
-                f.write("%           1.3 kWh -> " + str(converter.scale_to_integer(1.3)) + " (integer)\n")
+                f.write("% - tau_bi: minutes since 00:00 (no scaling) - matches MiniZinc tbi range 0..3000\n")
+                f.write("% - T: travel times scaled by 10 to preserve fractional minutes\n")
+                f.write("% - D: energy values scaled by SCALE=" + str(converter.SCALE) + " for precision\n")
+                f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
+                f.write("%           1.3 kWh -> " + str(converter.scale_to_integer(1.3)) + " (scaled by " + str(converter.SCALE) + ")\n")
                 f.write("%\n")
-                f.write("% IMPORTANT: To interpret results, divide integer values by SCALE:\n")
-                f.write(f"%   - Time: integer_value / {converter.SCALE} = minutes\n")
+                f.write("% IMPORTANT: To interpret results:\n")
+                f.write(f"%   - tau_bi: minutes since 00:00 (no division)\n")
+                f.write(f"%   - T: divide by 10 to get travel time in minutes\n")
                 f.write(f"%   - Energy (D): integer_value / {converter.SCALE} = kWh\n")
                 f.write("% " + "=" * 76 + "\n\n")
 
@@ -360,8 +364,9 @@ class ConverterEngine:
 
                 # Travel time
                 f.write("% --- Travel Time (T) ---\n")
-                f.write("% Time between stops (INTEGER values, divide by SCALE for minutes)\n")
-                f.write("% Calculated using JITS2022 algorithm with speed constraints\n")
+                f.write("% Time between stops (scaled by 10 to preserve fractional minutes)\n")
+                f.write("% Divide by 10 to get actual minutes\n")
+                f.write("% Calculated using JITS2022 algorithm: T = distance / speed\n")
                 f.write(f"T = array2d(1..{num_buses}, 1..{max_stops}, [\n")
                 for i in range(num_buses):
                     start_idx = i * max_stops
@@ -373,7 +378,8 @@ class ConverterEngine:
 
                 # Schedule
                 f.write("% --- Original Timetable (tau_bi) ---\n")
-                f.write("% Scheduled arrival times (INTEGER values, divide by SCALE for minutes since 00:00)\n")
+                f.write("% Scheduled arrival times in MINUTES since 00:00 (no scaling)\n")
+                f.write("% Consistent with MiniZinc tbi variable (0..3000 range)\n")
                 f.write(f"tau_bi = array2d(1..{num_buses}, 1..{max_stops}, [\n")
                 for i in range(num_buses):
                     start_idx = i * max_stops
