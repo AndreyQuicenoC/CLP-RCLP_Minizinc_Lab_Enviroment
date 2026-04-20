@@ -11,8 +11,12 @@ import tkinter as tk
 import sys
 from pathlib import Path
 
-# Add parent directory to path to allow absolute imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Get the project root and add it to sys.path
+orchestration_dir = Path(__file__).parent.absolute()
+project_root = orchestration_dir.parent.parent.absolute()
+
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 from core.orchestration.ui.interface import OrchestratorInterface
 

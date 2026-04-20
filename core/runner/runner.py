@@ -13,15 +13,13 @@ import sys
 import os
 from pathlib import Path
 
-# Get the Runner directory
+# Get the project root
 runner_dir = Path(__file__).parent.absolute()
-runner_parent = runner_dir.parent.absolute()
+project_root = runner_dir.parent.parent.absolute()
 
-# Add paths to sys.path for imports
-if str(runner_dir) not in sys.path:
-    sys.path.insert(0, str(runner_dir))
-if str(runner_parent) not in sys.path:
-    sys.path.insert(0, str(runner_parent))
+# Add ONLY the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 # Change to Runner directory context for proper imports
 os.chdir(runner_dir)

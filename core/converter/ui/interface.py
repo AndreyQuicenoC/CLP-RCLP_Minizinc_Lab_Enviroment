@@ -23,31 +23,15 @@ from .tooltip import Tooltip
 from .help_window import show_help
 
 # Import navigation utility
-try:
-    from core.shared.navigation import return_to_orchestrator
-except ImportError:
-    from ...shared.navigation import return_to_orchestrator
+from core.shared.navigation import return_to_orchestrator
 
-# Import config - handle both relative and absolute imports
-try:
-    from ..config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
-    from ..core.jits_analyzer import JITSAnalyzer
-    from ..core.file_manager import FileManager
-    from ..core.converter_engine import ConverterEngine
-    from ..core.experiment_config import ExperimentConfig
-    from ..core.data_loader import DataLoader
-except ImportError:
-    import sys
-    from pathlib import Path
-    converter_dir = Path(__file__).parent.parent
-    if str(converter_dir) not in sys.path:
-        sys.path.insert(0, str(converter_dir))
-    from config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
-    from core.jits_analyzer import JITSAnalyzer
-    from core.file_manager import FileManager
-    from core.converter_engine import ConverterEngine
-    from core.experiment_config import ExperimentConfig
-    from core.data_loader import DataLoader
+# Import config and core modules
+from core.converter.config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
+from core.converter.core.jits_analyzer import JITSAnalyzer
+from core.converter.core.file_manager import FileManager
+from core.converter.core.converter_engine import ConverterEngine
+from core.converter.core.experiment_config import ExperimentConfig
+from core.converter.core.data_loader import DataLoader
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

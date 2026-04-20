@@ -28,18 +28,11 @@ from .components import SectionLabel, FlatButton, Divider, StatusIndicator
 from .layouts import LayoutBuilder, LayoutConfig
 
 # Import navigation utility
-try:
-    from core.shared.navigation import return_to_orchestrator
-except ImportError:
-    from ...shared.navigation import return_to_orchestrator
+from core.shared.navigation import return_to_orchestrator
 
 # Import Generator core modules
-try:
-    from config import Config
-    from orchestrator import GeneratorOrchestrator
-except ImportError:
-    from ..config import Config
-    from ..orchestrator import GeneratorOrchestrator
+from core.generator.config import Config
+from core.generator.orchestrator import GeneratorOrchestrator
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

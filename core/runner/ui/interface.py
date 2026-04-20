@@ -28,22 +28,13 @@ from .layouts import LayoutBuilder, LayoutConfig
 from .tooltip import Tooltip
 
 # Import navigation utility
-try:
-    from core.shared.navigation import return_to_orchestrator
-except ImportError:
-    from ...shared.navigation import return_to_orchestrator
+from core.shared.navigation import return_to_orchestrator
 
 # Import Runner core modules
-try:
-    from config import RunnerConfig
-    from core.executor import MiniZincExecutor
-    from core.result_handler import ResultHandler
-    from core.solvers import SolverType, SolverManager
-except ImportError:
-    from ..config import RunnerConfig
-    from ..core.executor import MiniZincExecutor
-    from ..core.result_handler import ResultHandler
-    from ..core.solvers import SolverType, SolverManager
+from core.runner.config import RunnerConfig
+from core.runner.core.executor import MiniZincExecutor
+from core.runner.core.result_handler import ResultHandler
+from core.runner.core.solvers import SolverType, SolverManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

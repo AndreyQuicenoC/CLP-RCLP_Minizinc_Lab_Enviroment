@@ -15,15 +15,13 @@ import sys
 import os
 from pathlib import Path
 
-# Get the Converter directory
+# Get the project root
 converter_dir = Path(__file__).parent.absolute()
-converter_parent = converter_dir.parent.absolute()
+project_root = converter_dir.parent.parent.absolute()
 
-# Add paths to sys.path for imports
-if str(converter_dir) not in sys.path:
-    sys.path.insert(0, str(converter_dir))
-if str(converter_parent) not in sys.path:
-    sys.path.insert(0, str(converter_parent))
+# Add ONLY the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 # Change to Converter directory context
 os.chdir(converter_dir)

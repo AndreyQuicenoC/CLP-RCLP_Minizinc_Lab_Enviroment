@@ -17,12 +17,18 @@ Features:
 from pathlib import Path
 from typing import Tuple, Optional, Dict, Callable
 import os
+import sys
 
-from config import Config
-from core.instance_generator import FeasibleInstanceGenerator
-from core.minizinc_exporter import MiniZincExporter
-from core.instance_validator import InstanceValidator
-from core.instance_manager import InstanceManager
+# Ensure project root is in sys.path
+project_root = Path(__file__).parent.parent.parent.absolute()
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from core.generator.config import Config
+from core.generator.core.instance_generator import FeasibleInstanceGenerator
+from core.generator.core.minizinc_exporter import MiniZincExporter
+from core.generator.core.instance_validator import InstanceValidator
+from core.generator.core.instance_manager import InstanceManager
 
 
 class GeneratorOrchestrator:

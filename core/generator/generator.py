@@ -31,8 +31,13 @@ Date: April 2026
 import sys
 from pathlib import Path
 
-# Ensure Generator directory is in Python path
-sys.path.insert(0, str(Path(__file__).parent))
+# Get the project root
+generator_dir = Path(__file__).parent.absolute()
+project_root = generator_dir.parent.parent.absolute()
+
+# Add ONLY the project root to sys.path
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 from ui.interface import main
 

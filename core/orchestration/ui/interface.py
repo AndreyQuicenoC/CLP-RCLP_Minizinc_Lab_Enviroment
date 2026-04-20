@@ -430,18 +430,50 @@ class OrchestratorInterface(tk.Frame):
             tool_key: Tool identifier ('converter', 'generator', 'runner')
         """
         try:
-            # Import path resolver
-            from ..shared.path_resolver import ToolPathResolver
+            # Use direct path resolution without imports
+            from pathlib import Path
+            import subprocess
 
-            resolver = ToolPathResolver(self.project_root)
-            script_path = resolver.get_tool_path(tool_key)
+            # Find tool script dynamically
+            tool_path = self._resolve_tool_path(tool_key)
 
-            if script_path and script_path.exists():
-                subprocess.Popen(["python", str(script_path)])
+            if tool_path and tool_path.exists():
+                subprocess.Popen(["python", str(tool_path)])
+                # Close the orchestrator window after launching the tool
+                self.root.quit()
             else:
-                print(f"Tool script not found for {tool_key}: {script_path}")
+                print(f"Tool script not found for {tool_key}: {tool_path}")
         except Exception as e:
+            import traceback
             print(f"Error launching tool {tool_key}: {e}")
+            traceback.print_exc()
+
+    def _resolve_tool_path(self, tool_name: str) -> Path:
+        """
+        Resolve path to a tool script dynamically.
+
+        Searches for the tool in the core directory structure.
+
+        Args:
+            tool_name: Tool identifier ('converter', 'generator', 'runner')
+
+        Returns:
+            Path: Path to the tool script if found
+        """
+        from pathlib import Path
+
+        # Strategy 1: core/<tool_name>/<tool_name>.py
+        path = self.project_root / "core" / tool_name / f"{tool_name}.py"
+        if path.exists():
+            return path
+
+        # Strategy 2: <tool_name>/<tool_name>.py (legacy)
+        path = self.project_root / tool_name / f"{tool_name}.py"
+        if path.exists():
+            return path
+
+        # Return primary path for error reporting
+        return self.project_root / "core" / tool_name / f"{tool_name}.py"
 
     def _open_github(self) -> None:
         """Open GitHub repository in browser."""
