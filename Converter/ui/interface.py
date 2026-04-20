@@ -22,6 +22,12 @@ from .components import SectionLabel, FlatButton, Divider, StatusIndicator, Form
 from .tooltip import Tooltip
 from .help_window import show_help
 
+# Import navigation utility
+try:
+    from ...Shared.navigation import return_to_orchestrator
+except ImportError:
+    from Shared.navigation import return_to_orchestrator
+
 # Import config - handle both relative and absolute imports
 try:
     from ..config import WINDOW_WIDTH, WINDOW_HEIGHT, FONTS
@@ -142,6 +148,21 @@ class ConverterInterface(tk.Frame):
         # Title with accent bar
         left = tk.Frame(header, bg=self.theme_dict["bg_surface"])
         left.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=20, pady=15)
+
+        # Back button
+        back_btn = tk.Label(
+            left,
+            text="<",
+            cursor="hand2",
+            fg=self.theme_dict["accent_primary"],
+            bg=self.theme_dict["bg_surface"],
+            font=("Arial", 18, "bold"),
+            padx=8
+        )
+        back_btn.pack(side=tk.LEFT, padx=(0, 8))
+        back_btn.bind("<Button-1>", lambda e: self._on_back_click())
+        from .tooltip import Tooltip
+        Tooltip(back_btn, "Return to System Center", self.theme_dict)
 
         tk.Frame(left, bg=self.theme_dict["accent_primary"], width=4, height=32).pack(
             side=tk.LEFT, padx=(0, 12)
@@ -722,6 +743,10 @@ class ConverterInterface(tk.Frame):
         """Clear the conversion log."""
         self.results_text.delete("1.0", tk.END)
         self.status_indicator.set_status("idle", "Ready")
+
+    def _on_back_click(self) -> None:
+        """Handle back button click - return to Orchestrator."""
+        return_to_orchestrator(self.root)
 
     def _toggle_theme(self, event=None) -> None:
         """Toggle between dark and light themes."""

@@ -27,6 +27,12 @@ from .components import SectionLabel, FlatButton, Divider, StatusIndicator
 from .layouts import LayoutBuilder, LayoutConfig
 from .tooltip import Tooltip
 
+# Import navigation utility
+try:
+    from ...Shared.navigation import return_to_orchestrator
+except ImportError:
+    from Shared.navigation import return_to_orchestrator
+
 # Import Runner core modules
 try:
     from config import RunnerConfig
@@ -140,9 +146,23 @@ class RunnerInterface(tk.Frame):
         header.pack(fill=tk.X, padx=0, pady=0)
         header.pack_propagate(False)
 
-        # Left side: Title with accent bar
+        # Left side: Back button + Title with accent bar
         left = tk.Frame(header, bg=self.theme_dict["bg_surface"])
         left.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=20, pady=15)
+
+        # Back button
+        back_btn = tk.Label(
+            left,
+            text="<",
+            cursor="hand2",
+            fg=self.theme_dict["accent_primary"],
+            bg=self.theme_dict["bg_surface"],
+            font=("Arial", 18, "bold"),
+            padx=8
+        )
+        back_btn.pack(side=tk.LEFT, padx=(0, 8))
+        back_btn.bind("<Button-1>", lambda e: self._on_back_click())
+        Tooltip(back_btn, "Return to System Center", self.theme_dict)
 
         tk.Frame(left, bg=self.theme_dict["accent_primary"], width=4, height=24).pack(
             side=tk.LEFT, padx=(0, 12)
@@ -450,6 +470,10 @@ class RunnerInterface(tk.Frame):
             width=8,
             relief="flat",
         )
+
+    def _on_back_click(self) -> None:
+        """Handle back button click - return to Orchestrator."""
+        return_to_orchestrator(self.root)
 
     def _toggle_theme(self) -> None:
         """Toggle between dark and light theme modes."""
