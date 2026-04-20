@@ -102,6 +102,8 @@ SUPPORT_FILES = {
 # ============================================================================
 # PATHS
 # ============================================================================
+# Note: These are relative paths resolved from the project root at runtime
+# For absolute paths, use Path(__file__).parent.parent.parent for project_root
 
-JITS_BASE_PATH = "JITS2022/Code/Data"
-DATA_OUTPUT_BASE = "Data"
+JITS_BASE_PATH = "external/jits2022/Code/data"  # Default input source
+DATA_OUTPUT_BASE = "experiments/instances"      # Default output destination

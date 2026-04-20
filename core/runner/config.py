@@ -34,13 +34,15 @@ class RunnerConfig:
     FONT_SIZE_HEADER = 12
     FONT_SIZE_TITLE = 14
 
-    # Paths
+    # Paths - Resolved dynamically from project root at runtime
+    # Format: "battery-name" → resolved as "experiments/instances/battery-name"
     DATA_DIRECTORIES = [
-        "Data/battery-own",
-        "Data/battery-project-integer",
-        "Data/battery-project-variant",
-        "Data/battery-generated"
+        "battery-own",
+        "battery-generated",
+        "battery-project-integer",
+        "battery-project-variant"
     ]
+    DATA_BASE_PATH = "experiments/instances"  # Root directory for all test batteries
 
     MODELS = ["clp", "rclp"]
 
