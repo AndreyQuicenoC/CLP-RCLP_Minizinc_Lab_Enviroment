@@ -7,6 +7,19 @@ typography definitions, and dynamic theme management via singleton pattern.
 
 from typing import Dict, Any, Literal
 from dataclasses import dataclass
+import sys
+from pathlib import Path
+
+# Try to import theme persistence, fall back if not available
+try:
+    from core.shared.theme_persistence import ThemePersistence
+except ImportError:
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+        from core.shared.theme_persistence import ThemePersistence
+    except ImportError:
+        # Fallback: no persistence
+        ThemePersistence = None
 
 @dataclass
 class ColorPalette:
@@ -64,13 +77,19 @@ class Spacing:
 class ThemeManager:
     """Singleton theme manager for dynamic theme switching."""
     _instance = None
-    _current_mode: Literal["dark", "light"] = "dark"
+    _current_mode: Literal["dark", "light"] = None
     _palette: ColorPalette = DARK_PALETTE
     _observers: list = []
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ThemeManager, cls).__new__(cls)
+            # Initialize with saved theme or default
+            saved_theme = None
+            if ThemePersistence:
+                saved_theme = ThemePersistence.get_theme()
+            cls._current_mode = saved_theme or "dark"
+            cls._palette = DARK_PALETTE if cls._current_mode == "dark" else LIGHT_PALETTE
         return cls._instance
 
     @classmethod
@@ -89,6 +108,9 @@ class ThemeManager:
             return
         cls._current_mode = mode
         cls._palette = DARK_PALETTE if mode == "dark" else LIGHT_PALETTE
+        # Persist the theme choice
+        if ThemePersistence:
+            ThemePersistence.set_theme(mode)
         cls._notify_observers()
 
     @classmethod

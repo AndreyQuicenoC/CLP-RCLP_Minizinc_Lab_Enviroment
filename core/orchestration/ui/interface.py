@@ -37,7 +37,8 @@ class OrchestratorInterface(tk.Frame):
         # Setup window properties
         self.root.title(f"CLP-RCLP System Center v{VERSION}")
         self.root.geometry(f"{LayoutConfig.WINDOW_WIDTH}x{LayoutConfig.WINDOW_HEIGHT}")
-        self.root.resizable(False, False)
+        self.root.minsize(LayoutConfig.MIN_WIDTH, LayoutConfig.MIN_HEIGHT)
+        self.root.resizable(True, True)
         self._center_window()
         self.configure(bg=self.theme_dict["bg_base"])
 
@@ -147,7 +148,7 @@ class OrchestratorInterface(tk.Frame):
         """Build main content area with scrolling."""
         # Create canvas with scrollbar
         canvas_frame = tk.Frame(parent, bg=self.theme_dict["bg_base"])
-        canvas_frame.pack(fill=tk.BOTH, expand=True)
+        canvas_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
 
         canvas = tk.Canvas(
             canvas_frame,
@@ -175,12 +176,46 @@ class OrchestratorInterface(tk.Frame):
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Build content inside scrollable frame
+        self._build_information_section(scrollable_frame)
+        self._build_information_section(scrollable_frame)
         self._build_virtues_section(scrollable_frame)
         self._build_tools_section(scrollable_frame)
         self._build_community_section(scrollable_frame)
 
+    def _build_information_section(self, parent: tk.Widget) -> None:
+        """Build information section at the top."""
+        section = tk.Frame(parent, bg=self.theme_dict["bg_base"])
+        section.pack(fill=tk.X, padx=20, pady=(20, 24))
+
+        # Title
+        title = tk.Label(
+            section,
+            text="Information",
+            font=self.theme_dict["font_bold"],
+            fg=self.theme_dict["text_primary"],
+            bg=self.theme_dict["bg_base"]
+        )
+        title.pack(anchor=tk.W, pady=(0, 12))
+
+        # Description
+        description = tk.Label(
+            section,
+            text=(
+                "CLP-RCLP is a comprehensive optimization framework for electric vehicle charging "
+                "logistics. Access three powerful tools: convert battery schedules to constraint models, "
+                "generate synthetic test instances, and execute optimization with multiple solvers. "
+                "Use the System Center to manage all operations with an intuitive interface."
+            ),
+            font=self.theme_dict["font_ui"],
+            fg=self.theme_dict["text_secondary"],
+            bg=self.theme_dict["bg_base"],
+            justify=tk.LEFT,
+            wraplength=1000
+        )
+        description.pack(anchor=tk.W, fill=tk.X)
+
     def _build_virtues_section(self, parent: tk.Widget) -> None:
-        """Build system virtues cards section."""
+        """Build system features in 2x2 grid layout."""
         section = tk.Frame(parent, bg=self.theme_dict["bg_base"])
         section.pack(fill=tk.X, padx=0, pady=(0, 20))
 
@@ -189,36 +224,46 @@ class OrchestratorInterface(tk.Frame):
         label_frame.pack(fill=tk.X, padx=20, pady=(0, 12))
         SectionLabel(label_frame, "System Features", self.theme_dict).pack(fill=tk.X)
 
-        # Cards grid
-        cards_frame = tk.Frame(section, bg=self.theme_dict["bg_base"])
-        cards_frame.pack(fill=tk.X, padx=20)
+        # Grid container (2x2)
+        grid_frame = tk.Frame(section, bg=self.theme_dict["bg_base"])
+        grid_frame.pack(fill=tk.X, padx=20, pady=0)
 
+        # Create grid of virtue cards
         for idx, virtue in enumerate(VIRTUES):
-            self._create_virtue_card(cards_frame, virtue, idx)
+            row = idx // 2
+            col = idx % 2
+            card_frame = tk.Frame(grid_frame, bg=self.theme_dict["bg_base"])
+            card_frame.grid(row=row, column=col, sticky="nsew", padx=(0, 12 if col == 0 else 0), pady=(0, 12))
+
+            # Make both columns have equal weight
+            grid_frame.columnconfigure(0, weight=1)
+            grid_frame.columnconfigure(1, weight=1)
+
+            self._create_virtue_card(card_frame, virtue, idx)
 
     def _create_virtue_card(self, parent: tk.Widget, virtue: Dict[str, str], idx: int) -> None:
-        """Create a virtue card."""
+        """Create a virtue card for grid layout."""
         card = tk.Frame(
             parent,
             bg=self.theme_dict["bg_elevated"],
             relief=tk.FLAT,
             borderwidth=1
         )
-        card.pack(fill=tk.X, pady=8)
+        card.pack(fill=tk.BOTH, expand=True)
 
         # Accent indicator
         accent = tk.Frame(
             card,
             bg=self.theme_dict["accent_primary"],
             width=4,
-            height=60
+            height=80
         )
         accent.pack(side=tk.LEFT)
         accent.pack_propagate(False)
 
         # Content
         content = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
-        content.pack(fill=tk.BOTH, expand=True, padx=16, pady=12)
+        content.pack(fill=tk.BOTH, expand=True, padx=12, pady=12)
 
         tk.Label(
             content,
@@ -236,7 +281,7 @@ class OrchestratorInterface(tk.Frame):
             fg=self.theme_dict["text_secondary"],
             bg=self.theme_dict["bg_elevated"],
             justify=tk.LEFT,
-            wraplength=900
+            wraplength=400
         ).pack(anchor=tk.W, pady=(4, 0))
 
     def _build_tools_section(self, parent: tk.Widget) -> None:
@@ -377,9 +422,9 @@ class OrchestratorInterface(tk.Frame):
     def _launch_tool(self, tool_key: str) -> None:
         """Launch specified tool."""
         tool_scripts = {
-            "converter": "Converter/converter.py",
-            "generator": "Generator/generator.py",
-            "runner": "Runner/runner.py",
+            "converter": "core/converter/converter.py",
+            "generator": "core/generator/generator.py",
+            "runner": "core/runner/runner.py",
         }
 
         if tool_key in tool_scripts:
@@ -389,6 +434,8 @@ class OrchestratorInterface(tk.Frame):
                     "python",
                     str(script_path)
                 ])
+            else:
+                print(f"Tool script not found: {script_path}")
 
     def _open_github(self) -> None:
         """Open GitHub repository in browser."""
