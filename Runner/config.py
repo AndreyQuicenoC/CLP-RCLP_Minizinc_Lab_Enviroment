@@ -36,10 +36,10 @@ class RunnerConfig:
 
     # Paths
     DATA_DIRECTORIES = [
-        "Data/Battery Own",
-        "Data/Battery Project Integer",
-        "Data/Battery Project Variant",
-        "Data/Battery Generated"
+        "Data/battery-own",
+        "Data/battery-project-integer",
+        "Data/battery-project-variant",
+        "Data/battery-generated"
     ]
 
     MODELS = ["clp", "rclp"]

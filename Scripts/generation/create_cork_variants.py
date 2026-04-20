@@ -163,8 +163,8 @@ def main():
 
     # Navigate to project root (from Scripts/Generated System/)
     project_root = Path(__file__).parent.parent.parent
-    cork_dir = project_root / 'Data' / 'Battery Project Integer'
-    output_dir = project_root / 'Data' / 'Battery Project Variant'
+    cork_dir = project_root / 'Data' / 'battery-project-integer'
+    output_dir = project_root / 'Data' / 'battery-project-variant'
 
     output_dir.mkdir(parents=True, exist_ok=True)
 

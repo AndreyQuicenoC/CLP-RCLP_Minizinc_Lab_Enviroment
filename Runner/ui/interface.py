@@ -232,7 +232,7 @@ class RunnerInterface(tk.Frame):
         # Directory selection
         SectionLabel(card, "Directory", self.theme_dict).pack(anchor="w", padx=12, pady=(14, 6))
         self.dir_var = tk.StringVar()
-        dirs = ["Battery Own", "Battery Generated", "Battery Project Integer", "Battery Project Variant"]
+        dirs = ["battery-own", "battery-generated", "battery-project-integer", "battery-project-variant"]
         self.dir_combo = ttk.Combobox(
             card,
             textvariable=self.dir_var,

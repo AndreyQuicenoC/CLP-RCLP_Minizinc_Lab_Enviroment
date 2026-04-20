@@ -335,9 +335,9 @@ def main():
             logger.error(f"File not found: {file_path}")
             sys.exit(1)
     else:
-        # Directory mode - validate Battery Project Integer
+        # Directory mode - validate battery-project-integer
         project_root = Path(__file__).parent.parent
-        target_dir = project_root / "Data" / "Battery Project Integer"
+        target_dir = project_root / "Data" / "battery-project-integer"
 
         if not target_dir.exists():
             logger.error(f"Directory not found: {target_dir}")

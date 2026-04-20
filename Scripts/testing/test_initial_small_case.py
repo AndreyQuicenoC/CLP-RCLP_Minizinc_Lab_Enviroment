@@ -30,7 +30,7 @@ MODEL_FILE = "clp_model.mzn"
 
 # Test cases (small ones first)
 SMALL_TEST_CASES = [
-    "Data/Battery Own/noncity_5buses-8stations.dzn",
+    "Data/battery-own/noncity_5buses-8stations.dzn",
 ]
 
 # Solver configuration

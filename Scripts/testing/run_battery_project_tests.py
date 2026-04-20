@@ -5,7 +5,7 @@ Battery Project Integer - Comprehensive Test Runner
 ================================================================================
 
 Professional test execution system that:
-- Runs all test cases from Battery Project Integer
+- Runs all test cases from battery-project-integer
 - Manages execution runs in separate result directories
 - Handles interruptions gracefully
 - Generates comprehensive reports
@@ -353,7 +353,7 @@ def generate_summary_report(results: list, summary_file: Path, run_info: dict):
 
 def main():
     """Main execution function."""
-    parser = argparse.ArgumentParser(description='Run Battery Project Integer tests')
+    parser = argparse.ArgumentParser(description='Run battery-project-integer tests')
     parser.add_argument('--time-limit', type=int, default=DEFAULT_TIME_LIMIT_MS,
                         help=f'Time limit per test in milliseconds (default: {DEFAULT_TIME_LIMIT_MS})')
     parser.add_argument('--pattern', type=str, default='*.dzn',
@@ -366,7 +366,7 @@ def main():
     # Setup paths
     project_root = Path(__file__).parent.parent
     model_file = project_root / "Models" / MODEL_FILE
-    data_dir = project_root / "Data" / "Battery Project Integer"
+    data_dir = project_root / "Data" / "battery-project-integer"
     results_base = project_root / RESULTS_BASE_DIR
 
     # Validate

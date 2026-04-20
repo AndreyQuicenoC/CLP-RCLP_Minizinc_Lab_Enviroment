@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ================================================================================
-Synthetic Data Generator for Battery Own Test Cases
+Synthetic Data Generator for battery-own Test Cases
 ================================================================================
 
 Generates synthetic test cases with varying complexity for testing the CLP model.
@@ -143,7 +143,7 @@ def generate_test_case(num_buses: int, num_stations: int, max_stops: int, output
 def main():
     """Generate synthetic test cases."""
     project_root = Path(__file__).parent.parent
-    output_dir = project_root / "Data" / "Battery Own"
+    output_dir = project_root / "Data" / "battery-own"
     output_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info("=" * 80)
