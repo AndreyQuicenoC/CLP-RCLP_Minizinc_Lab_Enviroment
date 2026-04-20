@@ -67,9 +67,10 @@ array[B,B,1..max_stops,1..max_stops] of var 0..1: zbdi;
 % A. CAPACIDAD DE BATERÍA
 % -----------------------------
 
-% Initial battery condition: Start with full charge
+% Initial conditions
 constraint forall(b in B) (
-    cbi[b,1] = Cmax
+    cbi[b,1] = Cmax /\           % Start with full charge
+    tbi[b,1] = tau_bi[b,1]       % Actual arrival time matches schedule at first stop
 );
 
 % La batería debe permanecer dentro de límites seguros
