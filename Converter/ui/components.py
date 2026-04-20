@@ -78,12 +78,12 @@ class FlatButton(tk.Frame):
             self.button.config(bg=self.normal_bg)
 
     def set_disabled(self, disabled: bool) -> None:
-        """Enable/disable button."""
+        """Enable/disable button (gates click/hover handlers)."""
         self._disabled = disabled
         if disabled:
-            self.button.config(bg=self.disabled_bg, fg=self.disabled_fg, cursor="arrow", state=tk.DISABLED)
+            self.button.config(bg=self.disabled_bg, fg=self.disabled_fg, cursor="arrow")
         else:
-            self.button.config(bg=self.normal_bg, fg=self.normal_fg, cursor="hand2", state=tk.NORMAL)
+            self.button.config(bg=self.normal_bg, fg=self.normal_fg, cursor="hand2")
 
 
 class SectionLabel(tk.Label):

@@ -4,7 +4,7 @@
     "minizinc_available": true,
     "dll_path": null,
     "env_variable": null,
-    "home_directory": "C:\\gurobi1301\\win64"
+    "home_directory": "[REDACTED_GUROBI_PATH]"
   },
   "test_direct": {
     "success": false,

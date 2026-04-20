@@ -15,6 +15,7 @@ from typing import Dict, List, Optional, Literal
 import threading
 import logging
 from datetime import datetime
+import queue
 
 from .themes import ThemeManager, get_theme_dict, DARK_PALETTE, LIGHT_PALETTE
 from .components import SectionLabel, FlatButton, Divider, StatusIndicator, FormEntry
@@ -72,6 +73,8 @@ class ConverterInterface(tk.Frame):
         # Conversion state
         self.is_converting = False
         self.conversion_thread: Optional[threading.Thread] = None
+        self.conversion_stop_event = threading.Event()
+        self.log_queue: queue.Queue = queue.Queue()
 
         # State variables
         self.available_tests: List[str] = []
@@ -520,14 +523,19 @@ class ConverterInterface(tk.Frame):
             return
 
         self.is_converting = True
+        self.conversion_stop_event.clear()  # Reset stop flag
+        self.log_queue.queue.clear()  # Clear previous logs
         self.convert_btn.set_disabled(True)
         self.stop_btn.set_disabled(False)
 
         self.conversion_thread = threading.Thread(target=self._do_conversion, daemon=True)
         self.conversion_thread.start()
 
+        # Start polling for log messages from thread
+        self._poll_log_queue()
+
     def _do_conversion(self) -> None:
-        """Perform the actual conversion."""
+        """Perform the actual conversion (runs in background thread)."""
         try:
             # Validate inputs
             jits_dir = self.jits_dir_var.get()
@@ -535,14 +543,14 @@ class ConverterInterface(tk.Frame):
             test_mode = self.test_mode_var.get()
 
             if not jits_dir or not output_dir_name:
-                self._log("Error: Please select directory and output battery", "error")
+                self.log_queue.put(("Error: Please select directory and output battery", "error"))
                 return
 
             # Get output directory path
             if self.output_option_var.get() == "new":
                 new_dir_name = self.new_dir_var.get().strip()
                 if not new_dir_name:
-                    self._log("Error: Please enter a name for the new directory", "error")
+                    self.log_queue.put(("Error: Please enter a name for the new directory", "error"))
                     return
                 output_path = self.project_root / "Data" / new_dir_name
             else:
@@ -550,46 +558,46 @@ class ConverterInterface(tk.Frame):
 
             # Create output directory
             output_path.mkdir(parents=True, exist_ok=True)
-            self._log(f"Output directory: {output_path}", "info")
+            self.log_queue.put((f"Output directory: {output_path}", "info"))
 
             # Get JSON files to convert
             jits_path = self.project_root / "JITS2022" / "Code" / "Data" / jits_dir
             json_files = JITSAnalyzer.get_json_files(jits_path, "buses_input*.json")
 
             if not json_files:
-                self._log(f"No JSON files found in {jits_dir}", "error")
+                self.log_queue.put((f"No JSON files found in {jits_dir}", "error"))
                 return
 
             # Filter by test selection mode
             if test_mode == "selected":
                 selected_test = self.test_var.get()
                 if not selected_test:
-                    self._log("Error: Please select a test", "error")
+                    self.log_queue.put(("Error: Please select a test", "error"))
                     return
                 # Filter files by selected test
                 json_files = [f for f in json_files if selected_test in f.stem]
 
             if not json_files:
-                self._log("No tests selected for conversion", "error")
+                self.log_queue.put(("No tests selected for conversion", "error"))
                 return
 
-            self._log(f"Converting {len(json_files)} tests from {jits_dir}...", "info")
+            self.log_queue.put((f"Converting {len(json_files)} tests from {jits_dir}...", "info"))
 
             # Load experiment data
-            self._log("Loading stations and distance data...", "info")
+            self.log_queue.put(("Loading stations and distance data...", "info"))
 
             # Load stations and distances
             stations, station_count = DataLoader.load_stations(jits_path)
             distances, dist_station_count = DataLoader.load_distances(jits_path)
 
             if distances:
-                self._log(f"Loaded {len(distances)} distance entries", "info")
+                self.log_queue.put((f"Loaded {len(distances)} distance entries", "info"))
             else:
-                self._log("No distance data found. Using fallback calculation.", "warning")
+                self.log_queue.put(("No distance data found. Using fallback calculation.", "warning"))
 
             # Create experiment configuration
             config = ExperimentConfig()
-            self._log(f"Using config: model_speed={config.model_speed} km/h, rest_time={config.rest_time} min", "info")
+            self.log_queue.put((f"Using config: model_speed={config.model_speed} km/h, rest_time={config.rest_time} min", "info"))
 
             # Perform conversion with source directory name and loaded data
             success_count, failure_count, messages = ConverterEngine.batch_convert_files(
@@ -599,24 +607,25 @@ class ConverterInterface(tk.Frame):
             # Log results
             for msg in messages:
                 if msg.startswith("✓"):
-                    self._log(msg, "success")
+                    self.log_queue.put((msg, "success"))
                 else:
-                    self._log(msg, "error")
+                    self.log_queue.put((msg, "error"))
 
             # Summary
-            self._log(f"Conversion complete: {success_count} successful, {failure_count} failed", "success")
+            self.log_queue.put((f"Conversion complete: {success_count} successful, {failure_count} failed", "success"))
 
         except Exception as e:
-            self._log(f"Error: {str(e)}", "error")
+            self.log_queue.put((f"Error: {str(e)}", "error"))
             logger.error(f"Conversion error: {e}", exc_info=True)
         finally:
             self.is_converting = False
-            self.convert_btn.set_disabled(False)
-            self.stop_btn.set_disabled(True)
+            # Schedule UI updates in main thread
+            self.root.after(0, lambda: self.convert_btn.set_disabled(False))
+            self.root.after(0, lambda: self.stop_btn.set_disabled(True))
 
     def _stop_conversion(self) -> None:
         """Stop ongoing conversion."""
-        self.is_converting = False
+        self.conversion_stop_event.set()  # Signal thread to stop
         self._log("Conversion stopped by user", "warning")
         self.convert_btn.set_disabled(False)
         self.stop_btn.set_disabled(True)
@@ -681,6 +690,19 @@ class ConverterInterface(tk.Frame):
             font=("Arial", 8)
         ).pack(side=tk.LEFT, padx=20, pady=5)
 
+    def _poll_log_queue(self) -> None:
+        """Poll log queue for messages from conversion thread (thread-safe)."""
+        try:
+            while True:
+                message, level = self.log_queue.get_nowait()
+                self._log(message, level)
+        except queue.Empty:
+            pass
+
+        # Continue polling if conversion is still running
+        if self.is_converting:
+            self.root.after(100, self._poll_log_queue)
+
     def _log(self, message: str, level: str = "info") -> None:
         """Log message to results display."""
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -719,12 +741,12 @@ REQUIRED FILES:
   Example: buses_input_20_0.json (20 km/h speed, 0 min rest)
 
 ✓ stations_input.csv
-  Station information with IDs, names, and coordinates.
-  Format: station_id, station_name, latitude, longitude
+  Station information with IDs and names.
+  Format: name, id
 
 ✓ distances_input.csv
-  Distance matrix between all station pairs.
-  Format: from_id, to_id, distance_meters
+  Distance matrix between all station pairs (in kilometers).
+  Format: from_id, to_id, distance
 
 
 HOW THE CONVERTER USES THESE FILES:

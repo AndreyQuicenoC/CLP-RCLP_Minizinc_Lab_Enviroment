@@ -260,7 +260,7 @@ class ConverterEngine:
                     energy_consumed_kwh = distance_km * 0.25
                     energy.append(energy_consumed_kwh)
 
-                # Scale energy by SCALE_ENERGY (10) - 1 unit = 0.1 kWh
+                # Scale energy by SCALE_ENERGY (1000) - 1 unit = 0.001 kWh
                 energy_scaled = [converter.scale_energy_to_integer(e) for e in energy]
                 energy_scaled += [0] * (max_stops - len(energy_scaled))
                 D.extend(energy_scaled)
@@ -361,9 +361,9 @@ class ConverterEngine:
 
                 # Travel time
                 f.write("% --- Travel Time (T) ---\n")
-                f.write("% Time between stops (scaled by 10 to preserve fractional minutes)\n")
-                f.write("% Divide by 10 to get actual minutes\n")
-                f.write("% Calculated using JITS2022 algorithm: T = distance / speed\n")
+                f.write("% Time between stops in INTEGER minutes (no scaling)\n")
+                f.write("% Values are written directly in minutes\n")
+                f.write("% Calculated using JITS2022 algorithm: T from schedule deltas\n")
                 f.write(f"T = array2d(1..{num_buses}, 1..{max_stops}, [\n")
                 for i in range(num_buses):
                     start_idx = i * max_stops

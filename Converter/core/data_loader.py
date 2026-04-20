@@ -64,7 +64,9 @@ class DataLoader:
         Load distance matrix from distances_input.csv.
 
         Replicates JITS2022 InstanceMTD.readDistances() (lines 754-776).
-        Distances are in meters (km × 1000).
+
+        CSV Format: from_id,to_id,distance (distance in kilometers)
+        Returns: distances in meters (CSV km values multiplied by 1000)
 
         Args:
             input_folder: Path to input data folder
