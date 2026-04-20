@@ -29,9 +29,9 @@ from .tooltip import Tooltip
 
 # Import navigation utility
 try:
-    from ...Shared.navigation import return_to_orchestrator
+    from core.shared.navigation import return_to_orchestrator
 except ImportError:
-    from Shared.navigation import return_to_orchestrator
+    from ...shared.navigation import return_to_orchestrator
 
 # Import Runner core modules
 try:

@@ -24,9 +24,9 @@ from .help_window import show_help
 
 # Import navigation utility
 try:
-    from ...Shared.navigation import return_to_orchestrator
+    from core.shared.navigation import return_to_orchestrator
 except ImportError:
-    from Shared.navigation import return_to_orchestrator
+    from ...shared.navigation import return_to_orchestrator
 
 # Import config - handle both relative and absolute imports
 try:
