@@ -9,6 +9,7 @@ Scripts for general utilities, diagnostics, and auxiliary functions.
 **Purpose**: Comprehensive validation of path resolution, navigation, and theme integration systems.
 
 **What it validates**:
+
 - ✓ Core directory structure (converter, generator, runner, orchestration, shared)
 - ✓ ToolPathResolver implementation and functionality
 - ✓ Navigation system between windows
@@ -28,6 +29,7 @@ python scripts/utilities/validate_integration.py -v
 ```
 
 **Exit Codes**:
+
 - `0`: All validations passed ✓
 - `1`: One or more validations failed ✗
 
@@ -79,11 +81,13 @@ Overall Status: ✓ PASS
 Diagnostic script for analyzing and resolving Cork instance issues.
 
 **Usage**:
+
 ```bash
 bash diagnose_cork.sh
 ```
 
 **Functionality**:
+
 - Check Cork file format
 - Analyze size and structure
 - Report main parameters
@@ -93,6 +97,7 @@ bash diagnose_cork.sh
 ## Utilities Module
 
 This module can be expanded with useful auxiliary functions:
+
 - Format conversion
 - Instance analysis
 - Visualization
@@ -108,19 +113,21 @@ This module can be expanded with useful auxiliary functions:
 ## Dependencies
 
 **Python Scripts**:
+
 - Python 3.8+
 - pathlib (standard library)
 - logging (standard library)
 
 **Shell Scripts**:
+
 - bash 4.0+
 
 ## Development Notes
 
 To add new utility scripts:
+
 1. Create file in this directory
 2. Add documentation to "Contents" section
 3. Update this README
 4. Include comprehensive module docstring
 5. Add logging for debugging support
-

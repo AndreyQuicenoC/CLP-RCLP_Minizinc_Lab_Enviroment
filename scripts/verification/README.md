@@ -9,6 +9,7 @@ Automated verification and testing scripts for the CLP-RCLP framework.
 **Purpose**: Verifies window transition functionality between Orchestrator and Tool windows.
 
 **What it tests**:
+
 - ✓ ToolPathResolver can locate all tool scripts (Converter, Generator, Runner)
 - ✓ Navigation paths are correctly configured
 - ✓ Back button functionality works across all tools
@@ -25,6 +26,7 @@ python scripts/verification/verify_window_transitions.py --project-root /path/to
 ```
 
 **Exit Codes**:
+
 - `0`: All transitions verified successfully ✓
 - `1`: One or more transitions failed ✗
 - `2`: Configuration error (missing tools, etc.)
@@ -72,6 +74,7 @@ Details:
 ### Phase 1: ToolPathResolver Verification
 
 The script imports `ToolPathResolver` and tests its ability to locate all three tool scripts:
+
 - Converter (`core/converter/converter.py`)
 - Generator (`core/generator/generator.py`)
 - Runner (`core/runner/runner.py`)
@@ -81,6 +84,7 @@ This ensures the dynamic path resolution system works correctly regardless of di
 ### Phase 2: Navigation Path Verification
 
 Verifies that critical navigation components exist:
+
 - Orchestrator entry point (`core/orchestration/orchestrator.py`)
 - Navigation utility module (`core/shared/navigation.py`)
 - Path resolver module (`core/shared/path_resolver.py`)
@@ -88,6 +92,7 @@ Verifies that critical navigation components exist:
 ### Phase 3: Orchestrator Theme Support
 
 Checks that the Orchestrator interface includes all required theme-switching components:
+
 - `_toggle_theme()` method
 - `ThemeManager` integration
 - `FlatButton` component for theme toggle
@@ -100,7 +105,9 @@ Checks that the Orchestrator interface includes all required theme-switching com
 **Problem**: The path resolver can't locate tool scripts.
 
 **Solutions**:
+
 1. Verify directory structure:
+
    ```
    core/
    ├── converter/
@@ -126,6 +133,7 @@ The `navigation.py` file may be missing. Ensure it exists at `core/shared/naviga
 ### "Theme Support: ✗"
 
 The Orchestrator interface may not have theme switching properly integrated. Check `core/orchestration/ui/interface.py` for:
+
 - Proper `ThemeManager` import
 - `_toggle_theme()` method implementation
 - Theme toggle button in header
@@ -135,6 +143,7 @@ The Orchestrator interface may not have theme switching properly integrated. Che
 You can also test transitions manually:
 
 1. **Launch Orchestrator**:
+
    ```bash
    python core/orchestration/orchestrator.py
    ```

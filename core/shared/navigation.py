@@ -14,8 +14,6 @@ import subprocess
 from pathlib import Path
 import logging
 
-from .path_resolver import ToolPathResolver
-
 logger = logging.getLogger(__name__)
 
 
@@ -42,6 +40,7 @@ def return_to_orchestrator(current_window: tk.Tk) -> None:
             subprocess.Popen(["python", str(orchestrator_path)])
         else:
             logger.error(f"Orchestrator not found at: {orchestrator_path}")
+            print(f"Orchestrator not found at: {orchestrator_path}")
     except Exception as e:
         logger.error(f"Error launching orchestrator: {e}")
         print(f"Error launching orchestrator: {e}")
@@ -56,17 +55,23 @@ def _find_orchestrator_path() -> Path:
     Returns:
         Path: Path to orchestrator.py if found
     """
+    # Start from the shared module's location
+    # core/shared/navigation.py → navigate to project root
     current = Path(__file__).parent.parent.parent.absolute()
 
-    # Primary path: core/orchestration/orchestrator.py
+    # Primary path: <project_root>/core/orchestration/orchestrator.py
     path = current / "core" / "orchestration" / "orchestrator.py"
     if path.exists():
+        logger.debug(f"Found orchestrator at: {path}")
         return path
 
-    # Legacy path: orchestration/orchestrator.py (in case core is root)
+    # Alternative path: <project_root>/orchestration/orchestrator.py
     path = current / "orchestration" / "orchestrator.py"
     if path.exists():
+        logger.debug(f"Found orchestrator at: {path}")
         return path
 
-    logger.warning(f"Could not find orchestrator in: {current}")
-    return path  # Return the primary path even if not found (for error reporting)
+    logger.warning(f"Could not find orchestrator starting from: {current}")
+    # Return the primary path even if not found (for error reporting)
+    return current / "core" / "orchestration" / "orchestrator.py"
+
