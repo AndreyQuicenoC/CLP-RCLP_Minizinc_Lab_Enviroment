@@ -135,9 +135,10 @@ class OrchestratorInterface(tk.Frame):
         right = tk.Frame(header, bg=self.theme_dict["bg_elevated"])
         right.pack(side=tk.RIGHT, padx=20, pady=16)
 
+        toggle_text = "🌙 Dark" if ThemeManager.get_mode() == "light" else "☀ Light"
         theme_btn = FlatButton(
             right,
-            text="Light Mode" if ThemeManager.get_mode() == "dark" else "Dark Mode",
+            text=toggle_text,
             command=self._toggle_theme,
             theme=self.theme_dict,
             accent=False
@@ -176,7 +177,6 @@ class OrchestratorInterface(tk.Frame):
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Build content inside scrollable frame
-        self._build_information_section(scrollable_frame)
         self._build_information_section(scrollable_frame)
         self._build_virtues_section(scrollable_frame)
         self._build_tools_section(scrollable_frame)
@@ -422,13 +422,13 @@ class OrchestratorInterface(tk.Frame):
     def _launch_tool(self, tool_key: str) -> None:
         """Launch specified tool."""
         tool_scripts = {
-            "converter": "core/converter/converter.py",
-            "generator": "core/generator/generator.py",
-            "runner": "core/runner/runner.py",
+            "converter": "converter/converter.py",
+            "generator": "generator/generator.py",
+            "runner": "runner/runner.py",
         }
 
         if tool_key in tool_scripts:
-            script_path = self.project_root / tool_scripts[tool_key]
+            script_path = self.project_root / "core" / tool_scripts[tool_key]
             if script_path.exists():
                 subprocess.Popen([
                     "python",

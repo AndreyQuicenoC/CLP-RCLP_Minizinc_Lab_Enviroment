@@ -5,21 +5,25 @@ Complete documentation for the CLP-RCLP optimization framework.
 ## Quick Navigation
 
 ### Getting Started
+
 - **[getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md)** - Installation and first steps ⭐ Start here!
 - **[overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md)** - What is CLP-RCLP and how it works
 - **[reference/VERSION_HISTORY.md](reference/VERSION_HISTORY.md)** - Version history and migration guides
 
 ### Using the Tools
+
 - **[reference/USAGE_GUIDE.md](reference/USAGE_GUIDE.md)** - Detailed guide for each tool (GUI and CLI)
 - **[guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)** - Solutions to common problems
 - **[guides/](guides/)** - Additional user guides
 
 ### Technical Documentation
+
 - **[model/QUICKSTART.md](model/QUICKSTART.md)** - Quick mathematical overview
 - **[model/MathModel.tex](model/MathModel.tex)** - Complete mathematical formulation
 - **[model/README.md](model/README.md)** - Model documentation index
 
 ### Installation & Setup
+
 - **[installation/minizinc_installation.md](installation/minizinc_installation.md)** - MiniZinc setup
 - **[installation/gurobi_installation.md](installation/gurobi_installation.md)** - Gurobi solver (optional)
 - **[installation/cplex_installation.md](installation/cplex_installation.md)** - CPLEX solver (optional)
@@ -59,12 +63,14 @@ docs/
 ## For Different Users
 
 ### First-Time Users
+
 1. Read: [getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md)
 2. Launch: `python core/start.py`
 3. Explore: System Center GUI
 4. Learn: [overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md)
 
 ### Researchers & Scientists
+
 1. Review: [overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md)
 2. Study: [model/MathModel.tex](model/MathModel.tex)
 3. Use: [reference/USAGE_GUIDE.md](reference/USAGE_GUIDE.md)
@@ -72,12 +78,14 @@ docs/
 5. History: [reference/VERSION_HISTORY.md](reference/VERSION_HISTORY.md)
 
 ### Developers & Contributors
+
 1. Setup: [getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md)
 2. Understand: [core/README.md](../core/README.md)
 3. Reference: [model/MathModel.tex](model/MathModel.tex)
 4. Debug: [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)
 
 ### System Administrators
+
 1. Install: [getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md) + [installation/](installation/)
 2. Verify: Run `python scripts/solvers/check_solvers.py`
 3. Configure: `core/*/config.py` files
@@ -87,15 +95,15 @@ docs/
 
 ### By Topic
 
-| Topic | Location |
-|-------|----------|
-| Getting Started | [getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md) |
-| How to Use Tools | [reference/USAGE_GUIDE.md](reference/USAGE_GUIDE.md) |
-| Understanding the Project | [overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md) |
-| Mathematical Model | [model/MathModel.tex](model/MathModel.tex) |
-| Installation Issues | [installation/](installation/) |
-| Solver Problems | [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md) |
-| Version Information | [reference/VERSION_HISTORY.md](reference/VERSION_HISTORY.md) |
+| Topic                     | Location                                                                 |
+| ------------------------- | ------------------------------------------------------------------------ |
+| Getting Started           | [getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md) |
+| How to Use Tools          | [reference/USAGE_GUIDE.md](reference/USAGE_GUIDE.md)                     |
+| Understanding the Project | [overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md)             |
+| Mathematical Model        | [model/MathModel.tex](model/MathModel.tex)                               |
+| Installation Issues       | [installation/](installation/)                                           |
+| Solver Problems           | [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)                   |
+| Version Information       | [reference/VERSION_HISTORY.md](reference/VERSION_HISTORY.md)             |
 
 ### By Task
 
@@ -146,6 +154,7 @@ See [overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md) for more.
 **Current Version**: 2.0.0 (April 2026)
 
 Major update with:
+
 - System Center GUI with theme support
 - Multi-solver integration
 - Professional documentation
@@ -155,13 +164,13 @@ See [reference/VERSION_HISTORY.md](reference/VERSION_HISTORY.md) for upgrade gui
 
 ## Support
 
-| Question | Resource |
-|----------|----------|
-| How do I install? | [getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md) |
-| How do I use a tool? | [reference/USAGE_GUIDE.md](reference/USAGE_GUIDE.md) |
-| Something isn't working | [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md) |
-| What is the framework? | [overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md) |
-| How do solvers work? | [installation/](installation/) |
+| Question                | Resource                                                                 |
+| ----------------------- | ------------------------------------------------------------------------ |
+| How do I install?       | [getting-started/GETTING_STARTED.md](getting-started/GETTING_STARTED.md) |
+| How do I use a tool?    | [reference/USAGE_GUIDE.md](reference/USAGE_GUIDE.md)                     |
+| Something isn't working | [guides/TROUBLESHOOTING.md](guides/TROUBLESHOOTING.md)                   |
+| What is the framework?  | [overview/PROJECT_OVERVIEW.md](overview/PROJECT_OVERVIEW.md)             |
+| How do solvers work?    | [installation/](installation/)                                           |
 
 ## Contributing
 

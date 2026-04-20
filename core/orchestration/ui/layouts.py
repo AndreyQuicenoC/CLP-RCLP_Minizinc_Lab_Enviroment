@@ -8,9 +8,9 @@ from typing import Dict, Any
 class LayoutConfig:
     """Global layout configuration and constants."""
     WINDOW_WIDTH = 1100
-    WINDOW_HEIGHT = 900
+    WINDOW_HEIGHT = 650
     MIN_WIDTH = 1000
-    MIN_HEIGHT = 850
+    MIN_HEIGHT = 500
     MAX_WIDTH = None  # No maximum
     MAX_HEIGHT = None  # No maximum
     HEADER_HEIGHT = 70

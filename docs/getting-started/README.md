@@ -17,5 +17,6 @@ This directory contains everything you need to get started with the CLP-RCLP fra
 ## Next Steps
 
 After installation, see:
+
 - [../overview/PROJECT_OVERVIEW.md](../overview/PROJECT_OVERVIEW.md) - Understand the framework
 - [../reference/USAGE_GUIDE.md](../reference/USAGE_GUIDE.md) - Learn how to use tools

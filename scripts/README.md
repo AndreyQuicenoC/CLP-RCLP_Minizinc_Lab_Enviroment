@@ -1,224 +1,364 @@
 # Scripts Directory
 
-Collection of scripts for generation, validation, testing, and utilities of the CLP-RCLP MiniZinc project.
+Collection of utility scripts for data processing, generation, testing, and verification of the CLP-RCLP optimization framework.
 
 ## Directory Structure
 
 ```
-Scripts/
+scripts/
 ├── data-processing/        # Data conversion and validation
 │   ├── convert_json_to_integer_dzn.py
 │   ├── validate_integer_dzn.py
 │   └── README.md
 │
-├── generation/            # Instance variant and synthetic generation
+├── generation/             # Instance variant and synthetic generation
 │   ├── create_cork_variants.py
 │   ├── generate_synthetic_data.py
 │   └── README.md
 │
-├── testing/              # Testing suite and validation
-│   ├── test_generator.sh              (MAIN)
-│   ├── test_clp_preliminary.sh
-│   ├── run_battery_project_tests.py
-│   ├── test_initial_small_case.py
-│   └── README.md
-│
-├── setup/               # Initial configuration
+├── setup/                  # Environment setup and validation
 │   ├── setup_and_validate.py
 │   └── README.md
 │
-├── ui-testing/         # UI interface validation and theme testing
+├── solvers/                # Solver installation and testing
+│   ├── check_solvers.py              # Check available solvers
+│   ├── diagnose_solvers.py           # Diagnose solver issues
+│   ├── test_gurobi.py
+│   ├── test_multiple_solvers.py
+│   └── README.md
+│
+├── testing/                # Test suites and validation
+│   ├── test_generator.sh              (MAIN TEST SUITE)
+│   ├── test_clp_preliminary.sh
+│   ├── run_battery_project_tests.py
+│   ├── test_converter.py
+│   ├── test_converter_integration.py
+│   ├── test_initial_small_case.py
+│   └── README.md
+│
+├── ui-testing/             # UI interface validation
 │   ├── test_runner_ui.py
 │   ├── test_generator_ui.py
 │   └── README.md
 │
-├── utilities/           # Diagnostic and utility scripts
+├── utilities/              # Diagnostic and utility scripts
 │   ├── diagnose_cork.sh
 │   └── README.md
 │
-└── README.md            # This file
+├── verification/           # Converter and model verification
+│   ├── analyze_distance_scaling.py
+│   ├── test_converter_against_jits2022.py
+│   ├── verify_converter_fidelity.py
+│   ├── verify_dzn_correctness.py
+│   └── (no individual README)
+│
+└── README.md               # This file
 ```
 
-## Quick Start Workflow
+## Quick Start
 
-### First Time Using the Project
+### Launch System Center (Recommended)
 
 ```bash
-# 1. Initial setup
-python setup/setup_and_validate.py
+cd core
+python start.py
+```
 
-# 2. Generate Cork variants (if needed)
+Then use the GUI to access all tools.
+
+### From Command Line
+
+```bash
+# First time: validate setup
+python scripts/setup/setup_and_validate.py
+
+# Check available solvers
+python scripts/solvers/check_solvers.py
+
+# Run test suite
+bash scripts/testing/test_generator.sh
+```
+
+## Module Guide
+
+### Data Processing (`data-processing/`)
+
+Convert and validate data formats.
+
+**Scripts:**
+- `convert_json_to_integer_dzn.py` - JSON → DZN conversion
+- `validate_integer_dzn.py` - Verify DZN file correctness
+
+**Usage:**
+```bash
+# Convert JSON to DZN
+python data-processing/convert_json_to_integer_dzn.py input.json
+
+# Validate DZN file
+python data-processing/validate_integer_dzn.py data.dzn
+```
+
+### Generation (`generation/`)
+
+Create test instances and variants.
+
+**Scripts:**
+- `create_cork_variants.py` - Extract Cork single-cycle variants
+- `generate_synthetic_data.py` - Generate random instances
+
+**Usage:**
+```bash
+# Generate Cork variants
 python generation/create_cork_variants.py
 
-# 3. Run test suite
-bash testing/test_generator.sh
+# Generate synthetic data
+python generation/generate_synthetic_data.py --buses 10 --stops 5
 ```
 
-### Using the Interactive Generator
+### Setup (`setup/`)
 
+Configure and validate environment.
+
+**Scripts:**
+- `setup_and_validate.py` - Validate system requirements
+
+**Usage:**
 ```bash
-cd .. && python Generator/generator.py
+python setup/setup_and_validate.py
 ```
 
-### Development and Testing
+### Solvers (`solvers/`)
 
+Manage and test solver installation.
+
+**Scripts:**
+- `check_solvers.py` - List available solvers
+- `diagnose_solvers.py` - Diagnose solver issues
+- `test_gurobi.py` - Test Gurobi solver
+- `test_multiple_solvers.py` - Test all solvers
+
+**Usage:**
 ```bash
-# Individual tests
-bash testing/test_clp_preliminary.sh
-python testing/run_battery_project_tests.py
+# Check installed solvers
+python solvers/check_solvers.py
 
-# Cork diagnostics
-bash utilities/diagnose_cork.sh
+# Diagnose issues
+python solvers/diagnose_solvers.py
 
-# Validate existing data
-python data-processing/validate_integer_dzn.py ../Data/Battery\ Generated/*.dzn
+# Test specific solver
+python solvers/test_gurobi.py
 ```
 
-## Modules by Functionality
+### Testing (`testing/`)
 
-### Conversion & Validation (data-processing/)
+Execute test suites.
 
-Convert between formats and validate data integrity.
-
-- `convert_json_to_integer_dzn.py` - JSON → .dzn (scaled ×10)
-- `validate_integer_dzn.py` - Verify .dzn correctness
-
-**Input**: JSON, unvalidated `.dzn`
-**Output**: Validated data, correct `.dzn` files
-
-### Generation (generation/)
-
-Create instance variants and synthetic instances.
-
-- `create_cork_variants.py` - Extract Cork single-cycle from full-day
-- `generate_synthetic_data.py` - Generate random synthetic instances
-
-**Input**: Full-day instances, custom parameters
-**Output**: Feasible variants (single cycle), synthetic instances
-
-### Testing (testing/)
-
-Validate the complete system.
-
-- `test_generator.sh` (MAIN) - Main suite (7 tests)
-- `test_clp_preliminary.sh` - Basic preliminary tests
+**Main Scripts:**
+- `test_generator.sh` - **MAIN** test suite (recommended)
+- `test_clp_preliminary.sh` - Preliminary tests
+- `test_converter.py` - Converter unit tests
+- `test_converter_integration.py` - Integration tests
 - `run_battery_project_tests.py` - Battery project tests
-- `test_initial_small_case.py` - Small case tests
+- `test_initial_small_case.py` - Small case validation
 
-**Input**: .dzn instances
-**Output**: Test report
+**Usage:**
+```bash
+# Run main test suite
+bash testing/test_generator.sh
 
-### UI Testing (ui-testing/)
+# Run specific tests
+bash testing/test_clp_preliminary.sh
+python testing/test_converter.py
+```
 
-Validate user interface functionality and theme system.
+### UI Testing (`ui-testing/`)
 
-- `test_runner_ui.py` - Runner interface validation (8 test scenarios)
-- `test_generator_ui.py` - Generator interface validation (9 test scenarios)
+Validate user interface and theme system.
 
-**Input**: None (tests system directly)
-**Output**: Theme system verification, component rendering confirmation
-**Features Tested**: Dark/light mode switching, design tokens, component styling, window centering
+**Scripts:**
+- `test_runner_ui.py` - Test Runner interface
+- `test_generator_ui.py` - Test Generator interface
 
-### Setup (setup/)
+**Tests:**
+- Theme switching (dark/light)
+- Component rendering
+- Window positioning
+- Responsive layout
 
-Configure the environment.
+### Utilities (`utilities/`)
 
-- `setup_and_validate.py` - Validate requirements and structure
+Diagnostic tools.
 
-**Input**: System environment
-**Output**: Configuration report and suggestions
-
-### Utilities (utilities/)
-
-Diagnostic functions.
-
+**Scripts:**
 - `diagnose_cork.sh` - Analyze Cork instance issues
 
-## Global Dependencies
-
+**Usage:**
 ```bash
-# Python 3.8+
-python --version
-
-# MiniZinc 2.5+
-minizinc --version
-
-# Git (for versioning)
-git --version
-```
-
-## Runbook: Use Cases
-
-### Case 1: Generate New Cork Variants
-
-```bash
-# If variants don't exist:
-python generation/create_cork_variants.py
-
-# Verify creation:
-ls ../Data/Battery\ Project\ Variant/cork-*_1cycle.dzn
-```
-
-### Case 2: Validate Existing Data
-
-```bash
-# Validate single .dzn file
-python data-processing/validate_integer_dzn.py ../Data/sample.dzn
-
-# Validate all files in directory
-for f in ../Data/Battery\ Generated/*.dzn; do
-  python data-processing/validate_integer_dzn.py "$f"
-done
-```
-
-### Case 3: Complete Testing
-
-```bash
-# Main suite (recommended)
-bash testing/test_generator.sh
-
-# If failed, diagnose
 bash utilities/diagnose_cork.sh
 ```
 
-### Case 4: Develop New Instances
+### Verification (`verification/`)
+
+Verify converter and model correctness.
+
+**Scripts:**
+- `test_converter_against_jits2022.py` - Verify converter accuracy
+- `verify_converter_fidelity.py` - Check conversion fidelity
+- `verify_dzn_correctness.py` - Validate DZN output
+- `analyze_distance_scaling.py` - Analyze scaling parameters
+
+## Use Cases
+
+### New User Setup
 
 ```bash
-# 1. Generate synthetic data
-python generation/generate_synthetic_data.py --buses 8 --stations 10 --output test.dzn
+# 1. Validate environment
+python setup/setup_and_validate.py
 
-# 2. Validate
-python data-processing/validate_integer_dzn.py test.dzn
+# 2. Check solvers
+python solvers/check_solvers.py
 
-# 3. Test with MiniZinc
-minizinc --solver chuffed ../Models/clp_model.mzn test.dzn
+# 3. Launch System Center
+cd core && python start.py
 ```
 
-## Documentation
+### Generate Test Data
 
-For detailed information about each module:
+```bash
+# Via GUI (recommended)
+cd core && python start.py
+# Then use Instance Generator tool
 
-- [data-processing/README.md](data-processing/README.md)
-- [generation/README.md](generation/README.md)
-- [testing/README.md](testing/README.md)
-- [setup/README.md](setup/README.md)
-- [ui-testing/README.md](ui-testing/README.md)
-- [utilities/README.md](utilities/README.md)
+# Via command line
+python generation/generate_synthetic_data.py --buses 10 --stops 5 --output test_instance
+```
+
+### Run Optimization Tests
+
+```bash
+# Via GUI (recommended)
+cd core && python start.py
+# Then use Test Runner tool
+
+# Via command line
+bash testing/test_generator.sh
+```
+
+### Convert Data Format
+
+```bash
+# Via GUI
+cd core && python start.py
+# Then use Data Converter tool
+
+# Via command line
+python data-processing/convert_json_to_integer_dzn.py data.json
+```
+
+### Verify Installation
+
+```bash
+# Check all requirements
+python setup/setup_and_validate.py
+
+# Test solvers
+python solvers/check_solvers.py
+
+# Run verification tests
+python verification/test_converter_against_jits2022.py
+```
+
+## Data Paths (v2.0.0)
+
+All paths reference the new structure:
+
+```
+../experiments/instances/           # Test instances (old: ../Data/)
+├── battery-project-integer/
+├── battery-project-variant/
+├── battery-generated/
+└── battery-own/
+
+../experiments/results/             # Results (old: ../Tests/)
+└── Diagnostics/
+
+../core/models/                     # Models (old: ../Models/)
+├── clp_model.mzn
+├── rclp_model.mzn
+└── archive/
+```
+
+## System Requirements
+
+- **Python**: 3.8+
+- **MiniZinc**: 2.6+
+- **RAM**: 8GB minimum, 16GB recommended
+- **Disk**: 2GB for solvers and test data
+
+## Dependencies
+
+All scripts use only Python standard library and MiniZinc CLI.
+
+Optional Python packages:
+- `pytest` (for testing)
+- `numpy` (for some analysis scripts)
+
+## Running Tests
+
+### Full Test Suite (Recommended)
+
+```bash
+cd scripts
+bash testing/test_generator.sh
+```
+
+### Individual Tests
+
+```bash
+# Data processing
+python data-processing/validate_integer_dzn.py ../experiments/instances/*.dzn
+
+# Generation
+python generation/generate_synthetic_data.py --test
+
+# Conversion
+python testing/test_converter.py
+
+# Solver verification
+python solvers/test_multiple_solvers.py
+```
 
 ## Maintenance
 
-- **Paths**: All scripts use relative paths from Scripts/
-- **Encoding**: Python scripts use UTF-8 by default
-- **Compatibility**: Windows (bash via Git Bash), Linux, macOS
+- **Paths**: All scripts use relative paths from `scripts/` directory
+- **Python Version**: 3.8+ required
+- **Encoding**: UTF-8
+- **Cross-platform**: Windows, Linux, macOS compatible
 
 ## Contributing
 
 To add new scripts:
 
-1. Determine category (data-processing, generation, testing, setup, utilities)
-2. Create file in corresponding subdirectory
-3. Add documentation in subdirectory README.md
+1. Choose appropriate category directory
+2. Create script file following naming convention
+3. Add documentation to category README.md
 4. Update relative paths if needed
-5. Follow existing naming conventions
+5. Test with multiple solvers if applicable
 
-**Last Updated**: April 2026
+## Documentation
+
+For detailed information:
+
+- [data-processing/README.md](data-processing/README.md) - Data tools
+- [generation/README.md](generation/README.md) - Generation tools
+- [setup/README.md](setup/README.md) - Setup procedures
+- [solvers/README.md](solvers/README.md) - Solver management
+- [testing/README.md](testing/README.md) - Test procedures
+- [ui-testing/README.md](ui-testing/README.md) - UI testing
+- [utilities/README.md](utilities/README.md) - Diagnostics
+
+---
+
+**Version**: 2.0.0  
+**Last Updated**: April 20, 2026  
+**Structure**: clp-rclp-framework pattern

@@ -47,23 +47,29 @@ core/
 ## Quick Start
 
 ### Launch System Center (Recommended)
+
 From the `core/` directory:
+
 ```bash
 python start.py
 ```
 
 Or use the bash wrapper:
+
 ```bash
 bash start.sh
 ```
 
 Or launch directly:
+
 ```bash
 python orchestration/orchestrator.py
 ```
 
 ### Direct Module Access
+
 From the `core/` directory:
+
 - **Generator**: `python generator/generator.py`
 - **Runner**: `python runner/runner.py`
 - **Converter**: `python converter/converter.py`
@@ -80,6 +86,7 @@ From the `core/` directory:
 ## Architecture
 
 All modules follow a consistent architecture pattern:
+
 - `config.py` - Configuration and constants
 - `{module}.py` - Entry point script
 - `core/` - Core business logic
@@ -88,6 +95,7 @@ All modules follow a consistent architecture pattern:
 ## Theme System
 
 All UI modules support dark/light theme switching with:
+
 - Professional color palettes
 - Dynamic theme switching
 - Persistent theme state
