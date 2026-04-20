@@ -249,15 +249,22 @@ class ConverterEngine:
                 stations += [stations[-1]] * (max_stops - len(stations))
                 st_bi.extend(stations)
 
-                # For D: use time-based energy approximation for now
-                # (real distance matrix would require stations_input.csv + distances_input.csv)
-                energy = [0]  # First segment (at first station)
-                for i in range(1, len(bus['time_deltas'])):
-                    # Energy ≈ time * 0.20 (default approximation)
-                    # This will be more accurate once distances_dict is populated
-                    time_delta_minutes = bus['time_deltas'][i]
-                    energy_val = time_delta_minutes * 0.20
-                    energy.append(energy_val)
+                # For D: calculate energy consumption based on distance and consumption rate
+                # Energy = distance_km * consumption_per_km
+                # Default consumption rate if not specified
+                energy = [0]  # First segment (at first station, no energy consumed)
+                for i in range(1, len(bus['station_ids'])):
+                    prev_station_id = bus['station_ids'][i - 1]
+                    curr_station_id = bus['station_ids'][i]
+
+                    # Get distance from distances_dict (in meters)
+                    distance_m = converter.distances_dict.get((prev_station_id, curr_station_id), 0)
+                    distance_km = distance_m / 1000.0
+
+                    # Energy consumption: 0.25 kWh per km (typical electric bus consumption)
+                    # This can be adjusted based on bus specifications
+                    energy_consumed_kwh = distance_km * 0.25
+                    energy.append(energy_consumed_kwh)
 
                 energy_scaled = [converter.scale_to_integer(e) for e in energy]
                 energy_scaled += [0] * (max_stops - len(energy_scaled))
@@ -297,7 +304,7 @@ class ConverterEngine:
                 f.write("%\n")
                 f.write("% IMPORTANT: To interpret results, divide integer values by SCALE:\n")
                 f.write(f"%   - Time: integer_value / {converter.SCALE} = minutes\n")
-                f.write(f"%   - Energy: integer_value / {converter.SCALE} = kWh\n")
+                f.write(f"%   - Energy (D): integer_value / {converter.SCALE} = kWh\n")
                 f.write("% " + "=" * 76 + "\n\n")
 
                 # Problem dimensions
@@ -340,7 +347,8 @@ class ConverterEngine:
 
                 # Energy consumption
                 f.write("% --- Energy Consumption (D) ---\n")
-                f.write("% Energy consumed between stops (INTEGER values, divide by SCALE for kWh)\n")
+                f.write("% Energy consumed between stops in kWh (INTEGER values, divide by SCALE for kWh)\n")
+                f.write("% Calculated from distance matrix: Energy = distance_km * 0.25 kWh/km\n")
                 f.write(f"D = array2d(1..{num_buses}, 1..{max_stops}, [\n")
                 for i in range(num_buses):
                     start_idx = i * max_stops
