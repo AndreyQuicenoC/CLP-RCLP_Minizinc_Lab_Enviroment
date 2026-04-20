@@ -1,0 +1,26 @@
+{
+  "chuffed": {
+    "available": true,
+    "info": "MiniZinc to FlatZinc converter, version 2.9.4, build 2068644735\nCopyright (C) 2014-2025 Monash University, NICTA, Data61"
+  },
+  "gecode": {
+    "available": true,
+    "info": "MiniZinc to FlatZinc converter, version 2.9.4, build 2068644735\nCopyright (C) 2014-2025 Monash University, NICTA, Data61"
+  },
+  "coin-bc": {
+    "available": true,
+    "info": "MiniZinc to FlatZinc converter, version 2.9.4, build 2068644735\nCopyright (C) 2014-2025 Monash University, NICTA, Data61"
+  },
+  "globalizer": {
+    "available": true,
+    "info": "MiniZinc to FlatZinc converter, version 2.9.4, build 2068644735\nCopyright (C) 2014-2025 Monash University, NICTA, Data61"
+  },
+  "cplex": {
+    "available": true,
+    "info": "MiniZinc to FlatZinc converter, version 2.9.4, build 2068644735\nCopyright (C) 2014-2025 Monash University, NICTA, Data61"
+  },
+  "gurobi": {
+    "available": true,
+    "info": "MiniZinc to FlatZinc converter, version 2.9.4, build 2068644735\nCopyright (C) 2014-2025 Monash University, NICTA, Data61"
+  }
+}

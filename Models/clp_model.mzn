@@ -18,20 +18,27 @@ array[B,1..max_stops] of int: st_bi;
 % ESCALA NUMÉRICA
 % -----------------------------
 
-int: SCALE = 10;                % Factor de escala para trabajar con enteros
+% Diferenciada por dominio (energía vs tiempo):
+% Energy (D, Cmax, Cmin, alpha): Valores enteros en unidades de 0.001 kWh (SCALE=1000)
+%   Ejemplo: 100 kWh = 100000 unidades, 0.067 kWh × 1000 = 67 unidades (0% error)
+%   Escalado aumentado de 50 a 1000 para minimizar error de truncamiento en cálculos acumulados
+% Time (T, tau_bi, tbi, ctbi): Valores enteros en minutos (sin escala, SCALE_TIME=1)
+%   Ejemplo: 420 minutos (07:00) = 420 unidades, 5 min = 5 unidades
 
 % -----------------------------
 % CONSTANTES DEL MODELO
+% Todos los parámetros están en unidades enteras coherentes con su dominio físico
+% NO se usa escala global - cada magnitud tiene escala propia según necesidad
 % -----------------------------
 
-int: Cmax;   % Capacidad máxima de la batería
-int: Cmin;   % Nivel mínimo permitido de batería
-int: alpha;  % Tasa de carga energética (energía por unidad de tiempo)
-int: mu;     % Desviación máxima permitida respecto al horario
-int: SM;     % Margen de seguridad entre eventos de carga
-int: psi;    % Tiempo mínimo de carga
-int: beta;   % Tiempo máximo de carga
-int: M;      % Constante grande para restricciones lógicas (Big-M)
+int: Cmax;   % Capacidad máxima de la batería (en unidades de 0.001 kWh, SCALE=1000)
+int: Cmin;   % Nivel mínimo permitido de batería (en unidades de 0.001 kWh, SCALE=1000)
+int: alpha;  % Tasa de carga energética (en unidades de 0.001 kWh/min, SCALE=1000)
+int: mu;     % Desviación máxima permitida respecto al horario (en minutos)
+int: SM;     % Margen de seguridad entre eventos de carga (en minutos)
+int: psi;    % Tiempo mínimo de carga (en minutos)
+int: beta;   % Tiempo máximo de carga (en minutos)
+int: M;      % Constante grande para restricciones lógicas (Big-M ~5000, en minutos - no escala con energía)
 
 % -----------------------------
 % DATOS DE LAS RUTAS
@@ -45,8 +52,8 @@ array[B,1..max_stops] of int: tau_bi; % Horario planificado de llegada
 % VARIABLES DE DECISIÓN
 % -----------------------------
 
-array[B,1..max_stops] of var 0..1600: cbi;   % Nivel de batería al llegar
-array[B,1..max_stops] of var 0..1600: ebi;   % Energía cargada en la parada
+array[B,1..max_stops] of var 0..150000: cbi;   % Nivel de batería al llegar (scaled by 1000)
+array[B,1..max_stops] of var 0..150000: ebi;   % Energía cargada en la parada (scaled by 1000)
 array[B,1..max_stops] of var 0..600: ctbi;   % Tiempo dedicado a cargar
 array[B,1..max_stops] of var 0..3000: tbi;   % Tiempo real de llegada
 array[B,1..max_stops] of var 0..500: d_tbi;  % Desviación respecto al horario
@@ -63,9 +70,10 @@ array[B,B,1..max_stops,1..max_stops] of var 0..1: zbdi;
 % A. CAPACIDAD DE BATERÍA
 % -----------------------------
 
-% Initial battery condition: Start with full charge
+% Initial conditions
 constraint forall(b in B) (
-    cbi[b,1] = Cmax
+    cbi[b,1] = Cmax /\           % Start with full charge
+    tbi[b,1] = tau_bi[b,1]       % Actual arrival time matches schedule at first stop
 );
 
 % La batería debe permanecer dentro de límites seguros
@@ -140,7 +148,27 @@ constraint forall(b in B)(
 );
 
 % -----------------------------
-% F. FUNCIÓN OBJETIVO
+% G. RESTRICCIÓN DE PADDING (LIMPIEZA)
+% Fija a cero todas las variables para paradas más allá de num_stops[b]
+% Esto mejora la eficiencia del solver eliminando variables "muertas"
+% y es esencial para obtener resultados consistentes
+% -----------------------------
+
+constraint forall(b in B, i in num_stops[b]+1..max_stops) (
+    cbi[b,i] = 0 /\
+    ebi[b,i] = 0 /\
+    ctbi[b,i] = 0 /\
+    tbi[b,i] = 0 /\
+    d_tbi[b,i] = 0 /\
+    xbi[b,i] = 0
+);
+
+% Asegurar que st_bi tiene valores válidos en padding (no 0, pero no relevante)
+% Las restricciones anteriores hacen que xbi[b,i]=0 para padding, entonces
+% la restricción xst[st_bi[b,i]] >= xbi[b,i] se cumple trivialmente.
+
+% -----------------------------
+% H. FUNCIÓN OBJETIVO
 % -----------------------------
 
 % Minimizar el número de estaciones instaladas
@@ -154,6 +182,6 @@ output [
 "Estaciones instaladas: ", show(xst), "\n",
 "Total estaciones: ", show(sum(s in ST)(xst[s])), "\n",
 "Desviacion total: ",
-show(sum(b in B, i in 1..max_stops)(d_tbi[b,i])),
+show(sum(b in B, i in 1..num_stops[b])(d_tbi[b,i])),
 "\n"
 ];

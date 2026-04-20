@@ -1,0 +1,449 @@
+"""
+Converter Engine Module
+
+Core conversion logic from JSON to integer DZN format.
+Handles bus schedule parsing, energy calculation, and DZN file generation.
+
+Based on: Scripts/data-processing/convert_json_to_integer_dzn.py
+Author: AVISPA Research Team
+Date: April 2026
+"""
+
+import json
+import logging
+from pathlib import Path
+from typing import Dict, List, Any, Tuple, Optional
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+
+class ConverterEngine:
+    """Convert JSON bus schedules to integer DZN format."""
+
+    def __init__(self, config=None, distances_dict=None):
+        """
+        Initialize converter engine with configuration and data.
+
+        Args:
+            config: ExperimentConfig instance (or None for defaults)
+            distances_dict: Dict[(from_id, to_id)] -> distance_meters (or None to use fallback)
+        """
+        from .experiment_config import ExperimentConfig
+
+        self.config = config or ExperimentConfig()
+        self.distances_dict = distances_dict or {}
+
+        # Get scaled parameters from config (COHERENT SCALING)
+        scaled = self.config.to_scaled_dict()
+        self.SCALE_ENERGY = scaled['scale_energy']  # For D, Cmax, Cmin, alpha = 1000
+        self.SCALE_TIME = scaled['scale_time']      # For T, tau_bi = 1 (no scaling)
+
+        # Energy parameters (scaled by 1000: 1 unit = 0.001 kWh)
+        self.CMAX = scaled['cmax']      # 100000 (=100 kWh)
+        self.CMIN = scaled['cmin']      # 20000 (=20 kWh)
+        self.ALPHA = scaled['alpha']    # 10000 (=10 kWh/min)
+
+        # Time parameters (NOT scaled, keep as minutes)
+        self.MU = scaled['mu']          # 5 (min)
+        self.SM = scaled['sm']          # 1 (min)
+        self.PSI = scaled['psi']        # 1 (min)
+        self.BETA = scaled['beta']      # 10 (min)
+
+        # Big-M: Based on maximum scheduling horizon, not inflated by global SCALE
+        # Typical max schedule ~3000 min + buffer = 5000
+        self.M = 5000
+
+        # Speed bounds (in km/h)
+        self.MIN_SPEED_KMH = self.config.model_speed
+        self.MAX_SPEED_KMH = 60
+
+        # Rest time (converted to seconds)
+        self.REST_TIME_SECONDS = self.config.rest_time * 60
+
+    @staticmethod
+    def parse_time_to_minutes(time_str: str) -> int:
+        """
+        Convert time string (HH:MM format) to minutes since 00:00.
+
+        Args:
+            time_str: Time in "HH:MM" format
+
+        Returns:
+            Minutes since midnight as integer
+        """
+        try:
+            hours, minutes = map(int, time_str.split(':'))
+            return hours * 60 + minutes
+        except Exception as e:
+            logger.error(f"Error parsing time '{time_str}': {e}")
+            return 0
+
+    def scale_energy_to_integer(self, value: float) -> int:
+        """
+        Scale energy value by SCALE_ENERGY (1000).
+
+        Args:
+            value: Energy in kWh
+
+        Returns:
+            Scaled integer value (1 unit = 0.001 kWh = 0.1% precision)
+        """
+        return round(value * self.SCALE_ENERGY)
+
+    def scale_time_to_integer(self, value: float) -> int:
+        """
+        Convert time value to integer (NO scaling for minutes).
+
+        Args:
+            value: Time in minutes
+
+        Returns:
+            Integer minutes (as-is, no scaling)
+        """
+        return int(round(value))
+
+    @staticmethod
+    def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+        """
+        Calculate Euclidean distance between two GPS coordinates.
+
+        Args:
+            lat1, lon1: First coordinate
+            lat2, lon2: Second coordinate
+
+        Returns:
+            Distance in arbitrary units
+        """
+        return ((lat2 - lat1) ** 2 + (lon2 - lon1) ** 2) ** 0.5
+
+    def process_bus_line(self, line_data: Dict[str, Any], distances_dict: Dict = None) -> List[Dict[str, List]]:
+        """
+        Process a single bus line from JSON and calculate T using JITS2022 algorithm.
+
+        Replicates JITS2022 InstanceMTD.readBuses() and T calculation logic.
+
+        Args:
+            line_data: Dictionary containing line information
+            distances_dict: Optional dict of (from_id, to_id) -> distance_meters
+
+        Returns:
+            List of processed bus dictionaries with properly calculated T values
+        """
+        buses = line_data.get('buses', [])
+        processed_buses = []
+        distances_dict = distances_dict or self.distances_dict
+
+        for bus_idx, bus in enumerate(buses):
+            path = bus.get('path', [])
+
+            if not path:
+                logger.warning(f"Bus {bus_idx} has empty path. Skipping.")
+                continue
+
+            # Extract station IDs, times, and rest flags
+            station_ids = [stop['station_id'] for stop in path]
+            times = [self.parse_time_to_minutes(stop['time']) for stop in path]
+            rest_flags = [stop.get('rest', False) for stop in path]
+
+            # Calculate T using JITS2022 algorithm
+            # T represents travel time between consecutive stops (in minutes)
+            # In JITS2022, T is derived from the scheduled times, not recalculated from distances
+            # The schedule times already account for all factors (distance, speed, delays)
+            T_values = [0]  # First segment has no travel time
+
+            for i in range(1, len(path)):
+                # T is simply the time delta between consecutive stops
+                time_delta_minutes = times[i] - times[i - 1]
+
+                # If no time delta (shouldn't happen in valid data), use default
+                if time_delta_minutes <= 0:
+                    time_delta_minutes = 1
+                    logger.warning(f"Bus {bus_idx}: Zero or negative time delta at stop {i}. Using default.")
+
+                # Add rest time if previous stop has rest flag
+                rest_contribution = 0
+                if i > 0 and rest_flags[i - 1]:
+                    rest_contribution = self.config.rest_time
+
+                # T = time between stops (already includes any delays in the schedule)
+                travel_time_minutes = time_delta_minutes + rest_contribution
+                T_values.append(travel_time_minutes)
+
+            processed_buses.append({
+                'station_ids': station_ids,
+                'times': times,
+                'time_deltas': T_values,
+                'rest_flags': rest_flags,
+            })
+
+        return processed_buses
+
+    @classmethod
+    def convert_json_to_dzn(cls, json_file: Path, output_file: Path,
+                           variant_name: str = "", config=None, distances_dict=None) -> Tuple[bool, str]:
+        """
+        Convert a JSON bus schedule file to integer DZN format.
+
+        Args:
+            json_file: Path to input JSON file
+            output_file: Path to output DZN file
+            variant_name: Name of the variant (e.g., "20_0")
+            config: ExperimentConfig instance (or None for defaults)
+            distances_dict: Optional dict of (from_id, to_id) -> distance_meters
+
+        Returns:
+            (success: bool, message: str)
+        """
+        # Create converter instance with config and data
+        converter = cls(config=config, distances_dict=distances_dict or {})
+
+        logger.info(f"Converting {json_file.name} to integer DZN format...")
+        logger.info(f"  Using model speed: {converter.MIN_SPEED_KMH} km/h, rest time: {converter.config.rest_time} min")
+
+        try:
+            # Read JSON file
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+
+            # Process all lines and collect buses
+            all_buses = []
+            for line_data in data:
+                buses = converter.process_bus_line(line_data)
+                all_buses.extend(buses)
+
+            if not all_buses:
+                return False, f"No buses found in {json_file.name}"
+
+            # Collect all unique stations
+            all_stations = set()
+            for bus in all_buses:
+                all_stations.update(bus['station_ids'])
+
+            # Create station mapping (1-indexed)
+            station_to_idx = {st: idx + 1 for idx, st in enumerate(sorted(all_stations))}
+
+            # Determine dimensions
+            num_buses = len(all_buses)
+            num_stations = len(all_stations)
+            max_stops = max(len(bus['station_ids']) for bus in all_buses)
+
+            # Prepare arrays with padding
+            st_bi = []
+            D = []
+            T = []
+            tau_bi = []
+            num_stops = []
+
+            for bus in all_buses:
+                num_stops.append(len(bus['station_ids']))
+
+                # Map stations to indices and pad
+                stations = [station_to_idx[st] for st in bus['station_ids']]
+                stations += [stations[-1]] * (max_stops - len(stations))
+                st_bi.extend(stations)
+
+                # For D: calculate energy consumption based on distance and consumption rate
+                # Energy = distance_km * consumption_per_km
+                # Default consumption rate if not specified
+                energy = [0]  # First segment (at first station, no energy consumed)
+                for i in range(1, len(bus['station_ids'])):
+                    prev_station_id = bus['station_ids'][i - 1]
+                    curr_station_id = bus['station_ids'][i]
+
+                    # Get distance from distances_dict (in meters)
+                    distance_m = converter.distances_dict.get((prev_station_id, curr_station_id), 0)
+                    distance_km = distance_m / 1000.0
+
+                    # Energy consumption: 0.25 kWh per km (typical electric bus consumption)
+                    # This can be adjusted based on bus specifications
+                    energy_consumed_kwh = distance_km * 0.25
+                    energy.append(energy_consumed_kwh)
+
+                # Scale energy by SCALE_ENERGY (1000) - 1 unit = 0.001 kWh
+                energy_scaled = [converter.scale_energy_to_integer(e) for e in energy]
+                energy_scaled += [0] * (max_stops - len(energy_scaled))
+                D.extend(energy_scaled)
+
+                # T: travel times (NO SCALING - keep as integer minutes)
+                # Consistent with JITS2022: T = distance / speed in minutes
+                times = [converter.scale_time_to_integer(t) for t in bus['time_deltas']]
+                times += [0] * (max_stops - len(times))
+                T.extend(times)
+
+                # tau_bi: schedule times (NO SCALING - use raw minutes)
+                # MiniZinc tbi variable is defined as: var 0..3000: tbi
+                # So tau_bi must be in same units (minutes)
+                schedule = [converter.scale_time_to_integer(t) for t in bus['times']]
+                schedule += [schedule[-1] if schedule else 0] * (max_stops - len(schedule))
+                tau_bi.extend(schedule)
+
+            # Generate DZN file
+            base_name = json_file.stem.replace('buses_input', '')
+            base_name = base_name.strip('_') if base_name else 'default'
+
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write("% " + "=" * 76 + "\n")
+                f.write(f"% CLP Test Case: {base_name} (variant: {variant_name})\n")
+                f.write("% " + "=" * 76 + "\n")
+                f.write("% Source: JITS2022 Test Battery (Converted)\n")
+                f.write(f"% Original file: {json_file.name}\n")
+                f.write("% Converted to CLP format with COHERENT SCALING:\n")
+                f.write("%   - Energy (D, Cmax, Cmin, alpha): scaled by 1000 (1 unit = 0.001 kWh)\n")
+                f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): NO scaling (native minutes)\n")
+                f.write("%\n")
+                f.write("% CONVERSION DETAILS:\n")
+                f.write("% - tau_bi: minutes since 00:00 (no scaling) - matches MiniZinc tbi range 0..3000\n")
+                f.write("% - T: travel times (NO scaling - native integer minutes)\n")
+                f.write("% - D: energy values scaled by 1000 (1 unit = 0.001 kWh)\n")
+                f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
+                f.write("%           2.5 kWh -> 2500 (scaled by 1000)\n")
+                f.write("%\n")
+                f.write("% INTERPRETATION GUIDE:\n")
+                f.write("%   - tau_bi / times: minutes (no conversion needed)\n")
+                f.write("%   - Energy (D): integer_value / 1000 = kWh\n")
+                f.write("%   - MiniZinc constraints use scaled units (energy in 0.001 kWh units)\n")
+                f.write("% " + "=" * 76 + "\n\n")
+
+                # Problem dimensions
+                f.write("% --- Problem Dimensions ---\n")
+                f.write(f"num_buses = {num_buses};\n")
+                f.write(f"num_stations = {num_stations};\n\n")
+
+                # Energy parameters (from config, scaled by 1000)
+                f.write("% --- Energy Parameters (CLP Model) ---\n")
+                f.write(f"% Scaled by {converter.SCALE_ENERGY} (1 unit = 0.001 kWh)\n")
+                f.write(f"Cmax = {converter.CMAX};  % Maximum battery capacity (original: {converter.config.cmax} kWh)\n")
+                f.write(f"Cmin = {converter.CMIN};   % Minimum reserve (original: {converter.config.cmin} kWh)\n")
+                f.write(f"alpha = {converter.ALPHA};  % Fast charging rate (original: {converter.config.alpha} kWh/min)\n\n")
+
+                # Time and schedule parameters (NO SCALING)
+                f.write("% --- Time and Schedule Parameters ---\n")
+                f.write("% NO SCALING - values are native minutes\n")
+                f.write(f"mu = {converter.MU};      % Maximum delay (original: {converter.config.mu} min)\n")
+                f.write(f"SM = {converter.SM};      % Safety margin (original: {converter.config.sm} min)\n")
+                f.write(f"psi = {converter.PSI};     % Minimum charging time (original: {converter.config.psi} min)\n")
+                f.write(f"beta = {converter.BETA};   % Maximum charging time (original: {converter.config.beta} min)\n")
+                f.write(f"M = {converter.M};   % Big-M constant (based on max horizon: ~5000 min)\n\n")
+
+                # Route structure
+                f.write("% --- Route Structure ---\n")
+                f.write(f"max_stops = {max_stops};\n")
+                f.write(f"num_stops = {num_stops};\n\n")
+
+                # Station sequence
+                f.write("% --- Station Sequence (st_bi) ---\n")
+                f.write("% Maps each bus stop to a physical station ID (1-indexed)\n")
+                f.write(f"st_bi = array2d(1..{num_buses}, 1..{max_stops}, [\n")
+                for i in range(num_buses):
+                    start_idx = i * max_stops
+                    end_idx = start_idx + max_stops
+                    bus_stations = st_bi[start_idx:end_idx]
+                    line = "  " + ",".join(map(str, bus_stations))
+                    f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
+                f.write("]);\n\n")
+
+                # Energy consumption
+                f.write("% --- Energy Consumption (D) ---\n")
+                f.write("% Energy consumed between stops in kWh (INTEGER values scaled by 1000)\n")
+                f.write("% To get actual kWh: divide by 1000\n")
+                f.write("% Calculated from distance matrix: Energy = distance_km * 0.25 kWh/km\n")
+                f.write(f"D = array2d(1..{num_buses}, 1..{max_stops}, [\n")
+                for i in range(num_buses):
+                    start_idx = i * max_stops
+                    end_idx = start_idx + max_stops
+                    bus_energy = D[start_idx:end_idx]
+                    line = "  " + ",".join(map(str, bus_energy))
+                    f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
+                f.write("]);\n\n")
+
+                # Travel time
+                f.write("% --- Travel Time (T) ---\n")
+                f.write("% Time between stops in INTEGER minutes (no scaling)\n")
+                f.write("% Values are written directly in minutes\n")
+                f.write("% Calculated using JITS2022 algorithm: T from schedule deltas\n")
+                f.write(f"T = array2d(1..{num_buses}, 1..{max_stops}, [\n")
+                for i in range(num_buses):
+                    start_idx = i * max_stops
+                    end_idx = start_idx + max_stops
+                    bus_times = T[start_idx:end_idx]
+                    line = "  " + ",".join(map(str, bus_times))
+                    f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
+                f.write("]);\n\n")
+
+                # Schedule
+                f.write("% --- Original Timetable (tau_bi) ---\n")
+                f.write("% Scheduled arrival times in MINUTES since 00:00 (no scaling)\n")
+                f.write("% Consistent with MiniZinc tbi variable (0..3000 range)\n")
+                f.write(f"tau_bi = array2d(1..{num_buses}, 1..{max_stops}, [\n")
+                for i in range(num_buses):
+                    start_idx = i * max_stops
+                    end_idx = start_idx + max_stops
+                    bus_schedule = tau_bi[start_idx:end_idx]
+                    line = "  " + ",".join(map(str, bus_schedule))
+                    f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
+                f.write("]);\n")
+
+            logger.info(f"Successfully created {output_file.name}")
+            logger.info(f"  - Buses: {num_buses}, Stations: {num_stations}, Max stops: {max_stops}")
+            return True, f"Converted successfully: {num_buses} buses, {num_stations} stations"
+
+        except Exception as e:
+            logger.error(f"Error converting {json_file.name}: {e}", exc_info=True)
+            return False, f"Conversion error: {str(e)}"
+
+    @classmethod
+    def batch_convert_files(cls, json_files: List[Path], output_dir: Path, source_dir_name: str = "",
+                           config=None, distances_dict=None) -> Tuple[int, int, List[str]]:
+        """
+        Convert multiple JSON files to DZN format.
+
+        Args:
+            json_files: List of JSON file paths
+            output_dir: Output base directory for DZN files
+            source_dir_name: Name of the source directory (e.g., 'cork-1-line')
+            config: ExperimentConfig instance (or None for defaults)
+            distances_dict: Optional dict of (from_id, to_id) -> distance_meters
+
+        Returns:
+            (success_count: int, failure_count: int, messages: List[str])
+        """
+        success_count = 0
+        failure_count = 0
+        messages = []
+
+        # Create subdirectory with source directory name
+        if source_dir_name:
+            target_dir = output_dir / source_dir_name
+        else:
+            target_dir = output_dir
+
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        for json_file in json_files:
+            # Extract variant name
+            parts = json_file.stem.split('_')
+            variant = '_'.join(parts[2:]) if len(parts) > 2 else ""
+
+            # Generate output filename with source directory prefix
+            base_name = json_file.stem.replace('buses_input', '')
+            base_name = base_name.strip('_') if base_name else 'default'
+
+            if source_dir_name:
+                filename = f"{source_dir_name}_{output_dir.name}{base_name}.dzn"
+            else:
+                filename = f"{output_dir.name}{base_name}.dzn"
+
+            output_file = target_dir / filename
+
+            success, message = cls.convert_json_to_dzn(json_file, output_file, variant, config, distances_dict)
+            if success:
+                success_count += 1
+                messages.append(f"✓ {json_file.name}: {message}")
+            else:
+                failure_count += 1
+                messages.append(f"✗ {json_file.name}: {message}")
+
+        return success_count, failure_count, messages

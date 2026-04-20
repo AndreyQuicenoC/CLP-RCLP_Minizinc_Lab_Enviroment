@@ -1,6 +1,6 @@
 # CLP-RCLP MiniZinc Lab Environment
 
-[![Version](https://img.shields.io/badge/version-1.4.0-brightgreen?style=flat-square)](.)
+[![Version](https://img.shields.io/badge/version-1.5.0-brightgreen?style=flat-square)](.)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](.)
 [![Python](https://img.shields.io/badge/python-3.8+-yellow?style=flat-square)](.)
 [![MiniZinc](https://img.shields.io/badge/minizinc-2.5+-ff69b4?style=flat-square)](.)
@@ -15,6 +15,7 @@ This project includes:
 - Professional instance generation system (v3.0 - Working Pattern Replication)
 - Complete automated testing suite with **multi-solver support**
 - Enhanced test execution interface (Runner v1.4.0)
+- JSON to DZN conversion tool (Converter v1.5.0)
 - Exhaustive technical documentation
 - Varied datasets (Cork, synthetic, validated)
 
@@ -36,18 +37,32 @@ This project includes:
 ### 3. Test Runner Interface (v1.4.0 - Multi-Solver Support)
 
 - Professional Tkinter GUI with dark/light theme support
-- **Multiple solver selection** (chuffed, gecode, coin-bc, globalizer, cplex, gurobi)
+- **Multiple solver selection** (chuffed, gecode, coin-bc, or-tools cp-sat, cplex, gurobi)
 - Solver information modal with capabilities and use cases
 - Directory and file selectors for test instances
 - Model selection (CLP/RCLP)
 - Real-time execution monitoring
 - Automatic result formatting (JSON and TXT)
-- **Results organized by solver** for easy comparison
+- **Results organized by solver and test name** for easy comparison
 - Comprehensive tooltips for improved UX
 - Centered window positioning on all screens
 - Complete theme system with 27 design tokens
 
-### 4. Datasets
+### 4. JSON to DZN Converter (v1.5.0)
+
+- Professional conversion interface for JITS2022 test batteries
+- Batch convert JSON schedules to integer DZN format
+- Dark/light theme support with dynamic switching (fully working theme reconstruction)
+- Flexible test selection: All tests or individual test from combobox
+- Automatic directory existence verification for output batteries
+- Create new output directories on-demand with validation
+- Dynamic test loading with refresh button
+- Real-time conversion monitoring with progress logging
+- Clear button for conversion log management
+- Modular architecture for easy extension
+- Comprehensive tooltips and help system
+
+### 5. Datasets
 
 - Cork City (Real): Irish case instances
 - Noncity (Validated): Manually validated test cases
@@ -136,6 +151,7 @@ CLP-RCLP Minizinc/
 │   ├── generation/              # Variant generation
 │   ├── testing/                 # Test suite
 │   ├── setup/                   # Setup and initialization
+│   ├── solvers/                 # Solver utilities
 │   ├── utilities/               # Tools and diagnostics
 │   └── README.md                # Scripts guide
 │
@@ -147,17 +163,28 @@ CLP-RCLP Minizinc/
 │   ├── orchestrator.py          # Workflow coordinator
 │   └── README.md                # Documentation
 │
-├── Runner/                      # Test execution interface (NEW)
+├── Runner/                      # Test execution interface (v1.4.0)
 │   ├── runner.py                # Entry point
 │   ├── config.py                # UI colors and settings
 │   ├── core/                    # Executor and result handler
 │   ├── ui/                      # Tkinter interface
 │   └── README.md                # Documentation
 │
+├── Converter/                   # JSON to DZN converter (v1.0)
+│   ├── converter.py             # Entry point
+│   ├── config.py                # Configuration
+│   ├── core/                    # Conversion engine
+│   ├── ui/                      # Tkinter interface
+│   └── README.md                # Documentation
+│
+├── JITS2022/                    # JITS2022 test battery (external)
+│   └── Code/Data/               # Cork and other benchmarks
+│
 ├── Docs/                        # Documentation
 │   ├── generated-system/        # Generation system docs
 │   ├── model/                   # Model documentation
 │   ├── analysis/                # Analysis and diagnostics
+│   ├── installation/            # Solver installation guides
 │   └── README.md                # Documentation index
 │
 ├── Tests/                       # Test results and output

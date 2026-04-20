@@ -547,8 +547,12 @@ class RunnerInterface(tk.Frame):
                 self._log(f"Execution completed successfully in {exec_time:.3f}s", "success")
                 self.status_indicator.set_status("success", "Success")
 
-                # Save results organized by solver
-                handler = ResultHandler(str(Path(self.project_root) / "Tests" / "Output" / directory))
+                # Save results organized by test name and solver
+                test_name = instance.replace('.dzn', '')
+                handler = ResultHandler(
+                    str(Path(self.project_root) / "Tests" / "Output" / directory),
+                    test_name=test_name
+                )
                 success_save, json_path, txt_path = handler.save_results(instance, result_dict, SolverManager.get_display_name(solver_type))
 
                 if success_save:
