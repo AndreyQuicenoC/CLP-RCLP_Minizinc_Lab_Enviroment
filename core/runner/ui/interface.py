@@ -131,6 +131,17 @@ class RunnerInterface(tk.Frame):
         # Footer
         self._build_footer(container)
 
+        # Log battery discovery status
+        batteries_path = Path(self.project_root) / "experiments" / "instances"
+        if batteries_path.exists():
+            batteries = self._load_available_batteries()
+            if batteries:
+                self._log(f"Found {len(batteries)} test batteries: {', '.join(batteries)}", "info")
+            else:
+                self._log("No test batteries found in experiments/instances", "warning")
+        else:
+            self._log("Warning: experiments/instances directory not found", "warning")
+
     def _build_header(self, parent: tk.Widget) -> None:
         """Build the header with title and status indicator."""
         header = tk.Frame(parent, bg=self.theme_dict["bg_surface"], height=70)
@@ -501,7 +512,6 @@ class RunnerInterface(tk.Frame):
         batteries_path = Path(self.project_root) / "experiments" / "instances"
 
         if not batteries_path.exists():
-            self._log("Warning: experiments/instances directory not found", "warning")
             return []
 
         # Get all subdirectories (batteries)
@@ -509,11 +519,6 @@ class RunnerInterface(tk.Frame):
             d.name for d in batteries_path.iterdir()
             if d.is_dir() and not d.name.startswith('.')
         ])
-
-        if batteries:
-            self._log(f"Found {len(batteries)} test batteries: {', '.join(batteries)}", "info")
-        else:
-            self._log("No test batteries found in experiments/instances", "warning")
 
         return batteries
 
