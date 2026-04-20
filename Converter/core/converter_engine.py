@@ -34,17 +34,25 @@ class ConverterEngine:
         self.config = config or ExperimentConfig()
         self.distances_dict = distances_dict or {}
 
-        # Get scaled parameters from config
+        # Get scaled parameters from config (COHERENT SCALING)
         scaled = self.config.to_scaled_dict()
-        self.SCALE = self.config.scale
-        self.CMAX = scaled['cmax']
-        self.CMIN = scaled['cmin']
-        self.ALPHA = scaled['alpha']
-        self.MU = scaled['mu']
-        self.SM = scaled['sm']
-        self.PSI = scaled['psi']
-        self.BETA = scaled['beta']
-        self.M = 100000 * self.SCALE  # Big-M constant
+        self.SCALE_ENERGY = scaled['scale_energy']  # For D, Cmax, Cmin, alpha = 10
+        self.SCALE_TIME = scaled['scale_time']      # For T, tau_bi = 1 (no scaling)
+
+        # Energy parameters (scaled by 10)
+        self.CMAX = scaled['cmax']      # 1000 (=100 kWh)
+        self.CMIN = scaled['cmin']      # 200 (=20 kWh)
+        self.ALPHA = scaled['alpha']    # 100 (=10 kWh/min)
+
+        # Time parameters (NOT scaled, keep as minutes)
+        self.MU = scaled['mu']          # 5 (min)
+        self.SM = scaled['sm']          # 1 (min)
+        self.PSI = scaled['psi']        # 1 (min)
+        self.BETA = scaled['beta']      # 10 (min)
+
+        # Big-M: Based on maximum scheduling horizon, not inflated by global SCALE
+        # Typical max schedule ~3000 min + buffer = 5000
+        self.M = 5000
 
         # Speed bounds (in km/h)
         self.MIN_SPEED_KMH = self.config.model_speed
@@ -71,17 +79,29 @@ class ConverterEngine:
             logger.error(f"Error parsing time '{time_str}': {e}")
             return 0
 
-    def scale_to_integer(self, value: float) -> int:
+    def scale_energy_to_integer(self, value: float) -> int:
         """
-        Scale a floating-point value to integer by multiplying by SCALE.
+        Scale energy value by SCALE_ENERGY (10).
 
         Args:
-            value: Original floating-point value
+            value: Energy in kWh
 
         Returns:
-            Scaled integer value (rounded to nearest int)
+            Scaled integer value (1 unit = 0.1 kWh)
         """
-        return round(value * self.SCALE)
+        return round(value * self.SCALE_ENERGY)
+
+    def scale_time_to_integer(self, value: float) -> int:
+        """
+        Convert time value to integer (NO scaling for minutes).
+
+        Args:
+            value: Time in minutes
+
+        Returns:
+            Integer minutes (as-is, no scaling)
+        """
+        return int(round(value))
 
     @staticmethod
     def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -266,21 +286,21 @@ class ConverterEngine:
                     energy_consumed_kwh = distance_km * 0.25
                     energy.append(energy_consumed_kwh)
 
-                energy_scaled = [converter.scale_to_integer(e) for e in energy]
+                # Scale energy by SCALE_ENERGY (10) - 1 unit = 0.1 kWh
+                energy_scaled = [converter.scale_energy_to_integer(e) for e in energy]
                 energy_scaled += [0] * (max_stops - len(energy_scaled))
                 D.extend(energy_scaled)
 
-                # Scale and pad travel times (scale by 10 to avoid floating point)
-                # T is kept small (~1-8 range after scaling)
+                # T: travel times (NO SCALING - keep as integer minutes)
                 # Consistent with JITS2022: T = distance / speed in minutes
-                times = [round(t * 10) for t in bus['time_deltas']]  # Scale by 10 only
+                times = [converter.scale_time_to_integer(t) for t in bus['time_deltas']]
                 times += [0] * (max_stops - len(times))
                 T.extend(times)
 
-                # Scale and pad schedule times (NO SCALING - use raw minutes)
+                # tau_bi: schedule times (NO SCALING - use raw minutes)
                 # MiniZinc tbi variable is defined as: var 0..3000: tbi
-                # So tau_bi must be in the same units (minutes, not scaled)
-                schedule = [int(t) for t in bus['times']]  # Keep as minutes, no scaling
+                # So tau_bi must be in same units (minutes)
+                schedule = [converter.scale_time_to_integer(t) for t in bus['times']]
                 schedule += [schedule[-1] if schedule else 0] * (max_stops - len(schedule))
                 tau_bi.extend(schedule)
 
@@ -296,19 +316,21 @@ class ConverterEngine:
                 f.write("% " + "=" * 76 + "\n")
                 f.write("% Source: JITS2022 Test Battery (Converted)\n")
                 f.write(f"% Original file: {json_file.name}\n")
-                f.write("% Converted to CLP format with selective scaling (SCALE=" + str(converter.SCALE) + ")\n")
+                f.write("% Converted to CLP format with COHERENT SCALING:\n")
+                f.write("%   - Energy (D, Cmax, Cmin, alpha): scaled by 10 (1 unit = 0.1 kWh)\n")
+                f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): NO scaling (native minutes)\n")
                 f.write("%\n")
                 f.write("% CONVERSION DETAILS:\n")
                 f.write("% - tau_bi: minutes since 00:00 (no scaling) - matches MiniZinc tbi range 0..3000\n")
-                f.write("% - T: travel times scaled by 10 to preserve fractional minutes\n")
-                f.write("% - D: energy values scaled by SCALE=" + str(converter.SCALE) + " for precision\n")
+                f.write("% - T: travel times (NO scaling - native integer minutes)\n")
+                f.write("% - D: energy values scaled by 10 (1 unit = 0.1 kWh)\n")
                 f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
-                f.write("%           1.3 kWh -> " + str(converter.scale_to_integer(1.3)) + " (scaled by " + str(converter.SCALE) + ")\n")
+                f.write("%           2.5 kWh -> 25 (scaled by 10)\n")
                 f.write("%\n")
-                f.write("% IMPORTANT: To interpret results:\n")
-                f.write(f"%   - tau_bi: minutes since 00:00 (no division)\n")
-                f.write(f"%   - T: divide by 10 to get travel time in minutes\n")
-                f.write(f"%   - Energy (D): integer_value / {converter.SCALE} = kWh\n")
+                f.write("% INTERPRETATION GUIDE:\n")
+                f.write("%   - tau_bi / times: minutes (no conversion needed)\n")
+                f.write("%   - Energy (D): integer_value / 10 = kWh\n")
+                f.write("%   - MiniZinc constraints use native units (energy in 0.1 kWh units)\n")
                 f.write("% " + "=" * 76 + "\n\n")
 
                 # Problem dimensions
@@ -316,21 +338,21 @@ class ConverterEngine:
                 f.write(f"num_buses = {num_buses};\n")
                 f.write(f"num_stations = {num_stations};\n\n")
 
-                # Energy parameters (from config)
+                # Energy parameters (from config, scaled by 10)
                 f.write("% --- Energy Parameters (CLP Model) ---\n")
-                f.write(f"% Values are INTEGERS scaled by {converter.SCALE} from original values\n")
+                f.write(f"% Scaled by {converter.SCALE_ENERGY} (1 unit = 0.1 kWh)\n")
                 f.write(f"Cmax = {converter.CMAX};  % Maximum battery capacity (original: {converter.config.cmax} kWh)\n")
                 f.write(f"Cmin = {converter.CMIN};   % Minimum reserve (original: {converter.config.cmin} kWh)\n")
                 f.write(f"alpha = {converter.ALPHA};  % Fast charging rate (original: {converter.config.alpha} kWh/min)\n\n")
 
-                # Time and schedule parameters
+                # Time and schedule parameters (NO SCALING)
                 f.write("% --- Time and Schedule Parameters ---\n")
-                f.write(f"% Values are INTEGERS scaled by {converter.SCALE} from original values\n")
+                f.write("% NO SCALING - values are native minutes\n")
                 f.write(f"mu = {converter.MU};      % Maximum delay (original: {converter.config.mu} min)\n")
                 f.write(f"SM = {converter.SM};      % Safety margin (original: {converter.config.sm} min)\n")
                 f.write(f"psi = {converter.PSI};     % Minimum charging time (original: {converter.config.psi} min)\n")
                 f.write(f"beta = {converter.BETA};   % Maximum charging time (original: {converter.config.beta} min)\n")
-                f.write(f"M = {converter.M};   % Big-M constant (original: 10000.0)\n\n")
+                f.write(f"M = {converter.M};   % Big-M constant (based on max horizon: ~5000 min)\n\n")
 
                 # Route structure
                 f.write("% --- Route Structure ---\n")

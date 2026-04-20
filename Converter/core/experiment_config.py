@@ -225,14 +225,29 @@ class ExperimentConfig:
         return self.params.copy()
 
     def to_scaled_dict(self) -> Dict[str, int]:
-        """Return all parameters scaled by SCALE factor."""
+        """
+        Return all parameters with COHERENT scaling (not uniform).
+
+        Scaling strategy (based on JITS2022 best practices):
+        - Energy parameters (Cmax, Cmin, alpha): Scaled by 10
+          → 1 unit = 0.1 kWh (prevents precision loss, maintains readability)
+        - Time parameters (mu, SM, psi, beta): NO scaling
+          → Keep as natural minutes (no decimals in scheduling)
+        - D array: Scaled by 10 (energy consumption)
+        - T array: NO scaling (keep as fractional minutes, handled as integers)
+
+        This avoids inflating Big-M and maintains numerical stability.
+        """
+        SCALE_ENERGY = 10  # For energy: 1 unit = 0.1 kWh
+
         return {
-            'cmax': round(self.cmax * self.scale),
-            'cmin': round(self.cmin * self.scale),
-            'alpha': round(self.alpha * self.scale),
-            'mu': round(self.mu * self.scale),
-            'sm': round(self.sm * self.scale),
-            'psi': round(self.psi * self.scale),
-            'beta': round(self.beta * self.scale),
-            'scale': self.scale,
+            'cmax': round(self.cmax * SCALE_ENERGY),           # 100 kWh -> 1000
+            'cmin': round(self.cmin * SCALE_ENERGY),           # 20 kWh -> 200
+            'alpha': round(self.alpha * SCALE_ENERGY),         # 10 kWh/min -> 100
+            'mu': int(self.mu),                                # 5 min -> 5 (no scaling)
+            'sm': int(self.sm),                                # 1 min -> 1 (no scaling)
+            'psi': int(self.psi),                              # 1 min -> 1 (no scaling)
+            'beta': int(self.beta),                            # 10 min -> 10 (no scaling)
+            'scale_energy': SCALE_ENERGY,
+            'scale_time': 1,  # Time is not scaled
         }

@@ -18,20 +18,24 @@ array[B,1..max_stops] of int: st_bi;
 % ESCALA NUMÉRICA
 % -----------------------------
 
-int: SCALE = 10;                % Factor de escala para trabajar con enteros
+% Nota: No usamos SCALE global. Cada variable tiene su propio dominio físico coherente.
+% Energy (D): Valores enteros en unidades de 0.1 kWh (Cmax=1000 → 100 kWh)
+% Time (T, tau_bi, tbi, ctbi): Valores enteros en minutos (sin escala adicional)
 
 % -----------------------------
 % CONSTANTES DEL MODELO
+% Todos los parámetros están en unidades enteras coherentes con su dominio físico
+% NO se usa escala global - cada magnitud tiene escala propia según necesidad
 % -----------------------------
 
-int: Cmax;   % Capacidad máxima de la batería
-int: Cmin;   % Nivel mínimo permitido de batería
-int: alpha;  % Tasa de carga energética (energía por unidad de tiempo)
-int: mu;     % Desviación máxima permitida respecto al horario
-int: SM;     % Margen de seguridad entre eventos de carga
-int: psi;    % Tiempo mínimo de carga
-int: beta;   % Tiempo máximo de carga
-int: M;      % Constante grande para restricciones lógicas (Big-M)
+int: Cmax;   % Capacidad máxima de la batería (en unidades de 0.1 kWh)
+int: Cmin;   % Nivel mínimo permitido de batería (en unidades de 0.1 kWh)
+int: alpha;  % Tasa de carga energética (en unidades de 0.1 kWh/min)
+int: mu;     % Desviación máxima permitida respecto al horario (en minutos)
+int: SM;     % Margen de seguridad entre eventos de carga (en minutos)
+int: psi;    % Tiempo mínimo de carga (en minutos)
+int: beta;   % Tiempo máximo de carga (en minutos)
+int: M;      % Constante grande para restricciones lógicas (Big-M, ~5000 típico)
 
 % -----------------------------
 % DATOS DE LAS RUTAS
@@ -140,7 +144,27 @@ constraint forall(b in B)(
 );
 
 % -----------------------------
-% F. FUNCIÓN OBJETIVO
+% G. RESTRICCIÓN DE PADDING (LIMPIEZA)
+% Fija a cero todas las variables para paradas más allá de num_stops[b]
+% Esto mejora la eficiencia del solver eliminando variables "muertas"
+% y es esencial para obtener resultados consistentes
+% -----------------------------
+
+constraint forall(b in B, i in num_stops[b]+1..max_stops) (
+    cbi[b,i] = 0 /\
+    ebi[b,i] = 0 /\
+    ctbi[b,i] = 0 /\
+    tbi[b,i] = 0 /\
+    d_tbi[b,i] = 0 /\
+    xbi[b,i] = 0
+);
+
+% Asegurar que st_bi tiene valores válidos en padding (no 0, pero no relevante)
+% Las restricciones anteriores hacen que xbi[b,i]=0 para padding, entonces
+% la restricción xst[st_bi[b,i]] >= xbi[b,i] se cumple trivialmente.
+
+% -----------------------------
+% H. FUNCIÓN OBJETIVO
 % -----------------------------
 
 % Minimizar el número de estaciones instaladas
@@ -154,6 +178,6 @@ output [
 "Estaciones instaladas: ", show(xst), "\n",
 "Total estaciones: ", show(sum(s in ST)(xst[s])), "\n",
 "Desviacion total: ",
-show(sum(b in B, i in 1..max_stops)(d_tbi[b,i])),
+show(sum(b in B, i in 1..num_stops[b])(d_tbi[b,i])),
 "\n"
 ];
