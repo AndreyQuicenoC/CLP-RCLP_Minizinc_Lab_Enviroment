@@ -223,7 +223,7 @@ class RunnerInterface(tk.Frame):
         # Directory selection
         SectionLabel(card, "Directory", self.theme_dict).pack(anchor="w", padx=12, pady=(14, 6))
         self.dir_var = tk.StringVar()
-        dirs = ["battery-own", "battery-generated", "battery-project-integer", "battery-project-variant"]
+        dirs = self._load_available_batteries()
         self.dir_combo = ttk.Combobox(
             card,
             textvariable=self.dir_var,
@@ -487,7 +487,7 @@ class RunnerInterface(tk.Frame):
         if not directory:
             return
 
-        data_path = Path(self.project_root) / "Data" / directory
+        data_path = Path(self.project_root) / "experiments" / "instances" / directory
         instances = sorted([f.stem for f in data_path.glob("*.dzn")]) if data_path.exists() else []
 
         self.instance_combo["values"] = instances
@@ -495,6 +495,27 @@ class RunnerInterface(tk.Frame):
             self.instance_combo.current(0)
 
         self._log(f"Found {len(instances)} instances in {directory}", "info")
+
+    def _load_available_batteries(self) -> list:
+        """Load available battery directories from experiments/instances."""
+        batteries_path = Path(self.project_root) / "experiments" / "instances"
+
+        if not batteries_path.exists():
+            self._log("Warning: experiments/instances directory not found", "warning")
+            return []
+
+        # Get all subdirectories (batteries)
+        batteries = sorted([
+            d.name for d in batteries_path.iterdir()
+            if d.is_dir() and not d.name.startswith('.')
+        ])
+
+        if batteries:
+            self._log(f"Found {len(batteries)} test batteries: {', '.join(batteries)}", "info")
+        else:
+            self._log("No test batteries found in experiments/instances", "warning")
+
+        return batteries
 
     def _log(self, message: str, tag: str = "muted") -> None:
         """Add a message to the output log."""
@@ -545,7 +566,7 @@ class RunnerInterface(tk.Frame):
 
             executor = MiniZincExecutor(str(model_path))
 
-            data_path = Path(self.project_root) / "Data" / directory
+            data_path = Path(self.project_root) / "experiments" / "instances" / directory
             instance_path = data_path / f"{instance}.dzn"
 
             if not instance_path.exists():
