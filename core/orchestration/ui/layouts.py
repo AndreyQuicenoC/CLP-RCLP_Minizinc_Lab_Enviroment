@@ -9,8 +9,8 @@ class LayoutConfig:
     """Global layout configuration and constants."""
     WINDOW_WIDTH = 1100
     WINDOW_HEIGHT = 750
-    MIN_WIDTH = 900
-    MIN_HEIGHT = 800
+    MIN_WIDTH = 950
+    MIN_HEIGHT = 700
     HEADER_HEIGHT = 70
     FOOTER_HEIGHT = 40
     CONTENT_PADDING = 20
