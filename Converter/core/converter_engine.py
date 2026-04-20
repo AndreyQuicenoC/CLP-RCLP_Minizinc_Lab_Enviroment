@@ -147,18 +147,13 @@ class ConverterEngine:
             rest_flags = [stop.get('rest', False) for stop in path]
 
             # Calculate T using JITS2022 algorithm
+            # T represents travel time between consecutive stops (in minutes)
+            # In JITS2022, T is derived from the scheduled times, not recalculated from distances
+            # The schedule times already account for all factors (distance, speed, delays)
             T_values = [0]  # First segment has no travel time
 
             for i in range(1, len(path)):
-                prev_station_id = station_ids[i - 1]
-                curr_station_id = station_ids[i]
-
-                # Get actual distance from distances_dict if available
-                distance_m = 0
-                if distances_dict:
-                    distance_m = distances_dict.get((prev_station_id, curr_station_id), 0)
-
-                # Calculate time delta between stops (in minutes)
+                # T is simply the time delta between consecutive stops
                 time_delta_minutes = times[i] - times[i - 1]
 
                 # If no time delta (shouldn't happen in valid data), use default
@@ -166,34 +161,13 @@ class ConverterEngine:
                     time_delta_minutes = 1
                     logger.warning(f"Bus {bus_idx}: Zero or negative time delta at stop {i}. Using default.")
 
-                # Calculate required speed (km/h)
-                time_delta_hours = time_delta_minutes / 60.0
-                if distance_m > 0:
-                    # Distance in km, time in hours -> speed in km/h
-                    required_speed_kmh = (distance_m / 1000.0) / time_delta_hours
-                else:
-                    # Fallback: estimate speed from time
-                    required_speed_kmh = self.MAX_SPEED_KMH
-
-                # Constrain speed to model limits
-                actual_speed_kmh = max(self.MIN_SPEED_KMH, min(required_speed_kmh, self.MAX_SPEED_KMH))
-
-                # Convert speed to m/s
-                actual_speed_m_per_sec = (actual_speed_kmh * 1000) / 3600
-
-                # Calculate T: time = distance / speed (in seconds)
-                if distance_m > 0 and actual_speed_m_per_sec > 0:
-                    travel_time_seconds = distance_m / actual_speed_m_per_sec
-                else:
-                    # Fallback: use time delta
-                    travel_time_seconds = time_delta_minutes * 60
-
-                travel_time_minutes = travel_time_seconds / 60.0
-
                 # Add rest time if previous stop has rest flag
-                if rest_flags[i - 1]:
-                    travel_time_minutes += self.config.rest_time
+                rest_contribution = 0
+                if i > 0 and rest_flags[i - 1]:
+                    rest_contribution = self.config.rest_time
 
+                # T = time between stops (already includes any delays in the schedule)
+                travel_time_minutes = time_delta_minutes + rest_contribution
                 T_values.append(travel_time_minutes)
 
             processed_buses.append({
