@@ -1,186 +1,181 @@
-# CLP-RCLP MiniZinc Documentation
+# CLP-RCLP Documentation
 
-Central documentation directory for technical documentation, analysis and project guides.
+Complete documentation for the CLP-RCLP optimization framework.
 
-## 📁 Structure
+## Quick Navigation
+
+### Getting Started
+- **[GETTING_STARTED.md](GETTING_STARTED.md)** - Installation and first steps (start here!)
+- **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)** - What is CLP-RCLP and how it works
+- **[VERSION_HISTORY.md](VERSION_HISTORY.md)** - Version history and migration guides
+
+### Using the Tools
+- **[USAGE_GUIDE.md](USAGE_GUIDE.md)** - Detailed guide for each tool (GUI and CLI)
+- **guides/TROUBLESHOOTING.md** - Solutions to common problems
+- **guides/** - Additional user guides
+
+### Technical Documentation
+- **model/QUICKSTART.md** - Quick mathematical overview
+- **model/MathModel.tex** - Complete mathematical formulation
+- **model/README.md** - Model documentation index
+
+### Installation & Setup
+- **installation/minizinc_installation.md** - MiniZinc setup
+- **installation/gurobi_installation.md** - Gurobi solver (optional)
+- **installation/cplex_installation.md** - CPLEX solver (optional)
+- **installation/README.md** - Installation index
+
+## For Different Users
+
+### First-Time Users
+1. Read: [GETTING_STARTED.md](GETTING_STARTED.md)
+2. Launch: `python core/start.py`
+3. Explore: System Center GUI
+4. Learn: [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
+
+### Researchers
+1. Review: [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
+2. Study: model/MathModel.tex
+3. Use: [USAGE_GUIDE.md](USAGE_GUIDE.md)
+4. Benchmark: Compare solvers with Runner tool
+
+### Developers
+1. Setup: [GETTING_STARTED.md](GETTING_STARTED.md)
+2. Understand: core/README.md
+3. Reference: model/MathModel.tex
+4. Debug: guides/TROUBLESHOOTING.md
+
+### System Administrators
+1. Install: [GETTING_STARTED.md](GETTING_STARTED.md) + installation/
+2. Verify: Run `python scripts/solvers/check_solvers.py`
+3. Configure: core/*/config.py files
+4. Monitor: Check experiments/results/
+
+## Documentation Structure
 
 ```
-Docs/
-├── generated-system/       # Instance generation system
-│   ├── README.md          # Complete generator guide
-│   └── INDEX.md           # Navigation index
+docs/
+├── GETTING_STARTED.md          # Installation and first steps
+├── PROJECT_OVERVIEW.md         # Project description and features
+├── USAGE_GUIDE.md              # How to use each tool
+├── VERSION_HISTORY.md          # Version information and roadmap
 │
-├── model/                 # Mathematical model documentation
-│   ├── MathModel.tex      # LaTeX formulation
-│   ├── PROJECT_SUMMARY.md # Executive summary
-│   ├── QUICKSTART.md      # Quick start guide
-│   └── README.md          # Model index
+├── guides/                     # User guides
+│   └── TROUBLESHOOTING.md     # Problem solutions
 │
-├── analysis/              # Analysis and diagnostics
-│   ├── Cork_Infeasibility_Analysis.md
-│   ├── DataCorrections.md
-│   ├── ModelModificationJustification.md
-│   ├── CHECKLIST_FINAL.md
-│   ├── SESSION_2026_03_26_*.md # Session notes
-│   └── README.md          # Analysis index
+├── installation/               # Setup instructions
+│   ├── minizinc_installation.md
+│   ├── gurobi_installation.md
+│   ├── cplex_installation.md
+│   └── README.md
 │
-├── ARCHITECTURE_v1_4_0.md # v1.4.0 multi-solver architecture
-│
-└── README.md              # This file
+└── model/                      # Mathematical documentation
+    ├── QUICKSTART.md
+    ├── MathModel.tex
+    └── README.md
 ```
 
-## 🎯 Quick Start by User Type
+## Finding What You Need
 
-### 👨‍💼 Executive / Project Manager
+### By Topic
 
-1. Read: `generated-system/README.md` (Overview section)
-2. View: `model/PROJECT_SUMMARY.md`
-3. Check: `analysis/CHECKLIST_FINAL.md`
+**Getting Started**
+→ [GETTING_STARTED.md](GETTING_STARTED.md)
 
-### 👨‍💻 Developer / Researcher
+**How to Use Tools**
+→ [USAGE_GUIDE.md](USAGE_GUIDE.md)
 
-1. Start: `generated-system/README.md` (Quick Start)
-2. Understand: `model/MathModel.tex`
-3. Analyze: `analysis/Cork_Infeasibility_Analysis.md`
-4. Implement: Scripts in `../Scripts/`
+**Understanding the Project**
+→ [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)
 
-### 🔬 Scientist / Data Analyst
+**Mathematical Model**
+→ model/MathModel.tex or model/QUICKSTART.md
 
-1. Review: `model/MathModel.tex`
-2. Study: `analysis/DataCorrections.md`
-3. Investigate: `analysis/ModelModificationJustification.md`
-4. Execute: Scripts in `../Scripts/testing/`
+**Installation Issues**
+→ installation/ directory
 
-## 📚 Documents by Functionality
+**Solver Problems**
+→ guides/TROUBLESHOOTING.md
 
-### Generation System
+**Previous Versions**
+→ [VERSION_HISTORY.md](VERSION_HISTORY.md)
 
-**Main File**: `generated-system/README.md`
+### By User Type
 
-Contains:
+| Type | Start Here |
+|------|-----------|
+| New User | [GETTING_STARTED.md](GETTING_STARTED.md) |
+| Researcher | [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) |
+| Developer | core/README.md |
+| Admin | installation/ |
+| Troubleshooting | guides/TROUBLESHOOTING.md |
 
-- System overview
-- How to generate instances
-- Expert algorithm
-- Troubleshooting
-- Performance metrics
+## Common Tasks
 
-### Mathematical Model
+### Generate and Run Optimization
+→ See [USAGE_GUIDE.md](USAGE_GUIDE.md#batch-workflow-example)
 
-**Main File**: `model/MathModel.tex`
+### Install Additional Solvers
+→ See installation/
 
-Contains:
+### Compare Solver Performance
+→ See [USAGE_GUIDE.md](USAGE_GUIDE.md#test-runner)
 
-- Complete formulation
-- Variables and constraints
-- Parameters
-- Examples
+### Convert Data to MiniZinc
+→ See [USAGE_GUIDE.md](USAGE_GUIDE.md#data-converter)
 
-Executive summary: `model/PROJECT_SUMMARY.md`
-Quick reference: `model/QUICKSTART.md`
+### Generate Test Instances
+→ See [USAGE_GUIDE.md](USAGE_GUIDE.md#instance-generator)
 
-### Technical Analysis
+### Understand the Model
+→ See model/QUICKSTART.md or model/MathModel.tex
 
-**Main File**: `analysis/README.md`
+## System Requirements
 
-Contains:
+- Python 3.8+
+- MiniZinc 2.6+
+- 2GB disk space for solvers
+- 8GB RAM minimum
+- Multi-core CPU recommended
 
-- Cork problems
-- Data corrections
-- Model modifications
-- Key findings
+See [GETTING_STARTED.md](GETTING_STARTED.md#system-requirements) for details.
 
-## 🔍 Quick Search by Topic
+## Key Features
 
-### Cork Instances
+✓ Multi-tool framework (Generator, Converter, Runner)
+✓ Professional GUI (System Center)
+✓ Multiple solvers (6 supported)
+✓ Complete documentation
+✓ Real-world data support
+✓ Scalable to large instances
 
-- **Problem**: `analysis/Cork_Infeasibility_Analysis.md`
-- **Solution**: `generated-system/README.md` (Cork Variants)
+See [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md#key-features) for more.
 
-### Data Issues
+## Version Information
 
-- **Corrections**: `analysis/DataCorrections.md`
-- **Validation**: `generated-system/README.md` (Validation)
+**Current Version**: 2.0.0 (April 2026)
 
-### Model Questions
+Major update with:
+- New System Center GUI
+- Multi-solver support
+- Professional documentation
+- Complete project restructuring
 
-- **Formulation**: `model/MathModel.tex`
-- **Changes**: `analysis/ModelModificationJustification.md`
+See [VERSION_HISTORY.md](VERSION_HISTORY.md) for upgrade guides.
 
-### Generation System
+## Support
 
-- **Complete Guide**: `generated-system/README.md`
-- **Algorithm**: `generated-system/README.md` (Algorithm Design)
+- **Installation Issues**: See installation/
+- **Tool Usage**: See [USAGE_GUIDE.md](USAGE_GUIDE.md)
+- **Problems**: See guides/TROUBLESHOOTING.md
+- **General Questions**: See [GETTING_STARTED.md](GETTING_STARTED.md)
+- **GitHub**: See main README.md for links
 
-### First Time Setup
+## Contributing
 
-- **Steps**: `model/QUICKSTART.md`
-- **Checklist**: `analysis/CHECKLIST_FINAL.md`
+Documentation improvements welcome! See main README.md for contribution guidelines.
 
-### Multi-Solver Architecture (v1.4.0)
+---
 
-- **Architecture Guide**: `ARCHITECTURE_v1_4_0.md`
-- **Solver Scripts**: `../Scripts/solvers/README.md`
-
-## 📋 Documents by Format
-
-### Markdown (.md)
-
-- `**/README.md` - Main guides
-- `**/INDEX.md` - Navigation indices
-- `analysis/*.md` - Detailed analysis
-
-### LaTeX (.tex)
-
-- `model/MathModel.tex` - Mathematical formulation
-
-### Text (.txt)
-
-- `analysis/INSTALLATION_SUCCESS.txt` - Installation log
-
-## 🔗 Related Links
-
-- [Project Scripts](../Scripts/README.md)
-- [Generator GUI](../Generator/README.md)
-- [MiniZinc Models](../Models/)
-- [Datasets](../Data/)
-
-## 🤝 Contributing
-
-To add documentation:
-
-1. Determine category (generated-system, model, analysis)
-2. Create Markdown file with descriptive name
-3. Add index in corresponding README.md
-4. Update this file if necessary
-
-## 📊 Documentation Status
-
-| Section               | Complete | Updated          |
-| --------------------- | -------- | ---------------- |
-| generated-system/     | ✓        | Yes (2026-03-26) |
-| model/                | ✓        | Yes (2026-03-25) |
-| analysis/             | ✓        | Yes (2026-03-26) |
-| Navigation            | ✓        | Yes (2026-03-26) |
-| Architecture (v1.4.0) | ✓        | Yes (2026-04-15) |
-
-## 📝 Change History
-
-- **2026-04-15**: Multi-Solver Architecture (v1.4.0)
-  - Added ARCHITECTURE_v1_4_0.md with comprehensive technical documentation
-  - Documented solver management and result organization
-  - Added troubleshooting guide for multi-solver setup
-  - Updated navigation and status table
-
-- **2026-03-26**: Generator enhancements and documentation updates
-  - Fixed st_bi indexing in Battery Project data
-  - Enhanced Generator v2.0 with infinite iteration
-  - Organized Models directory
-  - Translated all docs to English
-
-- **2026-03-25**: Professional documentation restructuring
-  - Organized into 3 main categories
-  - Added navigation indices
-  - Updated reference paths
-
-**Last Updated**: 2026-04-15
+**Last Updated**: April 20, 2026
+**Version**: 2.0.0
