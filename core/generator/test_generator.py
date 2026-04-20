@@ -9,11 +9,11 @@ from pathlib import Path
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from generator_orchestrator import GeneratorOrchestrator
+from orchestrator import GeneratorOrchestrator
 
 def test_generator():
     """Test generator with small instance"""
-    project_root = Path(__file__).parent.parent
+    project_root = Path(__file__).parent.parent.parent
 
     orchestrator = GeneratorOrchestrator(str(project_root))
 
