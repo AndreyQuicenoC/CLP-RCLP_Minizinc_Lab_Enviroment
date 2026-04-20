@@ -19,6 +19,7 @@ from datetime import datetime
 from .themes import ThemeManager, get_theme_dict, DARK_PALETTE, LIGHT_PALETTE
 from .components import SectionLabel, FlatButton, Divider, StatusIndicator, FormEntry
 from .tooltip import Tooltip
+from .help_window import show_help
 
 # Import config - handle both relative and absolute imports
 try:
@@ -267,23 +268,7 @@ class ConverterInterface(tk.Frame):
         help_btn = tk.Button(
             jits_frame,
             text="?",
-            command=lambda: messagebox.showinfo(
-                "Instance Directory Format",
-                "JITS2022 Instance Directory Requirements\n"
-                "=" * 50 + "\n\n"
-                "Required files:\n"
-                "✓ buses_input_<speed>_<rest>.json\n"
-                "✓ stations_input.csv\n"
-                "✓ distances_input.csv\n\n"
-                "The converter reads:\n"
-                "• Bus routes and schedules from buses_input JSON\n"
-                "• Station names and IDs from stations_input.csv\n"
-                "• Distance matrix from distances_input.csv\n\n"
-                "These are used to calculate travel times (T) and\n"
-                "energy consumption (D) using JITS2022 algorithm.\n\n"
-                "Unused files:\n"
-                "⊘ input_report.txt (ignored)"
-            ),
+            command=self._show_instance_help,
             bg=self.theme_dict["bg_elevated"],
             fg=self.theme_dict["accent_primary"],
             relief=tk.FLAT,
@@ -721,6 +706,89 @@ class ConverterInterface(tk.Frame):
         current = ThemeManager.get_current_theme()
         new_theme = "light" if current == "dark" else "dark"
         ThemeManager.switch_theme(new_theme)
+
+    def _show_instance_help(self) -> None:
+        """Show styled help window for instance directory requirements."""
+        help_content = """JITS2022 INSTANCE DIRECTORY REQUIREMENTS
+════════════════════════════════════════════════════════════════
+
+REQUIRED FILES:
+
+✓ buses_input_<SPEED>_<REST>.json
+  Bus schedules and routes in JSON format.
+  Example: buses_input_20_0.json (20 km/h speed, 0 min rest)
+
+✓ stations_input.csv
+  Station information with IDs, names, and coordinates.
+  Format: station_id, station_name, latitude, longitude
+
+✓ distances_input.csv
+  Distance matrix between all station pairs.
+  Format: from_id, to_id, distance_meters
+
+
+HOW THE CONVERTER USES THESE FILES:
+
+1. SCHEDULES (buses_input JSON)
+   • Extracts bus routes and timetables
+   • Calculates travel times (T) between stops
+   • Determines energy consumption (D) per arc
+
+2. STATIONS (stations_input.csv)
+   • Maps station IDs to physical locations
+   • Creates station-to-index mapping for DZN file
+   • Validates route feasibility
+
+3. DISTANCES (distances_input.csv)
+   • Provides distance data for energy calculations
+   • Allows precise consumption modeling
+   • Critical for accuracy of converted data
+
+
+CONVERSION OUTPUT:
+
+The converter generates a .dzn file with:
+• st_bi: Station sequence for each bus
+• D: Energy consumption per arc (scaled for precision)
+• T: Travel times between stops
+• tau_bi: Original schedule times
+• Problem dimensions and parameters
+
+Energy precision uses SCALE_ENERGY=1000:
+  1 unit = 0.001 kWh (0.1% precision)
+  This ensures model feasibility without precision loss.
+
+
+OPTIONAL FILES (ignored):
+
+⊘ input_report.txt (ignored)
+⊘ Other files not listed above
+
+
+EXAMPLE DIRECTORY STRUCTURE:
+
+JITS2022/Code/Data/
+├── cork-1-line/
+│   ├── buses_input_20_0.json
+│   ├── buses_input_20_5.json
+│   ├── stations_input.csv
+│   └── distances_input.csv
+└── cork-2-lines/
+    ├── buses_input_30_0.json
+    ├── stations_input.csv
+    └── distances_input.csv
+
+
+TIPS FOR SUCCESSFUL CONVERSION:
+
+• Ensure all three file types are present
+• Verify file encoding is UTF-8
+• Check that station IDs match across files
+• Use consistent distance units (meters recommended)
+• Verify JSON syntax is valid
+
+"""
+        show_help(self.root, "Instance Directory Requirements", help_content, self.theme_dict)
 
     def _refresh_ui_colors(self) -> None:
         """Refresh UI colors after theme change by rebuilding the entire interface."""

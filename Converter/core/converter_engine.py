@@ -36,13 +36,13 @@ class ConverterEngine:
 
         # Get scaled parameters from config (COHERENT SCALING)
         scaled = self.config.to_scaled_dict()
-        self.SCALE_ENERGY = scaled['scale_energy']  # For D, Cmax, Cmin, alpha = 10
+        self.SCALE_ENERGY = scaled['scale_energy']  # For D, Cmax, Cmin, alpha = 1000
         self.SCALE_TIME = scaled['scale_time']      # For T, tau_bi = 1 (no scaling)
 
-        # Energy parameters (scaled by 10)
-        self.CMAX = scaled['cmax']      # 1000 (=100 kWh)
-        self.CMIN = scaled['cmin']      # 200 (=20 kWh)
-        self.ALPHA = scaled['alpha']    # 100 (=10 kWh/min)
+        # Energy parameters (scaled by 1000: 1 unit = 0.001 kWh)
+        self.CMAX = scaled['cmax']      # 100000 (=100 kWh)
+        self.CMIN = scaled['cmin']      # 20000 (=20 kWh)
+        self.ALPHA = scaled['alpha']    # 10000 (=10 kWh/min)
 
         # Time parameters (NOT scaled, keep as minutes)
         self.MU = scaled['mu']          # 5 (min)
@@ -81,13 +81,13 @@ class ConverterEngine:
 
     def scale_energy_to_integer(self, value: float) -> int:
         """
-        Scale energy value by SCALE_ENERGY (10).
+        Scale energy value by SCALE_ENERGY (1000).
 
         Args:
             value: Energy in kWh
 
         Returns:
-            Scaled integer value (1 unit = 0.1 kWh)
+            Scaled integer value (1 unit = 0.001 kWh = 0.1% precision)
         """
         return round(value * self.SCALE_ENERGY)
 
@@ -291,20 +291,20 @@ class ConverterEngine:
                 f.write("% Source: JITS2022 Test Battery (Converted)\n")
                 f.write(f"% Original file: {json_file.name}\n")
                 f.write("% Converted to CLP format with COHERENT SCALING:\n")
-                f.write("%   - Energy (D, Cmax, Cmin, alpha): scaled by 10 (1 unit = 0.1 kWh)\n")
+                f.write("%   - Energy (D, Cmax, Cmin, alpha): scaled by 1000 (1 unit = 0.001 kWh)\n")
                 f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): NO scaling (native minutes)\n")
                 f.write("%\n")
                 f.write("% CONVERSION DETAILS:\n")
                 f.write("% - tau_bi: minutes since 00:00 (no scaling) - matches MiniZinc tbi range 0..3000\n")
                 f.write("% - T: travel times (NO scaling - native integer minutes)\n")
-                f.write("% - D: energy values scaled by 10 (1 unit = 0.1 kWh)\n")
+                f.write("% - D: energy values scaled by 1000 (1 unit = 0.001 kWh)\n")
                 f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
-                f.write("%           2.5 kWh -> 25 (scaled by 10)\n")
+                f.write("%           2.5 kWh -> 2500 (scaled by 1000)\n")
                 f.write("%\n")
                 f.write("% INTERPRETATION GUIDE:\n")
                 f.write("%   - tau_bi / times: minutes (no conversion needed)\n")
-                f.write("%   - Energy (D): integer_value / 10 = kWh\n")
-                f.write("%   - MiniZinc constraints use native units (energy in 0.1 kWh units)\n")
+                f.write("%   - Energy (D): integer_value / 1000 = kWh\n")
+                f.write("%   - MiniZinc constraints use scaled units (energy in 0.001 kWh units)\n")
                 f.write("% " + "=" * 76 + "\n\n")
 
                 # Problem dimensions
@@ -312,9 +312,9 @@ class ConverterEngine:
                 f.write(f"num_buses = {num_buses};\n")
                 f.write(f"num_stations = {num_stations};\n\n")
 
-                # Energy parameters (from config, scaled by 10)
+                # Energy parameters (from config, scaled by 1000)
                 f.write("% --- Energy Parameters (CLP Model) ---\n")
-                f.write(f"% Scaled by {converter.SCALE_ENERGY} (1 unit = 0.1 kWh)\n")
+                f.write(f"% Scaled by {converter.SCALE_ENERGY} (1 unit = 0.001 kWh)\n")
                 f.write(f"Cmax = {converter.CMAX};  % Maximum battery capacity (original: {converter.config.cmax} kWh)\n")
                 f.write(f"Cmin = {converter.CMIN};   % Minimum reserve (original: {converter.config.cmin} kWh)\n")
                 f.write(f"alpha = {converter.ALPHA};  % Fast charging rate (original: {converter.config.alpha} kWh/min)\n\n")
@@ -347,7 +347,8 @@ class ConverterEngine:
 
                 # Energy consumption
                 f.write("% --- Energy Consumption (D) ---\n")
-                f.write("% Energy consumed between stops in kWh (INTEGER values, divide by SCALE for kWh)\n")
+                f.write("% Energy consumed between stops in kWh (INTEGER values scaled by 1000)\n")
+                f.write("% To get actual kWh: divide by 1000\n")
                 f.write("% Calculated from distance matrix: Energy = distance_km * 0.25 kWh/km\n")
                 f.write(f"D = array2d(1..{num_buses}, 1..{max_stops}, [\n")
                 for i in range(num_buses):
