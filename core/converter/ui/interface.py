@@ -444,7 +444,7 @@ class ConverterInterface(tk.Frame):
 
     def _load_jits_directories(self) -> None:
         """Load JITS2022 test directories."""
-        jits_path = self.project_root / "JITS2022" / "Code" / "Data"
+        jits_path = self.project_root / "external" / "jits2022" / "Code" / "data"
         directories = JITSAnalyzer.get_test_directories(jits_path)
 
         if directories:
@@ -454,8 +454,8 @@ class ConverterInterface(tk.Frame):
                 self.jits_dir_combo['values'] = directories
 
     def _load_batteries(self) -> None:
-        """Load available battery directories from Data folder."""
-        data_path = self.project_root / "Data"
+        """Load available battery directories from experiments/instances folder."""
+        data_path = self.project_root / "experiments" / "instances"
         batteries = []
 
         if data_path.exists():
@@ -494,7 +494,7 @@ class ConverterInterface(tk.Frame):
             return
 
         try:
-            jits_path = self.project_root / "JITS2022" / "Code" / "Data" / jits_dir
+            jits_path = self.project_root / "external" / "jits2022" / "Code" / "data" / jits_dir
             # Search for buses_input*.json files
             json_files = JITSAnalyzer.get_json_files(jits_path, "buses_input*.json")
             self.available_tests = [f.stem.replace("buses_input_", "").replace("buses_input", "") for f in json_files]
@@ -516,7 +516,7 @@ class ConverterInterface(tk.Frame):
 
     def _browse_jits_directory(self) -> None:
         """Browse for JITS directory."""
-        initial_dir = self.project_root / "JITS2022" / "Code" / "Data"
+        initial_dir = self.project_root / "external" / "jits2022" / "Code" / "data"
         directory = filedialog.askdirectory(initialdir=str(initial_dir))
         if directory:
             self.jits_dir_var.set(Path(directory).name)
@@ -566,7 +566,7 @@ class ConverterInterface(tk.Frame):
             self.log_queue.put((f"Output directory: {output_path}", "info"))
 
             # Get JSON files to convert
-            jits_path = self.project_root / "JITS2022" / "Code" / "Data" / jits_dir
+            jits_path = self.project_root / "external" / "jits2022" / "Code" / "data" / jits_dir
             json_files = JITSAnalyzer.get_json_files(jits_path, "buses_input*.json")
 
             if not json_files:
