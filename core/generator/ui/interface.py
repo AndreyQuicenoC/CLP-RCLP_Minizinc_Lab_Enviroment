@@ -66,7 +66,11 @@ class GeneratorInterface(tk.Frame):
         # Find project root for file operations
         self.project_root = ProjectPaths.get_project_root()
 
-        # Initialize core module
+        # Initialize log text widget as None (will be created in _build_ui)
+        self.log_text = None
+        self._log_buffer = []  # Buffer logs until UI is ready
+
+        # Initialize core module (may log messages)
         self.orchestrator = GeneratorOrchestrator(
             self.project_root,
             log_callback=self._log
@@ -78,6 +82,10 @@ class GeneratorInterface(tk.Frame):
 
         # Build UI
         self._build_ui()
+
+        # Flush buffered logs to the now-created log_text widget
+        self._flush_log_buffer()
+
         self._apply_ttk_theme()
 
     def _init_theme(self) -> None:
@@ -419,13 +427,28 @@ class GeneratorInterface(tk.Frame):
 
     def _log(self, message: str, tag: str = "muted") -> None:
         """Add a message to the generation log."""
-        self.log_text.insert(tk.END, message + "\n", tag)
+        if self.log_text is None:
+            # Buffer logs until UI is ready
+            self._log_buffer.append((message, tag))
+        else:
+            self.log_text.insert(tk.END, message + "\n", tag)
+            self.log_text.see(tk.END)
+            self.log_text.update()
+
+    def _flush_log_buffer(self) -> None:
+        """Flush buffered logs to the log text widget."""
+        if self.log_text is None:
+            return
+        for message, tag in self._log_buffer:
+            self.log_text.insert(tk.END, message + "\n", tag)
         self.log_text.see(tk.END)
-        self.log_text.update()
+        self._log_buffer.clear()
 
     def _clear_log(self) -> None:
         """Clear the generation log."""
-        self.log_text.delete("1.0", tk.END)
+        if self.log_text is not None:
+            self.log_text.delete("1.0", tk.END)
+        self._log_buffer.clear()
 
     def _start_generation(self) -> None:
         """Start the instance generation process."""

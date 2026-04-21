@@ -151,10 +151,10 @@ class ProjectPaths:
         """
         Models directory.
 
-        Location: Models (at project root)
+        Location: core/models (at project root)
         Contains .mzn files
         """
-        return cls.get_project_root() / "Models"
+        return cls.get_project_root() / "core" / "models"
 
     @classmethod
     def clp_model_path(cls) -> Path:
