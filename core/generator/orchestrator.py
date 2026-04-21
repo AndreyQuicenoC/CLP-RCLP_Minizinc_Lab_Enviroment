@@ -47,7 +47,8 @@ class GeneratorOrchestrator:
         self.output_dir = self.project_root / output_subdir
         self.manager = InstanceManager(str(self.output_dir))
 
-        model_path = self.project_root / 'Models' / 'clp_model.mzn'
+        # Use ProjectPaths for model resolution
+        model_path = ProjectPaths.clp_model_path()
         if not model_path.exists():
             self.log(f"MODEL ERROR: Model not found at {model_path}", 'error')
             raise FileNotFoundError(f"Model not found: {model_path}")

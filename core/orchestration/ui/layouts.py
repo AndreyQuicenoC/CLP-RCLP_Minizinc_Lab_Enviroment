@@ -1,9 +1,10 @@
 """
-Layouts Module - Layout builders and constants.
+Layouts Module - Layout builders and constants for Orchestrator UI.
 """
 
 import tkinter as tk
 from typing import Dict, Any
+
 
 class LayoutConfig:
     """Global layout configuration and constants."""
@@ -11,10 +12,8 @@ class LayoutConfig:
     WINDOW_HEIGHT = 650
     MIN_WIDTH = 1000
     MIN_HEIGHT = 500
-    MAX_WIDTH = None  # No maximum
-    MAX_HEIGHT = None  # No maximum
     HEADER_HEIGHT = 70
-    FOOTER_HEIGHT = 40
+    FOOTER_HEIGHT = 50
     CONTENT_PADDING = 20
     SECTION_SPACING = 16
     ITEM_SPACING = 12
@@ -30,6 +29,7 @@ class LayoutConfig:
     LABEL_MIN_WIDTH = 150
     HEADER_PADDING = (CONTENT_PADDING, 16)
     FOOTER_PADDING = (CONTENT_PADDING, 12)
+
 
 class LayoutBuilder:
     """Helper class for creating consistent layouts."""

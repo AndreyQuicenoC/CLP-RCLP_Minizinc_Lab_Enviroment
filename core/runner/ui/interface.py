@@ -558,10 +558,16 @@ class RunnerInterface(tk.Frame):
                 self._log(f"Invalid solver: {solver_name}", "error")
                 return
 
-            # Map model name to .mzn file path
-            model_map = {"CLP": "clp_model.mzn", "RCLP": "rclp_model.mzn"}
-            model_filename = model_map.get(model, "clp_model.mzn")
-            model_path = Path(self.project_root) / "Models" / model_filename
+            # Resolve model path using ProjectPaths
+            if model == "RCLP":
+                model_path = ProjectPaths.rclp_model_path()
+            else:  # Default to CLP
+                model_path = ProjectPaths.clp_model_path()
+
+            if not model_path.exists():
+                self._log(f"Model not found: {model_path}", "error")
+                self.status_indicator.set_status("error", "Error")
+                return
 
             executor = MiniZincExecutor(str(model_path))
 
