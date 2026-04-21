@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-04-20
+
+### Added
+
+- **System Center (Orchestrator Interface)**
+  - Central entry point for accessing all tools
+  - Professional dark/light theme support with dynamic switching
+  - System features showcase with virtue cards
+  - Tool navigation with descriptions and launch buttons
+  - Community contribution invitation with GitHub link
+
+- **Back Navigation**
+  - Back button in header of Converter, Generator, and Runner
+  - Seamless navigation between System Center and individual tools
+  - Consistent header styling across all interfaces
+
+- **Project Reorganization**
+  - Data directories standardized to kebab-case naming convention
+  - Improved project structure with shared utilities module
+
+### Changed
+
+- **Version Updates**
+  - Converter v1.5.0 → v2.0.0
+  - Generator v3.0 → v2.0.0  
+  - Runner v1.4.0 → v2.0.0
+  - Project unified to single version: 2.0.0
+
+- **Data Structure**
+  - Data/Battery Own → Data/battery-own
+  - Data/Battery Generated → Data/battery-generated
+  - Data/Battery Converted → Data/battery-converted
+  - Data/Battery Project Integer → Data/battery-project-integer
+
+- **Documentation**
+  - All references updated for consistency
+  - README updated to reflect v2.0.0 and System Center
+
+### Technical
+
+- Added Orchestrator module with complete UI infrastructure
+- Added Shared/navigation.py for tool integration
+- Imported design patterns from existing tools (themes, components, layouts)
+- All tools maintained backward compatibility
+
 ## [1.5.0] - 2026-04-16
 
 ### Added
