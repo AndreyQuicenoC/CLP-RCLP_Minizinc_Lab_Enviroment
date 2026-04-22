@@ -4,9 +4,6 @@ Orchestrator Configuration
 Central configuration for the System Center interface.
 """
 
-WINDOW_WIDTH = 1000
-WINDOW_HEIGHT = 900
-
 VERSION = "2.0.0"
 
 TOOLS = {

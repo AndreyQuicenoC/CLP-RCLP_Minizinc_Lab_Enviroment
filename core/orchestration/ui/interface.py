@@ -12,6 +12,7 @@ from tkinter import ttk
 from pathlib import Path
 from typing import Dict, Any, Literal, Optional
 import subprocess
+import sys
 import webbrowser
 
 from .themes import ThemeManager, get_theme_dict
@@ -53,11 +54,17 @@ class OrchestratorInterface(tk.Frame):
         """Initialize theme system and register observer for dynamic switching."""
         self.theme_dict = get_theme_dict("dark")
         ThemeManager.register_observer(self._on_theme_change)
+        # Setup cleanup handler for observer deregistration
+        self.bind("<Destroy>", self._on_destroy, add="+")
 
     def _on_theme_change(self, mode: Literal["dark", "light"]) -> None:
         """Called when theme mode changes."""
         self.theme_dict = get_theme_dict(mode)
         self._refresh_ui_colors()
+
+    def _on_destroy(self, event=None) -> None:
+        """Cleanup handler called when widget is destroyed."""
+        ThemeManager.unregister_observer(self._on_theme_change)
 
     def _center_window(self) -> None:
         """Center window on screen."""
@@ -162,10 +169,31 @@ class OrchestratorInterface(tk.Frame):
         canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
         canvas.configure(yscrollcommand=scrollbar.set)
 
-        # Bind mousewheel for scrolling
+        # Bind mousewheel for scrolling only within this scrollable area
         def _on_mousewheel(event):
-            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
-        canvas.bind_all("<MouseWheel>", _on_mousewheel)
+            if event.delta:
+                canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
+        def _on_linux_mousewheel(event):
+            if event.num == 4:
+                canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                canvas.yview_scroll(1, "units")
+
+        def _unbind_mousewheel(_event=None):
+            for widget in (canvas, scrollable_frame):
+                widget.unbind("<MouseWheel>")
+                widget.unbind("<Button-4>")
+                widget.unbind("<Button-5>")
+
+        # Bind only to the canvas and scrollable_frame, not globally
+        for widget in (canvas, scrollable_frame):
+            widget.bind("<MouseWheel>", _on_mousewheel)
+            widget.bind("<Button-4>", _on_linux_mousewheel)
+            widget.bind("<Button-5>", _on_linux_mousewheel)
+
+        # Unbind on widget destruction
+        canvas.bind("<Destroy>", _unbind_mousewheel, add="+")
 
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -432,9 +460,10 @@ class OrchestratorInterface(tk.Frame):
             tool_path = self._resolve_tool_path(tool_key)
 
             if tool_path and tool_path.exists():
-                subprocess.Popen(["python", str(tool_path)])
-                # Close the orchestrator window after launching the tool
-                self.root.quit()
+                # Use sys.executable to ensure same interpreter as orchestrator
+                subprocess.Popen([sys.executable, str(tool_path)])
+                # Fully close the orchestrator window after launching the tool
+                self.root.destroy()
             else:
                 print(f"Tool script not found for {tool_key}: {tool_path}")
         except Exception as e:

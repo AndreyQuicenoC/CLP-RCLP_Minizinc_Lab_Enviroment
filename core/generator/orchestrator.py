@@ -17,14 +17,8 @@ Features:
 from pathlib import Path
 from typing import Tuple, Optional, Dict, Callable
 import os
-import sys
 
-# Ensure project root is in sys.path
 from core.shared.project_paths import ProjectPaths
-project_root = ProjectPaths.get_project_root()
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
-
 from core.generator.config import Config
 from core.generator.core.instance_generator import FeasibleInstanceGenerator
 from core.generator.core.minizinc_exporter import MiniZincExporter
