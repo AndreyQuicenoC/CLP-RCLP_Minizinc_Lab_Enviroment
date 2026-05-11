@@ -124,6 +124,9 @@ class MiniZincExecutor:
                 logger.warning(f"Could not parse solution values for {SolverManager.get_display_name(solver)}")
                 return False, None
 
+            result["model_path"] = str(self.model_path)
+            result["model_precision"] = "floating" if "float" in self.model_path.stem.lower() else "integer"
+
             logger.info(f"Solution found with {SolverManager.get_display_name(solver)}: {result.get('charged_stations', 0)} stations charged")
             return True, result
 
@@ -174,9 +177,9 @@ class MiniZincExecutor:
             return None
 
         # Look for "Desviacion total: N" (Spanish for time deviation)
-        desviacion_match = re.search(r'Desviacion total:\s*(\d+)', solution_text)
+        desviacion_match = re.search(r'Desviacion total:\s*(-?\d+(?:\.\d+)?)', solution_text)
         if desviacion_match:
-            result['time_deviation'] = int(desviacion_match.group(1))
+            result['time_deviation'] = float(desviacion_match.group(1))
         else:
             logger.warning("Could not find 'Desviacion total' in output")
             result['time_deviation'] = 0

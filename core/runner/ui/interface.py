@@ -319,6 +319,32 @@ class RunnerInterface(tk.Frame):
 
         Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
 
+        SectionLabel(card, "Number Type", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 6))
+        precision_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
+        precision_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+
+        self.precision_var = tk.StringVar(value="integer")
+        for label, value in [("Integer", "integer"), ("Floating", "floating")]:
+            rb = tk.Radiobutton(
+                precision_frame,
+                text=label,
+                variable=self.precision_var,
+                value=value,
+                bg=self.theme_dict["bg_elevated"],
+                fg=self.theme_dict["text_primary"],
+                selectcolor=self.theme_dict["accent_primary"],
+                activebackground=self.theme_dict["bg_hover"],
+            )
+            rb.pack(side=tk.LEFT, padx=8)
+
+        Tooltip(
+            precision_frame,
+            "Integer models keep the current scaled workflow. Floating models preserve original decimal values.",
+            self.theme_dict,
+        )
+
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
+
         # Action buttons
         btn_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
         btn_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
@@ -529,14 +555,15 @@ class RunnerInterface(tk.Frame):
         """Start execution of the selected test instance."""
         instance = self.instance_var.get()
         model = self.model_var.get()
+        precision = self.precision_var.get()
         directory = self.dir_var.get()
         solver_name = self.solver_var.get()
 
-        if not instance or not model or not directory:
-            messagebox.showwarning("Missing Selection", "Please select directory, instance, and model.")
+        if not instance or not model or not precision or not directory:
+            messagebox.showwarning("Missing Selection", "Please select directory, instance, model, and number type.")
             return
 
-        self._log(f"Starting execution: {instance} ({model}) with {solver_name}", "info")
+        self._log(f"Starting execution: {instance} ({model}, {precision}) with {solver_name}", "info")
         self.status_indicator.set_status("running", "Running...")
         self.run_btn.set_disabled(True)
         self.stop_btn.set_disabled(False)
@@ -544,12 +571,12 @@ class RunnerInterface(tk.Frame):
 
         self.execution_thread = threading.Thread(
             target=self._execute_test,
-            args=(directory, instance, model, solver_name),
+            args=(directory, instance, model, precision, solver_name),
             daemon=True
         )
         self.execution_thread.start()
 
-    def _execute_test(self, directory: str, instance: str, model: str, solver_name: str) -> None:
+    def _execute_test(self, directory: str, instance: str, model: str, precision: str, solver_name: str) -> None:
         """Execute test in background thread."""
         try:
             # Get solver type from display name
@@ -560,9 +587,9 @@ class RunnerInterface(tk.Frame):
 
             # Resolve model path using ProjectPaths
             if model == "RCLP":
-                model_path = ProjectPaths.rclp_model_path()
+                model_path = ProjectPaths.rclp_model_path(precision)
             else:  # Default to CLP
-                model_path = ProjectPaths.clp_model_path()
+                model_path = ProjectPaths.clp_model_path(precision)
 
             if not model_path.exists():
                 self._log(f"Model not found: {model_path}", "error")
@@ -579,7 +606,7 @@ class RunnerInterface(tk.Frame):
                 self.status_indicator.set_status("error", "Error")
                 return
 
-            self._log(f"Executing: {model} ({solver_name}) on {instance}", "key")
+            self._log(f"Executing: {model} [{precision}] ({solver_name}) on {instance}", "key")
 
             # execute() now returns tuple: (success: bool, result: Optional[Dict], execution_time: Optional[float])
             success, result_dict, exec_time = executor.execute(str(instance_path), solver_type)
