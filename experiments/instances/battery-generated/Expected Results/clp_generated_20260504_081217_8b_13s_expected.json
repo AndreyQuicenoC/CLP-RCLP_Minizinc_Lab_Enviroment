@@ -1,0 +1,11 @@
+{
+  "instance": "clp_generated_20260504_081217_8b_13s",
+  "generated": "2026-05-04T08:12:22.707099",
+  "solver": "chuffed",
+  "satisfiable": true,
+  "solution": {
+    "total_stations": 1,
+    "total_deviation": 4511
+  },
+  "dzn_path": "C:\\Users\\lu\\Downloads\\C\u00f3digo\\ 2026-I\\AVISPA\\CLP-RCLP_Minizinc_Lab_Enviroment\\experiments\\instances\\battery-generated\\clp_generated_20260504_081217_8b_13s.dzn"
+}

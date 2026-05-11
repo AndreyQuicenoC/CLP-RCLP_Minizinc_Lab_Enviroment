@@ -1,0 +1,18 @@
+{
+  "instance": "clp_generated_20260420_201605_7b_6s",
+  "generated": "2026-04-20T20:16:06.273029",
+  "num_buses": 7,
+  "num_stations": 6,
+  "max_stops": 6,
+  "dzn_path": "C:\\Users\\lu\\Downloads\\C\u00f3digo\\ 2026-I\\AVISPA\\CLP-RCLP_Minizinc_Lab_Enviroment\\experiments\\instances\\battery-generated\\clp_generated_20260420_201605_7b_6s.dzn",
+  "parameters": {
+    "Cmax": 1000,
+    "Cmin": 200,
+    "alpha": 100,
+    "mu": 50,
+    "SM": 10,
+    "psi": 10,
+    "beta": 100,
+    "M": 10000
+  }
+}

@@ -1,399 +1,297 @@
 # CLP-RCLP MiniZinc Lab Environment
 
-[![Version](https://img.shields.io/badge/version-1.5.0-brightgreen?style=flat-square)](.)
+[![Version](https://img.shields.io/badge/version-2.0.0-brightgreen?style=flat-square)](.)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](.)
 [![Python](https://img.shields.io/badge/python-3.8+-yellow?style=flat-square)](.)
-[![MiniZinc](https://img.shields.io/badge/minizinc-2.5+-ff69b4?style=flat-square)](.)
+[![MiniZinc](https://img.shields.io/badge/minizinc-2.6+-ff69b4?style=flat-square)](.)
 
 ## Overview
 
-Professional lab environment for research and optimization of the **Charging Location Problem (CLP)** and its robust extension **(RCLP)** for electric bus fleets.
+Professional lab environment for research and optimization of the **Charging Location Problem (CLP)** and its robust extension **(RCLP)** for electric bus fleets using constraint programming.
 
-This project includes:
+This framework provides a complete toolkit for:
 
-- Mathematical models in MiniZinc (CLP and RCLP)
-- Professional instance generation system (v3.0 - Working Pattern Replication)
-- Complete automated testing suite with **multi-solver support**
-- Enhanced test execution interface (Runner v1.4.0)
-- JSON to DZN conversion tool (Converter v1.5.0)
-- Exhaustive technical documentation
-- Varied datasets (Cork, synthetic, validated)
+- **System Center**: Unified GUI for accessing all tools (v2.0.0)
+- **Mathematical Models**: CLP and RCLP formulations in MiniZinc
+- **Instance Generation**: Create synthetic and realistic test datasets
+- **Data Conversion**: Transform JSON to constraint programming format
+- **Optimization Testing**: Execute and compare multiple solvers
+- **Multi-Solver Support**: Chuffed, Gecode, COIN-BC, OR-Tools, CPLEX, Gurobi
+- **Complete Documentation**: Comprehensive guides and technical references
 
 ## Key Features
 
-### 1. Mathematical Models
+### 🎯 System Center GUI (v2.0.0)
 
-- **CLP**: Optimal charging station location under normal conditions
-- **RCLP**: Robust version with resilience against failures
+- Unified interface to all tools
+- Dark/Light theme with persistent preferences
+- Professional design with 2x2 grid layout
+- One-click tool launching
+- Direct access to documentation and GitHub
+- Resizable window with responsive layout
 
-### 2. Automatic Generation System (v3.0 - Production Ready)
+### 🔧 Three Core Tools
 
-- Working Pattern Replication: Each bus visits every station exactly once
-- 5 Route Patterns: Sequential, Reverse, Alternate-Odd/Even, Diagonal
-- Smart Overconsumption: 1.5-1.8x for small networks, forcing strategic charging
-- Guaranteed SAT: All test cases generate satisfiable instances instantly
-- Automatic validation with MiniZinc (chuffed solver)
+1. **Data Converter** - JSON to MiniZinc (DZN) format
+2. **Instance Generator** - Create test instances with parameters
+3. **Test Runner** - Execute optimization and compare solvers
 
-### 3. Test Runner Interface (v1.4.0 - Multi-Solver Support)
+### 📊 Mathematical Models
 
-- Professional Tkinter GUI with dark/light theme support
-- **Multiple solver selection** (chuffed, gecode, coin-bc, or-tools cp-sat, cplex, gurobi)
-- Solver information modal with capabilities and use cases
-- Directory and file selectors for test instances
-- Model selection (CLP/RCLP)
-- Real-time execution monitoring
-- Automatic result formatting (JSON and TXT)
-- **Results organized by solver and test name** for easy comparison
-- Comprehensive tooltips for improved UX
-- Centered window positioning on all screens
-- Complete theme system with 27 design tokens
+- **CLP**: Optimal charging station location
+- **RCLP**: Robust variant with failure resilience
+- MiniZinc format for multiple solvers
 
-### 4. JSON to DZN Converter (v1.5.0)
+### 🎲 Instance Generation
 
-- Professional conversion interface for JITS2022 test batteries
-- Batch convert JSON schedules to integer DZN format
-- Dark/light theme support with dynamic switching (fully working theme reconstruction)
-- Flexible test selection: All tests or individual test from combobox
-- Automatic directory existence verification for output batteries
-- Create new output directories on-demand with validation
-- Dynamic test loading with refresh button
-- Real-time conversion monitoring with progress logging
-- Clear button for conversion log management
-- Modular architecture for easy extension
-- Comprehensive tooltips and help system
+- Working Pattern Replication
+- 5 Route Patterns (Sequential, Reverse, Alternate, Diagonal)
+- Smart parameter generation
+- Guaranteed satisfiable instances
 
-### 5. Datasets
+### ⚡ Multi-Solver Optimization
 
-- Cork City (Real): Irish case instances
-- Noncity (Validated): Manually validated test cases
-- Synthetic (Scalable): Procedurally generated instances
-- Cork Variants (Single-cycle): Reduced Cork instances
-- Battery Generated (User-created): Generated via Generator v3.0
+- 6+ constraint solvers (open-source and commercial)
+- Parallel solver execution
+- Result aggregation and comparison
+- Performance metrics and analysis
+
+### 📚 Complete Documentation
+
+- Getting started guide
+- User guides for each tool
+- API reference documentation
+- Mathematical formulation (LaTeX)
+- Troubleshooting guide
+- Installation instructions
 
 ## Quick Start
 
 ### Prerequisites
 
 ```bash
-# Python 3.8+
+# Python 3.8 or higher
 python --version
 
-# MiniZinc 2.5+
+# MiniZinc 2.6 or higher
 minizinc --version
 
-# Download from https://www.minizinc.org/ if needed
+# Download MiniZinc from https://www.minizinc.org/
 ```
 
-### Initial Setup
+### Installation
 
 ```bash
-# Validate configuration
-python Scripts/setup/setup_and_validate.py
+# Clone repository
+git clone https://github.com/AndreyQuicenoC/CLP-RCLP_Minizinc_Lab_Enviroment.git
+cd "CLP-RCLP_Minizinc_Lab_Enviroment"
 
-# Generate Cork variants (if necessary)
-python Scripts/generation/create_cork_variants.py
-
-# Run tests
-bash Scripts/testing/test_generator.sh
+# Install MiniZinc (if not already installed)
+# See docs/getting-started/GETTING_STARTED.md for detailed instructions
 ```
 
-### Generate New Instances
+### Launch System Center
 
 ```bash
-# Interactive GUI (recommended)
-python Generator/generator.py
+# Recommended: Use System Center GUI
+python core/start.py
 
-# Expected: SAT instance in ~1 second
+# Or from core directory:
+cd core
+python start.py
+# Or on Unix/Linux:
+bash start.sh
 ```
 
-### Run Tests with Runner
+### Direct Tool Access
 
 ```bash
-# Launch test execution interface
-python Runner/runner.py
+cd core
 
-# Workflow:
-# 1. Select test directory
-# 2. Choose test instance (.dzn file)
-# 3. Select model (CLP or RCLP)
-# 4. Click "Run Test"
-# 5. View results in JSON/TXT formats
-```
+# Generate instances
+python generator/generator.py
 
-### Execute Models Directly
+# Convert data to DZN format
+python converter/converter.py
 
-```bash
-# Quick test with validated instance
-minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Own/noncity_5buses-8stations.dzn
-
-# With generated instance
-minizinc --solver chuffed Models/clp_model.mzn Data/Battery\ Generated/*.dzn
+# Run optimization tests
+python runner/runner.py
 ```
 
 ## Project Structure
 
 ```
-CLP-RCLP Minizinc/
+CLP-RCLP_Minizinc_Lab_Enviroment/
 │
-├── Models/                      # Mathematical models
-│   ├── clp_model.mzn            # CLP Model (primary)
-│   ├── rclp_model.mzn           # RCLP Model (robust)
-│   └── archive/                 # Backup and experimental variants
+├── core/                          # Application modules
+│   ├── start.py                  # System Center entry point
+│   ├── start.sh                  # Bash launcher
+│   ├── orchestration/            # System Center GUI
+│   ├── converter/                # JSON to DZN conversion
+│   ├── generator/                # Instance generation
+│   ├── runner/                   # Optimization execution
+│   ├── models/                   # MiniZinc models
+│   ├── shared/                   # Common utilities
+│   └── README.md                 # Core module documentation
 │
-├── Data/                        # Datasets
-│   ├── Battery Project Integer/ # Cork (real instances)
-│   ├── Battery Project Variant/ # Cork single-cycle variants
-│   ├── Battery Generated/       # Generated instances
-│   └── Battery Own/             # Noncity + synthetic
+├── experiments/                   # Experimental data
+│   ├── instances/                # Test datasets
+│   │   ├── battery-project-integer/
+│   │   ├── battery-project-variant/
+│   │   ├── battery-generated/
+│   │   └── battery-own/
+│   └── results/                  # Solver results and diagnostics
 │
-├── Scripts/                     # Organized scripts
-│   ├── data-processing/         # Conversion and validation
-│   ├── generation/              # Variant generation
-│   ├── testing/                 # Test suite
-│   ├── setup/                   # Setup and initialization
-│   ├── solvers/                 # Solver utilities
-│   ├── utilities/               # Tools and diagnostics
-│   └── README.md                # Scripts guide
+├── scripts/                       # Utility scripts
+│   ├── data-processing/          # Data utilities
+│   ├── generation/               # Instance generation
+│   ├── setup/                    # Environment setup
+│   ├── solvers/                  # Solver management
+│   ├── testing/                  # Test suites
+│   ├── ui-testing/               # UI testing
+│   ├── utilities/                # Diagnostic tools
+│   ├── verification/             # Validation tools
+│   └── README.md                 # Scripts documentation
 │
-├── Generator/                   # Generation system (v3.0)
-│   ├── generator.py             # Interactive GUI
-│   ├── config.py                # Configuration module
-│   ├── core/                    # Core generation logic
-│   ├── ui/                      # User interface components
-│   ├── orchestrator.py          # Workflow coordinator
-│   └── README.md                # Documentation
+├── docs/                          # Documentation
+│   ├── getting-started/          # Installation and quick start
+│   ├── overview/                 # Project information
+│   ├── reference/                # Complete reference
+│   ├── guides/                   # User guides
+│   ├── installation/             # Solver installation
+│   ├── model/                    # Mathematical documentation
+│   └── README.md                 # Documentation index
 │
-├── Runner/                      # Test execution interface (v1.4.0)
-│   ├── runner.py                # Entry point
-│   ├── config.py                # UI colors and settings
-│   ├── core/                    # Executor and result handler
-│   ├── ui/                      # Tkinter interface
-│   └── README.md                # Documentation
+├── external/                      # External dependencies
+│   └── jits2022/                 # JITS2022 reference data
 │
-├── Converter/                   # JSON to DZN converter (v1.0)
-│   ├── converter.py             # Entry point
-│   ├── config.py                # Configuration
-│   ├── core/                    # Conversion engine
-│   ├── ui/                      # Tkinter interface
-│   └── README.md                # Documentation
-│
-├── JITS2022/                    # JITS2022 test battery (external)
-│   └── Code/Data/               # Cork and other benchmarks
-│
-├── Docs/                        # Documentation
-│   ├── generated-system/        # Generation system docs
-│   ├── model/                   # Model documentation
-│   ├── analysis/                # Analysis and diagnostics
-│   ├── installation/            # Solver installation guides
-│   └── README.md                # Documentation index
-│
-├── Tests/                       # Test results and output
-│
-├── README.md                    # This file
-├── LICENSE                      # MIT License
-├── CONTRIBUTING.md              # Contribution guide
-├── CHANGELOG.md                 # Change history
-├── VERSION                      # Version number
-└── .gitignore                   # Git configuration
+├── README.md                      # This file
+├── LICENSE                        # MIT License
+├── CHANGELOG.md                   # Change history
+├── CONTRIBUTING.md                # Contribution guidelines
+└── .gitignore                     # Git configuration
 ```
+
+## Technology Stack
+
+- **Language**: Python 3.8+
+- **Constraint Programming**: MiniZinc 2.6+
+- **UI Framework**: Tkinter (Python built-in)
+- **Solvers**: 
+  - Open-source: Chuffed, Gecode, COIN-BC, OR-Tools
+  - Commercial: CPLEX, Gurobi
+- **Testing**: pytest, shell scripts
+- **Version Control**: Git
 
 ## Documentation
 
-### Getting Started
+Complete documentation is available in the `docs/` directory:
 
-- **[Generator/README.md](Generator/README.md)** - Generator v3.0 documentation
-- **[Runner/README.md](Runner/README.md)** - Test Runner interface guide
-- **[Scripts/README.md](Scripts/README.md)** - Scripts and utilities guide
-- **[Docs/README.md](Docs/README.md)** - Central documentation index
+- **[Getting Started](docs/getting-started/GETTING_STARTED.md)** - Installation and first steps
+- **[Project Overview](docs/overview/PROJECT_OVERVIEW.md)** - Features and architecture
+- **[Usage Guide](docs/reference/USAGE_GUIDE.md)** - How to use each tool
+- **[Version History](docs/reference/VERSION_HISTORY.md)** - Release notes and roadmap
+- **[Mathematical Model](docs/model/MathModel.tex)** - Complete formulation
+- **[Troubleshooting](docs/guides/TROUBLESHOOTING.md)** - Common problems and solutions
+- **[Installation Guides](docs/installation/)** - Solver setup instructions
 
-### Technical Documentation
+## System Requirements
 
-- **[Docs/model/](Docs/model/)** - Mathematical formulation
-- **[Docs/model/PROJECT_SUMMARY.md](Docs/model/PROJECT_SUMMARY.md)** - Project summary
-- **[Docs/analysis/](Docs/analysis/)** - Detailed analysis
+### Minimum
+- RAM: 8GB
+- Disk: 2GB for solvers and instances
+- Python 3.8+
+- MiniZinc 2.6+
 
-## Typical Workflows
+### Recommended
+- RAM: 16GB
+- Multi-core CPU for parallel solving
+- SSD for faster I/O
 
-### Generate New Instances
+## Features by Version
 
-```bash
-python Generator/generator.py          # Interactive GUI
-# or
-python Scripts/generation/create_cork_variants.py  # Cork variants
-```
+### v2.0.0 (Current - April 2026)
+- System Center GUI with theme support
+- Multi-solver integration
+- Professional documentation
+- Complete project restructuring
+- Theme persistence across sessions
 
-### Validate Existing Instances
+### v1.4.0
+- Multi-solver architecture
+- Result aggregation
+- HTML report generation
 
-```bash
-python Scripts/data-processing/validate_integer_dzn.py Data/Battery\ Generated/*.dzn
-```
+### v1.3.0
+- Enhanced converter with validation
+- Cork variant generation
+- Parameter scaling improvements
 
-### Run Tests
+### v1.2.0
+- Initial multi-tool release
+- Converter, Generator, Runner tools
+- Basic documentation
 
-```bash
-bash Scripts/testing/test_generator.sh    # Main suite (recommended)
-python Scripts/testing/run_battery_project_tests.py  # Battery tests
-python Runner/runner.py                   # GUI test runner (v1.4.0)
-```
+## Getting Help
 
-### Check Available Solvers
+### Documentation
+- [docs/getting-started/GETTING_STARTED.md](docs/getting-started/GETTING_STARTED.md) - Installation help
+- [docs/guides/TROUBLESHOOTING.md](docs/guides/TROUBLESHOOTING.md) - Common problems
+- [docs/reference/USAGE_GUIDE.md](docs/reference/USAGE_GUIDE.md) - Tool usage
 
-```bash
-python Scripts/solvers/check_solvers.py    # System solver verification
-```
-
-### Test Multiple Solvers
-
-```bash
-python Scripts/solvers/test_multiple_solvers.py Data/Battery\ Own/instance.dzn CLP
-```
-
-### Diagnose Issues
-
-```bash
-python Scripts/setup/setup_and_validate.py  # Validate environment
-bash Scripts/utilities/diagnose_cork.sh    # Diagnose Cork
-```
-
-## Datasets
-
-| Dataset       | Origin         | Instances | Status   | Usage                 |
-| ------------- | -------------- | --------- | -------- | --------------------- |
-| Cork          | Real (Ireland) | 182+      | Complex  | RCLP or single cycles |
-| Cork Variants | Reduced        | 5         | Feasible | Testing               |
-| Noncity       | Validated      | 10+       | Feasible | Recommended           |
-| Synthetic     | Generated      | Variable  | Feasible | Recommended           |
-| Generated     | Gen. System    | 3+        | Feasible | Recommended           |
-
-## Testing Status
-
-Generator v3.0 Results:
-
-- 2 buses, 4 stations: SAT in attempt 1 [PASS]
-- 3 buses, 5 stations: SAT in attempt 1 [PASS]
-- 5 buses, 8 stations: SAT in attempt 1 [PASS]
-
-System Performance:
-
-- Success Rate: 100%
-- Average Time to SAT: <1 second
-- Average Attempts: 1.0
-
-## Tools and Dependencies
-
-| Tool     | Version     | Purpose                    |
-| -------- | ----------- | -------------------------- |
-| MiniZinc | 2.5+        | Constraint modeling        |
-| Python   | 3.8+        | Utility scripts and Runner |
-| Bash     | Linux/macOS | Automation scripts         |
-| Git      | Any         | Version control            |
-
-### Supported Solvers
-
-- **Chuffed** (Default) - Fast constraint solver, recommended
-- **Gecode** - General-purpose constraint programming
-- **COIN-BC** - Linear/mixed-integer programming
-- **OR-Tools CP-SAT** - Google's modern CP solver
-- **CPLEX** (Commercial) - Industry-leading optimizer
-- **Gurobi** (Commercial) - Requires valid license
-
-## Key Concepts
-
-### CLP (Charging Location Problem)
-
-Base constraint programming problem that determines optimal charging station location, minimizing station count while guaranteeing operational feasibility.
-
-### RCLP (Robust CLP)
-
-Robust extension that adds resilience against potential system failures.
-
-### Scaling (x10)
-
-All values are scaled by 10 to use integer arithmetic in MiniZinc, improving numerical precision and reliability.
-
-### Feasibility
-
-An instance is "feasible" if a valid solution exists where all buses complete their routes respecting all constraints.
-
-## FAQ
-
-### Where do I start?
-
-1. Run `bash Scripts/testing/test_generator.sh` first
-2. Review [Docs/README.md](Docs/README.md) for documentation
-3. Use `python Generator/generator.py` to create instances
-4. Execute tests with `python Runner/runner.py`
-
-### Why is Cork infeasible?
-
-Cork contains 13-14 daily cycles (~400-500 stops) with ~1700 kWh consumption vs 80 kWh usable capacity. Requires 3+ RCLP models or reduction to single cycles.
-
-### How do I generate custom instances?
-
-Use `python Generator/generator.py` (GUI) or modify `Scripts/generation/` for automation.
-
-### How do I run tests?
-
-Use `python Runner/runner.py` for GUI interface or `minizinc --solver chuffed Models/clp_model.mzn Data/.../*.dzn` for command line.
-
-### Where are results stored?
-
-Test results auto-save to `Tests/Output/{DirectoryName}/` in JSON and TXT formats.
+### Issues & Feedback
+- GitHub Issues: Report bugs and request features
+- GitHub Discussions: General questions and ideas
 
 ## Contributing
 
-Contributions are welcome! Please:
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md)
-2. Fork the repository
-3. Create a branch: `git checkout -b feature/your-feature`
-4. Make descriptive commits
-5. Submit a Pull Request with clear description
+### Development Setup
+
+```bash
+# Create development environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies (if any)
+pip install -r requirements.txt  # If project has this file
+
+# Run tests
+python -m pytest scripts/testing/
+```
+
+## Citation
+
+If using this framework in research, please cite:
+
+```bibtex
+@software{clprclp2026,
+  title={CLP-RCLP: Charging Logistics Optimization Framework},
+  author={Quiceno, Andrey and García, Juan Francesco},
+  year={2026},
+  url={https://github.com/AndreyQuicenoC/CLP-RCLP_Minizinc_Lab_Enviroment}
+}
+```
 
 ## License
 
-This project is licensed under MIT. See [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License - see [LICENSE](LICENSE) file for details.
 
-## Authors
+## Author
 
-- **AVISPA Research Team** - Main research
-- **Andrey Quiceño** - Development and maintenance
+**AVISPA Research Team**
+- Andrey Quiceno (Lead Developer)
+- Juan Francesco García (UI/Framework)
 
-## Support
+## Acknowledgments
 
-- Report Bugs: [GitHub Issues](../../issues)
-- Questions: See [Docs/README.md](Docs/README.md)
-- Documentation: [Docs/](Docs/)
-
-## Roadmap
-
-- [ ] Batch generation mode
-- [ ] Custom parameter profiles
-- [ ] Improved CLI mode
-- [ ] Real-time visualization
-- [ ] Benchmark suite integration
-- [ ] REST API
-
-## Project Statistics
-
-- Lines of Code: 2500+
-- Documentation: 3500+ lines
-- Automated Tests: 7 test suites
-- Datasets: 200+ instances
-- Validated Instances: 18+
+- MiniZinc for the constraint programming framework
+- Multi-solver community (Chuffed, Gecode, OR-Tools, etc.)
+- Research collaborators and testers
 
 ---
 
-Version: 1.4.0
-Last Updated: April 2026
-Status: Production Ready - Multi-Solver Support & Enhanced UI v1.4.0
-
-## Technical Note
-
-All numeric parameters are scaled x10 to use integer arithmetic:
-
-- Time: `4200` = 420.0 minutes = 7:00 AM
-- Energy: `250` = 25.0 kWh
-- Capacity: `1000` = 100.0 kWh
-
-For more details, see [Docs/](Docs/) and [Runner/README.md](Runner/README.md).
+**Version**: 2.0.0  
+**Last Updated**: April 20, 2026  
+**Status**: Production Ready
