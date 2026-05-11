@@ -80,21 +80,31 @@ class ThemeManager:
     _current_mode: Literal["dark", "light"] = None
     _palette: ColorPalette = DARK_PALETTE
     _observers: list = []
+    _initialized = False
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ThemeManager, cls).__new__(cls)
-            # Initialize with saved theme or default
-            saved_theme = None
-            if ThemePersistence:
-                saved_theme = ThemePersistence.get_theme()
-            cls._current_mode = saved_theme or "dark"
-            cls._palette = DARK_PALETTE if cls._current_mode == "dark" else LIGHT_PALETTE
         return cls._instance
+
+    @classmethod
+    def _ensure_initialized(cls) -> None:
+        """Initialize theme settings if not already done (lazy initialization)."""
+        if cls._initialized:
+            return
+
+        # Initialize with saved theme or default
+        saved_theme = None
+        if ThemePersistence:
+            saved_theme = ThemePersistence.get_theme()
+        cls._current_mode = saved_theme or "dark"
+        cls._palette = DARK_PALETTE if cls._current_mode == "dark" else LIGHT_PALETTE
+        cls._initialized = True
 
     @classmethod
     def get_palette(cls, mode: Literal["dark", "light"] = None) -> ColorPalette:
         """Get color palette for specified mode. None returns current."""
+        cls._ensure_initialized()
         if mode is None:
             return cls._palette
         return DARK_PALETTE if mode == "dark" else LIGHT_PALETTE
@@ -102,6 +112,7 @@ class ThemeManager:
     @classmethod
     def set_mode(cls, mode: Literal["dark", "light"]) -> None:
         """Switch to specified theme mode."""
+        cls._ensure_initialized()
         if mode not in ("dark", "light"):
             raise ValueError(f"Invalid mode: {mode}")
         if mode == cls._current_mode:
@@ -116,6 +127,7 @@ class ThemeManager:
     @classmethod
     def get_mode(cls) -> Literal["dark", "light"]:
         """Get current theme mode."""
+        cls._ensure_initialized()
         return cls._current_mode
 
     @classmethod
