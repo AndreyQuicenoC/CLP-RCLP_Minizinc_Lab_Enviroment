@@ -70,6 +70,7 @@ class ConverterInterface(tk.Frame):
         # State variables
         self.available_tests: List[str] = []
         self.available_batteries: List[str] = []
+        self.output_format_var = tk.StringVar(value="normalized")
 
         # Build UI
         self._build_ui()
@@ -359,6 +360,46 @@ class ConverterInterface(tk.Frame):
         frame = tk.Frame(parent, bg=self.theme_dict["bg_base"])
         frame.pack(fill=tk.X, pady=(0, 10))
 
+        # Conversion format
+        tk.Label(
+            frame,
+            text="Conversion Format:",
+            bg=self.theme_dict["bg_base"],
+            fg=self.theme_dict["text_primary"],
+            font=("Arial", 9)
+        ).pack(anchor=tk.W, pady=(0, 5))
+
+        format_frame = tk.Frame(frame, bg=self.theme_dict["bg_base"])
+        format_frame.pack(fill=tk.X, pady=(0, 10))
+
+        tk.Radiobutton(
+            format_frame,
+            text="Normalized integer mode",
+            variable=self.output_format_var,
+            value="normalized",
+            bg=self.theme_dict["bg_base"],
+            fg=self.theme_dict["text_primary"],
+            selectcolor=self.theme_dict["bg_surface"],
+            command=self._on_format_change
+        ).pack(anchor=tk.W)
+
+        tk.Radiobutton(
+            format_frame,
+            text="Original decimal mode",
+            variable=self.output_format_var,
+            value="original",
+            bg=self.theme_dict["bg_base"],
+            fg=self.theme_dict["text_primary"],
+            selectcolor=self.theme_dict["bg_surface"],
+            command=self._on_format_change
+        ).pack(anchor=tk.W)
+
+        Tooltip(
+            format_frame,
+            "Normalized keeps the current scaled integer output. Original preserves the source decimals for the external model.",
+            self.theme_dict
+        )
+
         # Output battery
         tk.Label(
             frame,
@@ -598,9 +639,22 @@ class ConverterInterface(tk.Frame):
             config = ExperimentConfig()
             self.log_queue.put((f"Using config: model_speed={config.model_speed} km/h, rest_time={config.rest_time} min", "info"))
 
+            output_format = self.output_format_var.get()
+            self.log_queue.put((f"Using conversion format: {output_format}", "info"))
+
+            distances, dist_station_count = DataLoader.load_distances(
+                jits_path,
+                preserve_precision=(output_format == "original")
+            )
+
             # Perform conversion with source directory name and loaded data
             success_count, failure_count, messages = ConverterEngine.batch_convert_files(
-                json_files, output_path, jits_dir, config=config, distances_dict=distances
+                json_files,
+                output_path,
+                jits_dir,
+                config=config,
+                distances_dict=distances,
+                output_format=output_format
             )
 
             # Log results
@@ -790,6 +844,16 @@ OPTIONAL FILES (ignored):
 ⊘ Other files not listed above
 
 
+CONVERSION FORMATS:
+
+• Normalized integer mode
+    Keeps the current scaled integer output used by the CLP pipeline.
+
+• Original decimal mode
+    Preserves raw decimal distances and energy calculations for the external model.
+    Use this when you need the same values that appear in the source JSON/CSV files.
+
+
 EXAMPLE DIRECTORY STRUCTURE:
 
 JITS2022/Code/Data/
@@ -814,6 +878,14 @@ TIPS FOR SUCCESSFUL CONVERSION:
 
 """
         show_help(self.root, "Instance Directory Requirements", help_content, self.theme_dict)
+
+    def _on_format_change(self) -> None:
+        """React to format selection changes."""
+        selected = self.output_format_var.get()
+        if selected == "original":
+            self._log("Original decimal mode selected; distances and energy will be preserved without scaling.", "info")
+        else:
+            self._log("Normalized integer mode selected; current scaled output will be used.", "info")
 
     def _refresh_ui_colors(self) -> None:
         """Refresh UI colors after theme change by rebuilding the entire interface."""

@@ -1,10 +1,10 @@
 # Converter - JSON to DZN Conversion Tool
 
-Professional interface for converting JITS2022 test batteries from JSON format to MiniZinc integer DZN format.
+Professional interface for converting JITS2022 test batteries from JSON format to MiniZinc DZN format.
 
 ## Overview
 
-The Converter tool provides an intuitive GUI to transform JSON bus schedule files from the JITS2022 dataset into integer-scaled DZN format compatible with the CLP and RCLP models.
+The Converter tool provides an intuitive GUI to transform JSON bus schedule files from the JITS2022 dataset into either integer-scaled DZN format or the original decimal DZN format used by the external model.
 
 ## Features
 
@@ -17,6 +17,7 @@ The Converter tool provides an intuitive GUI to transform JSON bus schedule file
 - **Dark/Light Themes**: Professional UI with theme switching
 - **Tooltips**: Context help on all major controls
 - **Differentiated Scaling**: Energy-related values scaled by 1000, time values unscaled for MiniZinc
+- **Format Selection**: Switch between normalized integer output and original decimal output
 
 ## Usage
 
@@ -38,7 +39,8 @@ python Converter/converter.py
 
 3. **Choose Output Battery**
    - Select an existing battery: Battery Own, Battery Project Integer, etc.
-   - Files automatically organized by test name and solver subdirectories
+  - Files automatically organized by test name and solver subdirectories
+  - Select the conversion format before starting the batch
 
 4. **Start Conversion**
    - Click "Convert" to begin
@@ -96,7 +98,7 @@ Core conversion logic:
 - Calculate travel times (T) using JITS2022 algorithm:
   - T = distance / speed (constrained by speed limits)
   - Includes rest time adjustments when applicable
-- Generate integer DZN files with proper formatting
+- Generate integer DZN files or original decimal DZN files with proper formatting
 - Batch conversion support with configurable parameters
 
 ### file_manager.py
@@ -145,6 +147,15 @@ Converter uses **differentiated scaling** by domain for precision and MiniZinc c
 - **Rationale**: Schedule times already precise in minutes; no scaling needed for MiniZinc compatibility
 
 **Precision Improvement**: This approach reduces error per arc from ±10.4% (SCALE=50) to ±0.05%, improving cumulative accuracy across multi-stop routes by 200×.
+
+### Original Decimal Mode
+
+This mode preserves the source decimal values from the input JSON and CSV files.
+
+- **Energy Values**: `D`, `Cmax`, `Cmin`, and `alpha` remain in raw kWh units
+- **Distance Precision**: Distances are read as decimals and multiplied without rounding before writing the energy matrix
+- **Time Values**: `T`, `tau_bi`, `mu`, `SM`, `psi`, `beta`, and `M` remain in their native units
+- **Use Case**: Validation against the external reference model and research workflows that need the exact original decimals
 
 ### Model Parameters
 
@@ -209,6 +220,7 @@ Hover over [?] icons to get context-specific help:
 - **Generator**: Create new test instances
 - **Runner**: Execute tests with multiple solvers
 - Scripts/data-processing/convert_json_to_integer_dzn.py: CLI conversion script
+- scripts/verification/verify_original_decimal_converter.py: Validates the original decimal output mode
 
 ## Troubleshooting
 

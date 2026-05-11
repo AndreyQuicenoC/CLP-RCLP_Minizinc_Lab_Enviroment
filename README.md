@@ -32,7 +32,7 @@ This framework provides a complete toolkit for:
 
 ### 🔧 Three Core Tools
 
-1. **Data Converter** - JSON to MiniZinc (DZN) format
+1. **Data Converter** - JSON to MiniZinc (DZN) format, with normalized and original decimal output modes
 2. **Instance Generator** - Create test instances with parameters
 3. **Test Runner** - Execute optimization and compare solvers
 

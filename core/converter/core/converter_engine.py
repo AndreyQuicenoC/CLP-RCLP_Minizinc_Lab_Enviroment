@@ -11,6 +11,7 @@ Date: April 2026
 
 import json
 import logging
+from decimal import Decimal
 from pathlib import Path
 from typing import Dict, List, Any, Tuple, Optional
 from datetime import datetime
@@ -104,6 +105,15 @@ class ConverterEngine:
         return int(round(value))
 
     @staticmethod
+    def format_dzn_number(value: Any) -> str:
+        """Format numeric values for DZN output without losing decimal precision."""
+        if isinstance(value, Decimal):
+            return format(value, 'f')
+        if isinstance(value, float):
+            return format(value, '.15g')
+        return str(value)
+
+    @staticmethod
     def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         """
         Calculate Euclidean distance between two GPS coordinates.
@@ -181,7 +191,8 @@ class ConverterEngine:
 
     @classmethod
     def convert_json_to_dzn(cls, json_file: Path, output_file: Path,
-                           variant_name: str = "", config=None, distances_dict=None) -> Tuple[bool, str]:
+                           variant_name: str = "", config=None, distances_dict=None,
+                           output_format: str = "normalized") -> Tuple[bool, str]:
         """
         Convert a JSON bus schedule file to integer DZN format.
 
@@ -191,14 +202,20 @@ class ConverterEngine:
             variant_name: Name of the variant (e.g., "20_0")
             config: ExperimentConfig instance (or None for defaults)
             distances_dict: Optional dict of (from_id, to_id) -> distance_meters
+            output_format: "normalized" for scaled integer output, "original" for raw decimal output
 
         Returns:
             (success: bool, message: str)
         """
         # Create converter instance with config and data
         converter = cls(config=config, distances_dict=distances_dict or {})
+        format_mode = (output_format or "normalized").strip().lower()
+        if format_mode not in {"normalized", "original"}:
+            return False, f"Unsupported output format: {output_format}"
 
-        logger.info(f"Converting {json_file.name} to integer DZN format...")
+        preserve_precision = format_mode == "original"
+
+        logger.info(f"Converting {json_file.name} to {format_mode} DZN format...")
         logger.info(f"  Using model speed: {converter.MIN_SPEED_KMH} km/h, rest time: {converter.config.rest_time} min")
 
         try:
@@ -246,24 +263,31 @@ class ConverterEngine:
                 # For D: calculate energy consumption based on distance and consumption rate
                 # Energy = distance_km * consumption_per_km
                 # Default consumption rate if not specified
-                energy = [0]  # First segment (at first station, no energy consumed)
+                energy = [Decimal('0') if preserve_precision else 0]  # First segment has no energy consumed
                 for i in range(1, len(bus['station_ids'])):
                     prev_station_id = bus['station_ids'][i - 1]
                     curr_station_id = bus['station_ids'][i]
 
-                    # Get distance from distances_dict (in meters)
-                    distance_m = converter.distances_dict.get((prev_station_id, curr_station_id), 0)
-                    distance_km = distance_m / 1000.0
-
                     # Energy consumption: 0.25 kWh per km (typical electric bus consumption)
-                    # This can be adjusted based on bus specifications
-                    energy_consumed_kwh = distance_km * 0.25
+                    # Preserve decimal precision when requested.
+                    if preserve_precision:
+                        distance_km = converter.distances_dict.get((prev_station_id, curr_station_id), Decimal('0'))
+                        if not isinstance(distance_km, Decimal):
+                            distance_km = Decimal(str(distance_km))
+                        energy_consumed_kwh = distance_km * Decimal('0.25')
+                    else:
+                        distance_m = converter.distances_dict.get((prev_station_id, curr_station_id), 0)
+                        distance_km = float(distance_m) / 1000.0
+                        energy_consumed_kwh = distance_km * 0.25
                     energy.append(energy_consumed_kwh)
 
-                # Scale energy by SCALE_ENERGY (1000) - 1 unit = 0.001 kWh
-                energy_scaled = [converter.scale_energy_to_integer(e) for e in energy]
-                energy_scaled += [0] * (max_stops - len(energy_scaled))
-                D.extend(energy_scaled)
+                if preserve_precision:
+                    energy_values = energy + [Decimal('0')] * (max_stops - len(energy))
+                else:
+                    # Scale energy by SCALE_ENERGY (1000) - 1 unit = 0.001 kWh
+                    energy_values = [converter.scale_energy_to_integer(e) for e in energy]
+                    energy_values += [0] * (max_stops - len(energy_values))
+                D.extend(energy_values)
 
                 # T: travel times (NO SCALING - keep as integer minutes)
                 # Consistent with JITS2022: T = distance / speed in minutes
@@ -290,21 +314,35 @@ class ConverterEngine:
                 f.write("% " + "=" * 76 + "\n")
                 f.write("% Source: JITS2022 Test Battery (Converted)\n")
                 f.write(f"% Original file: {json_file.name}\n")
-                f.write("% Converted to CLP format with COHERENT SCALING:\n")
-                f.write("%   - Energy (D, Cmax, Cmin, alpha): scaled by 1000 (1 unit = 0.001 kWh)\n")
-                f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): NO scaling (native minutes)\n")
+                if preserve_precision:
+                    f.write("% Converted to CLP format with ORIGINAL DECIMAL VALUES:\n")
+                    f.write("%   - Energy (D, Cmax, Cmin, alpha): raw decimal values (no scaling)\n")
+                    f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): native minutes (no scaling)\n")
+                else:
+                    f.write("% Converted to CLP format with COHERENT SCALING:\n")
+                    f.write("%   - Energy (D, Cmax, Cmin, alpha): scaled by 1000 (1 unit = 0.001 kWh)\n")
+                    f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): NO scaling (native minutes)\n")
                 f.write("%\n")
                 f.write("% CONVERSION DETAILS:\n")
                 f.write("% - tau_bi: minutes since 00:00 (no scaling) - matches MiniZinc tbi range 0..3000\n")
                 f.write("% - T: travel times (NO scaling - native integer minutes)\n")
-                f.write("% - D: energy values scaled by 1000 (1 unit = 0.001 kWh)\n")
-                f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
-                f.write("%           2.5 kWh -> 2500 (scaled by 1000)\n")
+                if preserve_precision:
+                    f.write("% - D: energy values kept as raw decimal kWh values\n")
+                    f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
+                    f.write("%           2.5 kWh -> 2.5 (raw decimal)\n")
+                else:
+                    f.write("% - D: energy values scaled by 1000 (1 unit = 0.001 kWh)\n")
+                    f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
+                    f.write("%           2.5 kWh -> 2500 (scaled by 1000)\n")
                 f.write("%\n")
                 f.write("% INTERPRETATION GUIDE:\n")
                 f.write("%   - tau_bi / times: minutes (no conversion needed)\n")
-                f.write("%   - Energy (D): integer_value / 1000 = kWh\n")
-                f.write("%   - MiniZinc constraints use scaled units (energy in 0.001 kWh units)\n")
+                if preserve_precision:
+                    f.write("%   - Energy (D): direct kWh values, no scaling applied\n")
+                    f.write("%   - MiniZinc constraints use original decimal energy units\n")
+                else:
+                    f.write("%   - Energy (D): integer_value / 1000 = kWh\n")
+                    f.write("%   - MiniZinc constraints use scaled units (energy in 0.001 kWh units)\n")
                 f.write("% " + "=" * 76 + "\n\n")
 
                 # Problem dimensions
@@ -314,19 +352,32 @@ class ConverterEngine:
 
                 # Energy parameters (from config, scaled by 1000)
                 f.write("% --- Energy Parameters (CLP Model) ---\n")
-                f.write(f"% Scaled by {converter.SCALE_ENERGY} (1 unit = 0.001 kWh)\n")
-                f.write(f"Cmax = {converter.CMAX};  % Maximum battery capacity (original: {converter.config.cmax} kWh)\n")
-                f.write(f"Cmin = {converter.CMIN};   % Minimum reserve (original: {converter.config.cmin} kWh)\n")
-                f.write(f"alpha = {converter.ALPHA};  % Fast charging rate (original: {converter.config.alpha} kWh/min)\n\n")
+                if preserve_precision:
+                    f.write("% Raw decimal values from the original model\n")
+                    f.write(f"Cmax = {converter.format_dzn_number(Decimal(str(converter.config.cmax)))};  % Maximum battery capacity (kWh)\n")
+                    f.write(f"Cmin = {converter.format_dzn_number(Decimal(str(converter.config.cmin)))};   % Minimum reserve (kWh)\n")
+                    f.write(f"alpha = {converter.format_dzn_number(Decimal(str(converter.config.alpha)))};  % Fast charging rate (kWh/min)\n\n")
+                else:
+                    f.write(f"% Scaled by {converter.SCALE_ENERGY} (1 unit = 0.001 kWh)\n")
+                    f.write(f"Cmax = {converter.CMAX};  % Maximum battery capacity (original: {converter.config.cmax} kWh)\n")
+                    f.write(f"Cmin = {converter.CMIN};   % Minimum reserve (original: {converter.config.cmin} kWh)\n")
+                    f.write(f"alpha = {converter.ALPHA};  % Fast charging rate (original: {converter.config.alpha} kWh/min)\n\n")
 
                 # Time and schedule parameters (NO SCALING)
                 f.write("% --- Time and Schedule Parameters ---\n")
                 f.write("% NO SCALING - values are native minutes\n")
-                f.write(f"mu = {converter.MU};      % Maximum delay (original: {converter.config.mu} min)\n")
-                f.write(f"SM = {converter.SM};      % Safety margin (original: {converter.config.sm} min)\n")
-                f.write(f"psi = {converter.PSI};     % Minimum charging time (original: {converter.config.psi} min)\n")
-                f.write(f"beta = {converter.BETA};   % Maximum charging time (original: {converter.config.beta} min)\n")
-                f.write(f"M = {converter.M};   % Big-M constant (based on max horizon: ~5000 min)\n\n")
+                if preserve_precision:
+                    f.write(f"mu = {converter.format_dzn_number(Decimal(str(converter.config.mu)))};      % Maximum delay (original: {converter.config.mu} min)\n")
+                    f.write(f"SM = {converter.format_dzn_number(Decimal(str(converter.config.sm)))};      % Safety margin (original: {converter.config.sm} min)\n")
+                    f.write(f"psi = {converter.format_dzn_number(Decimal(str(converter.config.psi)))};     % Minimum charging time (original: {converter.config.psi} min)\n")
+                    f.write(f"beta = {converter.format_dzn_number(Decimal(str(converter.config.beta)))};   % Maximum charging time (original: {converter.config.beta} min)\n")
+                    f.write(f"M = {converter.format_dzn_number(Decimal(str(converter.M)))};   % Big-M constant (based on max horizon: ~5000 min)\n\n")
+                else:
+                    f.write(f"mu = {converter.MU};      % Maximum delay (original: {converter.config.mu} min)\n")
+                    f.write(f"SM = {converter.SM};      % Safety margin (original: {converter.config.sm} min)\n")
+                    f.write(f"psi = {converter.PSI};     % Minimum charging time (original: {converter.config.psi} min)\n")
+                    f.write(f"beta = {converter.BETA};   % Maximum charging time (original: {converter.config.beta} min)\n")
+                    f.write(f"M = {converter.M};   % Big-M constant (based on max horizon: ~5000 min)\n\n")
 
                 # Route structure
                 f.write("% --- Route Structure ---\n")
@@ -341,7 +392,7 @@ class ConverterEngine:
                     start_idx = i * max_stops
                     end_idx = start_idx + max_stops
                     bus_stations = st_bi[start_idx:end_idx]
-                    line = "  " + ",".join(map(str, bus_stations))
+                    line = "  " + ",".join(converter.format_dzn_number(value) for value in bus_stations)
                     f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
                 f.write("]);\n\n")
 
@@ -355,7 +406,7 @@ class ConverterEngine:
                     start_idx = i * max_stops
                     end_idx = start_idx + max_stops
                     bus_energy = D[start_idx:end_idx]
-                    line = "  " + ",".join(map(str, bus_energy))
+                    line = "  " + ",".join(converter.format_dzn_number(value) for value in bus_energy)
                     f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
                 f.write("]);\n\n")
 
@@ -369,7 +420,7 @@ class ConverterEngine:
                     start_idx = i * max_stops
                     end_idx = start_idx + max_stops
                     bus_times = T[start_idx:end_idx]
-                    line = "  " + ",".join(map(str, bus_times))
+                    line = "  " + ",".join(converter.format_dzn_number(value) for value in bus_times)
                     f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
                 f.write("]);\n\n")
 
@@ -382,7 +433,7 @@ class ConverterEngine:
                     start_idx = i * max_stops
                     end_idx = start_idx + max_stops
                     bus_schedule = tau_bi[start_idx:end_idx]
-                    line = "  " + ",".join(map(str, bus_schedule))
+                    line = "  " + ",".join(converter.format_dzn_number(value) for value in bus_schedule)
                     f.write(line + ("," if i < num_buses - 1 else "") + f"  % Bus {i+1}\n")
                 f.write("]);\n")
 
@@ -396,7 +447,7 @@ class ConverterEngine:
 
     @classmethod
     def batch_convert_files(cls, json_files: List[Path], output_dir: Path, source_dir_name: str = "",
-                           config=None, distances_dict=None) -> Tuple[int, int, List[str]]:
+                           config=None, distances_dict=None, output_format: str = "normalized") -> Tuple[int, int, List[str]]:
         """
         Convert multiple JSON files to DZN format.
 
@@ -438,7 +489,14 @@ class ConverterEngine:
 
             output_file = target_dir / filename
 
-            success, message = cls.convert_json_to_dzn(json_file, output_file, variant, config, distances_dict)
+            success, message = cls.convert_json_to_dzn(
+                json_file,
+                output_file,
+                variant,
+                config,
+                distances_dict,
+                output_format=output_format,
+            )
             if success:
                 success_count += 1
                 messages.append(f"✓ {json_file.name}: {message}")
