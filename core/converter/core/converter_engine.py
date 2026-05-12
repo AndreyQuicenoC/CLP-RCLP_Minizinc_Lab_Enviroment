@@ -151,34 +151,51 @@ class ConverterEngine:
                 logger.warning(f"Bus {bus_idx} has empty path. Skipping.")
                 continue
 
-            # Extract station IDs, times, and rest flags
+            # Extract station IDs, schedule times, and rest flags
             station_ids = [stop['station_id'] for stop in path]
             times = [self.parse_time_to_minutes(stop['time']) for stop in path]
             rest_flags = [stop.get('rest', False) for stop in path]
 
-            # Calculate T using JITS2022 algorithm
-            # T represents travel time between consecutive stops (in minutes)
-            # In JITS2022, T is derived from the scheduled times, not recalculated from distances
-            # The schedule times already account for all factors (distance, speed, delays)
+            # Calculate T using JITS2022 InstanceMTD.readBuses() logic:
+            # - Use scheduled timestamps only to infer required speed
+            # - Clamp speeds within [MIN_SPEED, MAX_SPEED]
+            # - Recompute segment travel time from distance/speed
+            # - If two consecutive timestamps are equal, use a 30-second delta
+            min_speed_mps = (self.MIN_SPEED_KMH * 1000.0) / 3600.0
+            max_speed_mps = (self.MAX_SPEED_KMH * 1000.0) / 3600.0
+
             T_values = [0]  # First segment has no travel time
 
             for i in range(1, len(path)):
-                # T is simply the time delta between consecutive stops
-                time_delta_minutes = times[i] - times[i - 1]
+                prev_station_id = station_ids[i - 1]
+                curr_station_id = station_ids[i]
 
-                # If no time delta (shouldn't happen in valid data), use default
-                if time_delta_minutes <= 0:
-                    time_delta_minutes = 1
-                    logger.warning(f"Bus {bus_idx}: Zero or negative time delta at stop {i}. Using default.")
+                # Distances are stored in meters for normalized mode and Decimal(km) for original mode.
+                raw_distance = distances_dict.get((prev_station_id, curr_station_id), 0)
+                if isinstance(raw_distance, Decimal):
+                    distance_m = float(raw_distance * Decimal('1000'))
+                else:
+                    distance_m = float(raw_distance)
 
-                # Add rest time if previous stop has rest flag
-                rest_contribution = 0
-                if i > 0 and rest_flags[i - 1]:
-                    rest_contribution = self.config.rest_time
+                previous_arrival_seconds = times[i - 1] * 60
+                current_arrival_seconds = times[i] * 60
+                time_needed_for_previous = current_arrival_seconds - previous_arrival_seconds
 
-                # T = time between stops (already includes any delays in the schedule)
-                travel_time_minutes = time_delta_minutes + rest_contribution
-                T_values.append(travel_time_minutes)
+                if time_needed_for_previous == 0:
+                    time_needed_for_previous = 30
+
+                required_speed = distance_m / time_needed_for_previous if time_needed_for_previous != 0 else max_speed_mps
+                if required_speed > max_speed_mps:
+                    required_speed = max_speed_mps
+
+                segment_speed = max(required_speed, min_speed_mps)
+                travel_time_seconds = int(round(distance_m / segment_speed)) if segment_speed > 0 else 0
+
+                if rest_flags[i - 1]:
+                    travel_time_seconds += self.REST_TIME_SECONDS
+
+                travel_time_minutes = int(round(travel_time_seconds / 60.0))
+                T_values.append(max(0, travel_time_minutes))
 
             processed_buses.append({
                 'station_ids': station_ids,

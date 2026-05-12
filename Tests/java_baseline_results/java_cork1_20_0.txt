@@ -1,0 +1,113 @@
+Gathering Java sources...
+Compiling Java sources...
+Y:\MinimalTimetableDisruptions\src\greedy\EasiestGreedyHeuristic.java:312: warning: [dep-ann] deprecated item is not annotated with @Deprecated
+	public void solveOverlappingConflicts() {
+	            ^
+Y:\MinimalTimetableDisruptions\src\heuristics\HeuristicMTD.java:557: warning: [dep-ann] deprecated item is not annotated with @Deprecated
+	public void removeStation(ArrayList<RemoveOperator> removeOperators, int iteration) {
+	            ^
+Note: Y:\MinimalTimetableDisruptions\src\core\Executor.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: Some input files use unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+2 warnings
+Running Executor...
+Max ct: 486
+Line 214-1 has 4 buses
+Number of stations: 579
+Number of buses: 4
+Bus 0 ----> 0
+Bus 1 ----> 1
+Bus 2 ----> 2
+Bus 3 ----> 3
+Number of stops: 1868
+Total min energy: 161026.0
+Number of buses discarded: 0
+Number of buses: 4
+Bus 0 ----> 0
+Bus 1 ----> 1
+Bus 2 ----> 2
+Bus 3 ----> 3
+Number of stops: 1868
+Laura's extension activated
+Total min energy: 161026.0
+Bus 0: 566
+Bus 1: 568
+Bus 2: 378
+Bus 3: 356
+Building basic constraints
+class modelimplementations.BasicRouteModelExtension
+class modelimplementations.MinChargingTimeRouteModelExtension
+class modelimplementations.InstallChargerRouteModelExtension
+class modelimplementations.SecurityMarginTimeSequenceModelExtension
+class modelimplementations.LaurasModelExtension
+class modelimplementations.MinEnergyAddedModelExtension
+Building non-overlapping constraints
+Optimizing number of chargers
+No objective in extension class modelimplementations.MinChargingTimeRouteModelExtension
+No objective in extension class modelimplementations.InstallChargerRouteModelExtension
+No objective in extension class modelimplementations.SecurityMarginTimeSequenceModelExtension
+No objective in extension class modelimplementations.LaurasModelExtension
+No objective in extension class modelimplementations.MinEnergyAddedModelExtension
+
+Tue May 12 09:48:56 COT 2026
+objective type: chargers, CMax: 120000, model speed: 20, instance speed: 20
+rest time: 0, DTmax: 4, minCt: 1, lauras: 1, arrivingWithoutCharging: 0, robust: 0, backToPrimary: 0, objective: 0, threads: 4
+
+Solving...
+obj = 1.0
+Checking solution feasibility
+Feasible: true
+newMaxTime: 240
+Laura's extension activated
+Robust extension activated
+Total min energy: 161026.0
+Bus 0: 566
+Bus 1: 568
+Bus 2: 378
+Bus 3: 356
+Building basic constraints
+class modelimplementations.BasicRouteModelExtension
+class modelimplementations.MinChargingTimeRouteModelExtension
+class modelimplementations.InstallChargerRouteModelExtension
+Warming start with 1 chargers
+Printing them...
+11
+Warm for route!!
+Warming start basic...
+class modelimplementations.SecurityMarginTimeSequenceModelExtension
+class modelimplementations.LaurasModelExtension
+class modelimplementations.BasicRouteModelExtension
+class modelimplementations.SecurityMarginTimeSequenceModelExtension
+class modelimplementations.MinChargingTimeRouteModelExtension
+class modelimplementations.InstallChargerRouteModelExtension
+class modelimplementations.RobustSkipChargeRouteModelExtension
+class modelimplementations.RobustChargeRouteModelExtension
+class modelimplementations.RobustTimeRouteModelExtension
+class modelimplementations.LaurasModelExtension
+class modelimplementations.MinEnergyAddedModelExtension
+Building non-overlapping constraints
+Optimizing number of chargers
+No objective in extension class modelimplementations.MinChargingTimeRouteModelExtension
+No objective in extension class modelimplementations.InstallChargerRouteModelExtension
+No objective in extension class modelimplementations.SecurityMarginTimeSequenceModelExtension
+No objective in extension class modelimplementations.LaurasModelExtension
+No objective in extension class modelimplementations.SecurityMarginTimeSequenceModelExtension
+No objective in extension class modelimplementations.MinChargingTimeRouteModelExtension
+No objective in extension class modelimplementations.InstallChargerRouteModelExtension
+No objective in extension class modelimplementations.RobustSkipChargeRouteModelExtension
+No objective in extension class modelimplementations.RobustChargeRouteModelExtension
+No objective in extension class modelimplementations.RobustTimeRouteModelExtension
+No objective in extension class modelimplementations.LaurasModelExtension
+No objective in extension class modelimplementations.MinEnergyAddedModelExtension
+
+Tue May 12 09:49:02 COT 2026
+objective type: chargers, CMax: 120000, model speed: 20, instance speed: 20
+rest time: 0, DTmax: 4, minCt: 1, lauras: 1, arrivingWithoutCharging: 0, robust: 1, backToPrimary: 0, objective: 0, threads: 4
+
+Solving...
+obj = 2.0
+Checking solution feasibility for robust model
+Feasible: false
+######## NOT Feasible ##########
+check on checker-cork-1-line_chargers_120000_20_0_4_1_1_0_1_0_0_4_mar--12-05-2026_-9-48-52-44_4_0

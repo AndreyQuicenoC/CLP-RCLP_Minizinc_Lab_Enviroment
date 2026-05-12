@@ -23,13 +23,13 @@ logger = logging.getLogger(__name__)
 class MiniZincExecutor:
     """Execute MiniZinc models with multiple solver support."""
 
-    def __init__(self, model_path: str, timeout_seconds: int = 300):
+    def __init__(self, model_path: str, timeout_seconds: Optional[int] = 300):
         """
         Initialize executor.
 
         Args:
             model_path: Path to .mzn model file
-            timeout_seconds: Execution timeout in seconds
+            timeout_seconds: Execution timeout in seconds, or None/<=0 for no timeout
         """
         self.model_path = Path(model_path)
         self.timeout_seconds = timeout_seconds
@@ -61,21 +61,27 @@ class MiniZincExecutor:
             cmd = [
                 "minizinc",
                 "--solver", solver_name,
-                "--time-limit", str(self.timeout_seconds * 1000),
                 str(self.model_path),
                 str(dzn_path)
             ]
+
+            if self.timeout_seconds and self.timeout_seconds > 0:
+                cmd[4:4] = ["--time-limit", str(self.timeout_seconds * 1000)]
 
             logger.debug(f"Running: {' '.join(cmd)}")
 
             # Measure execution time
             start_time = time.time()
 
+            run_timeout = None
+            if self.timeout_seconds and self.timeout_seconds > 0:
+                run_timeout = self.timeout_seconds + 10
+
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=self.timeout_seconds + 10
+                timeout=run_timeout
             )
 
             execution_time = time.time() - start_time
