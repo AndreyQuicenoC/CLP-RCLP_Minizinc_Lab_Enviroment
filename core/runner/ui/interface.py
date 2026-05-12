@@ -569,7 +569,8 @@ class RunnerInterface(tk.Frame):
                 self.status_indicator.set_status("error", "Error")
                 return
 
-            executor = MiniZincExecutor(str(model_path))
+            # Run without a hard execution time limit from the UI.
+            executor = MiniZincExecutor(str(model_path), timeout_seconds=None)
 
             data_path = Path(self.project_root) / "experiments" / "instances" / directory
             instance_path = data_path / f"{instance}.dzn"

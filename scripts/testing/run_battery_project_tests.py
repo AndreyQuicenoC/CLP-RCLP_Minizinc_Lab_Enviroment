@@ -30,7 +30,7 @@ import signal
 # ============================================================================
 
 MODEL_FILE = "clp_model.mzn"
-SOLVER = "chuffed"
+DEFAULT_SOLVER = "cplex"
 DEFAULT_TIME_LIMIT_MS = 300000  # 5 minutes per test
 RESULTS_BASE_DIR = "Tests/Battery Project"
 
@@ -120,7 +120,7 @@ def create_run_directory(base_dir: Path, run_number: int) -> Path:
 # TEST EXECUTION FUNCTIONS
 # ============================================================================
 
-def run_test_case(model_file: Path, data_file: Path, time_limit_ms: int) -> dict:
+def run_test_case(model_file: Path, data_file: Path, time_limit_ms: int, solver: str) -> dict:
     """
     Execute a single test case with MiniZinc.
 
@@ -134,7 +134,7 @@ def run_test_case(model_file: Path, data_file: Path, time_limit_ms: int) -> dict
     """
     cmd = [
         "minizinc",
-        "--solver", SOLVER,
+        "--solver", solver,
         "--time-limit", str(time_limit_ms),
         "-s",  # Statistics
         "--json-stream",  # JSON output for easier parsing
@@ -348,42 +348,102 @@ def generate_summary_report(results: list, summary_file: Path, run_info: dict):
 
 
 # ============================================================================
+# MODEL SELECTION
+# ============================================================================
+
+def detect_dzn_precision(dzn_file: Path) -> str:
+    """
+    Detect if a DZN file contains float or integer data.
+    
+    Returns:
+        'float' if data contains decimal values, 'int' otherwise
+    """
+    try:
+        with open(dzn_file, 'r', encoding='utf-8') as f:
+            content = f.read(2000)  # Check first 2KB
+            
+            # Look for float patterns: decimal points in numeric values
+            # But not in comments
+            lines = [l for l in content.split('\n') if not l.strip().startswith('%')]
+            text = ' '.join(lines)
+            
+            # Check for float indicators
+            import re
+            # Pattern: number with decimal point (e.g., 100.0, 0.123)
+            float_pattern = r'=\s*[\d\.]+-?[\d\.]+(?:\.|e)[\d\.]+'
+            if re.search(float_pattern, text) or '.0' in text or '0.0' in text:
+                return 'float'
+            
+            return 'int'
+    except Exception as e:
+        logger.warning(f"Could not determine precision for {dzn_file}: {e}. Assuming int.")
+        return 'int'
+
+
+def select_model_file(project_root: Path, data_dir: Path, dzn_file: Path = None) -> tuple:
+    """
+    Select appropriate model file based on data precision.
+    
+    Returns:
+        (model_file: Path, precision: str)
+    """
+    # Auto-detect precision from first DZN file if available
+    if dzn_file:
+        precision = detect_dzn_precision(dzn_file)
+    else:
+        # Check first DZN in data directory
+        first_dzn = next((project_root / data_dir).rglob('*.dzn'), None) if data_dir else None
+        precision = detect_dzn_precision(first_dzn) if first_dzn else 'int'
+    
+    model_name = "clp_model_float.mzn" if precision == 'float' else "clp_model.mzn"
+    model_file = project_root / "core" / "models" / model_name
+    
+    return model_file, precision
+
+
+# ============================================================================
 # MAIN EXECUTION
 # ============================================================================
 
 def main():
     """Main execution function."""
     parser = argparse.ArgumentParser(description='Run Battery Project Integer tests')
+    parser.add_argument('--data-dir', type=str, default='experiments/instances/battery-converted',
+                        help='Path to data directory (default: experiments/instances/battery-converted)')
     parser.add_argument('--time-limit', type=int, default=DEFAULT_TIME_LIMIT_MS,
                         help=f'Time limit per test in milliseconds (default: {DEFAULT_TIME_LIMIT_MS})')
     parser.add_argument('--pattern', type=str, default='*.dzn',
                         help='File pattern to match (default: *.dzn)')
     parser.add_argument('--limit', type=int, default=None,
                         help='Limit number of tests to run')
+    parser.add_argument('--solver', type=str, default=DEFAULT_SOLVER,
+                        help=f'MiniZinc solver id (default: {DEFAULT_SOLVER})')
 
     args = parser.parse_args()
 
     # Setup paths
-    project_root = Path(__file__).parent.parent
-    model_file = project_root / "Models" / MODEL_FILE
-    data_dir = project_root / "Data" / "Battery Project Integer"
+    project_root = Path(__file__).resolve().parents[2]
+    data_dir = project_root / args.data_dir
     results_base = project_root / RESULTS_BASE_DIR
 
-    # Validate
-    if not model_file.exists():
-        logger.error(f"Model file not found: {model_file}")
-        sys.exit(1)
-
+    # Validate data directory first
     if not data_dir.exists():
         logger.error(f"Data directory not found: {data_dir}")
         logger.error("Run convert_json_to_integer_dzn.py first!")
         sys.exit(1)
 
     # Get test cases
-    test_files = sorted(data_dir.glob(args.pattern))
+    test_files = sorted(data_dir.rglob(args.pattern))
 
     if not test_files:
         logger.error(f"No test files found matching pattern: {args.pattern}")
+        sys.exit(1)
+
+    # Auto-detect and select appropriate model
+    model_file, precision = select_model_file(project_root, data_dir, test_files[0])
+
+    if not model_file.exists():
+        logger.error(f"Model file not found: {model_file}")
         sys.exit(1)
 
     if args.limit:
@@ -406,8 +466,9 @@ def main():
     logger.info("=" * 80)
     logger.info(f"Run Number: {run_number}")
     logger.info(f"Results Directory: {run_dir}")
-    logger.info(f"Model: {MODEL_FILE}")
-    logger.info(f"Solver: {SOLVER}")
+    logger.info(f"Data Precision: {precision.upper()}")
+    logger.info(f"Model: {model_file.name}")
+    logger.info(f"Solver: {args.solver}")
     logger.info(f"Time Limit: {args.time_limit / 1000}s per test")
     logger.info(f"Total Tests: {len(test_files)}")
     logger.info("=" * 80)
@@ -427,7 +488,7 @@ def main():
         logger.info(f"[{idx}/{len(test_files)}] Testing: {case_name}")
         logger.info("-" * 80)
 
-        test_result = run_test_case(model_file, test_file, args.time_limit)
+        test_result = run_test_case(model_file, test_file, args.time_limit, args.solver)
 
         # Parse solution info
         if test_result['success']:
