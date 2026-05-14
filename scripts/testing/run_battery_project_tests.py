@@ -32,7 +32,8 @@ import signal
 MODEL_FILE = "clp_model.mzn"
 DEFAULT_SOLVER = "cplex"
 DEFAULT_TIME_LIMIT_MS = 300000  # 5 minutes per test
-RESULTS_BASE_DIR = "Tests/Battery Project"
+RESULTS_BASE_DIR = "experiments/results/runner"
+DIAGNOSTICS_BASE_DIR = "experiments/results/diagnostics"
 
 # ============================================================================
 # LOGGING SETUP
@@ -466,6 +467,7 @@ def main():
     logger.info("=" * 80)
     logger.info(f"Run Number: {run_number}")
     logger.info(f"Results Directory: {run_dir}")
+    logger.info(f"Data Directory: {args.data_dir}")
     logger.info(f"Data Precision: {precision.upper()}")
     logger.info(f"Model: {model_file.name}")
     logger.info(f"Solver: {args.solver}")
@@ -518,9 +520,26 @@ def main():
 
         results.append(result)
 
-        # Save individual result
-        output_file = run_dir / f"{case_name}.txt"
+        # Save individual result under run Output directory
+        output_dir = run_dir / "Output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / f"{case_name}.txt"
         save_test_result(result, output_file)
+
+        # Save diagnostics for failed/unknown cases organized by battery type
+        try:
+            # Derive battery type from data directory structure: first component under data_dir
+            rel = test_file.relative_to(data_dir)
+            battery_type = rel.parts[0] if len(rel.parts) > 1 else rel.stem
+        except Exception:
+            battery_type = "unknown"
+
+        if (not result['success']) or result['timed_out'] or (not result['solution_found']):
+            diag_dir = project_root / DIAGNOSTICS_BASE_DIR / battery_type / case_name
+            diag_dir.mkdir(parents=True, exist_ok=True)
+            # Save diagnostic details
+            diag_file = diag_dir / "error.txt"
+            save_test_result(result, diag_file)
 
         # Log result
         if result['success']:
