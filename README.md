@@ -1,4 +1,4 @@
-# CLP-RCLP MiniZinc Lab Environment
+# CLP-RCLP TestLab Environment
 
 [![Version](https://img.shields.io/badge/version-2.0.0-brightgreen?style=flat-square)](.)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](.)
@@ -32,7 +32,7 @@ This framework provides a complete toolkit for:
 
 ### 🔧 Three Core Tools
 
-1. **Data Converter** - JSON to MiniZinc (DZN) format, with normalized and original decimal output modes
+1. **Data Converter** - JSON to MiniZinc (DZN) format, with normalized and Java-compatible output modes
 2. **Instance Generator** - Create test instances with parameters
 3. **Test Runner** - Execute optimization and compare solvers
 
@@ -141,6 +141,8 @@ CLP-RCLP_Minizinc_Lab_Enviroment/
 │   │   ├── battery-generated/
 │   │   └── battery-own/
 │   └── results/                  # Solver results and diagnostics
+│       ├── runner/               # Runner outputs: Run_N/Output/
+│       └── diagnostics/          # Diagnostics organized by battery-type/instance
 │
 ├── scripts/                       # Utility scripts
 │   ├── data-processing/          # Data utilities
@@ -177,7 +179,7 @@ CLP-RCLP_Minizinc_Lab_Enviroment/
 - **Language**: Python 3.8+
 - **Constraint Programming**: MiniZinc 2.6+
 - **UI Framework**: Tkinter (Python built-in)
-- **Solvers**: 
+- **Solvers**:
   - Open-source: Chuffed, Gecode, COIN-BC, OR-Tools
   - Commercial: CPLEX, Gurobi
 - **Testing**: pytest, shell scripts
@@ -198,12 +200,14 @@ Complete documentation is available in the `docs/` directory:
 ## System Requirements
 
 ### Minimum
+
 - RAM: 8GB
 - Disk: 2GB for solvers and instances
 - Python 3.8+
 - MiniZinc 2.6+
 
 ### Recommended
+
 - RAM: 16GB
 - Multi-core CPU for parallel solving
 - SSD for faster I/O
@@ -211,6 +215,7 @@ Complete documentation is available in the `docs/` directory:
 ## Features by Version
 
 ### v2.0.0 (Current - April 2026)
+
 - System Center GUI with theme support
 - Multi-solver integration
 - Professional documentation
@@ -218,16 +223,19 @@ Complete documentation is available in the `docs/` directory:
 - Theme persistence across sessions
 
 ### v1.4.0
+
 - Multi-solver architecture
 - Result aggregation
 - HTML report generation
 
 ### v1.3.0
+
 - Enhanced converter with validation
 - Cork variant generation
 - Parameter scaling improvements
 
 ### v1.2.0
+
 - Initial multi-tool release
 - Converter, Generator, Runner tools
 - Basic documentation
@@ -235,11 +243,13 @@ Complete documentation is available in the `docs/` directory:
 ## Getting Help
 
 ### Documentation
+
 - [docs/getting-started/GETTING_STARTED.md](docs/getting-started/GETTING_STARTED.md) - Installation help
 - [docs/guides/TROUBLESHOOTING.md](docs/guides/TROUBLESHOOTING.md) - Common problems
 - [docs/reference/USAGE_GUIDE.md](docs/reference/USAGE_GUIDE.md) - Tool usage
 
 ### Issues & Feedback
+
 - GitHub Issues: Report bugs and request features
 - GitHub Discussions: General questions and ideas
 
@@ -281,6 +291,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file for
 ## Author
 
 **AVISPA Research Team**
+
 - Andrey Quiceno (Lead Developer)
 - Juan Francesco García (UI/Framework)
 
