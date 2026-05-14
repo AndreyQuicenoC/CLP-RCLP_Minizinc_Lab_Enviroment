@@ -48,15 +48,18 @@ array[B,1..max_stops] of int: D;      % Energía consumida entre paradas
 array[B,1..max_stops] of int: T;      % Tiempo de viaje entre paradas
 array[B,1..max_stops] of int: tau_bi; % Horario planificado de llegada
 
+int: tau_max = max([tau_bi[b,i] | b in B, i in 1..num_stops[b]]);
+int: t_upper_bound = tau_max + M + beta + SM + mu;
+
 % -----------------------------
 % VARIABLES DE DECISIÓN
 % -----------------------------
 
-array[B,1..max_stops] of var 0..150000: cbi;   % Nivel de batería al llegar (scaled by 1000)
-array[B,1..max_stops] of var 0..150000: ebi;   % Energía cargada en la parada (scaled by 1000)
-array[B,1..max_stops] of var 0..600: ctbi;   % Tiempo dedicado a cargar
-array[B,1..max_stops] of var 0..3000: tbi;   % Tiempo real de llegada
-array[B,1..max_stops] of var 0..500: d_tbi;  % Desviación respecto al horario
+array[B,1..max_stops] of var 0..Cmax: cbi;   % Nivel de batería al llegar
+array[B,1..max_stops] of var 0..Cmax: ebi;   % Energía cargada en la parada
+array[B,1..max_stops] of var 0..beta: ctbi;   % Tiempo dedicado a cargar
+array[B,1..max_stops] of var 0..t_upper_bound: tbi;   % Tiempo real de llegada
+array[B,1..max_stops] of var 0..mu: d_tbi;  % Desviación respecto al horario
 
 array[B,1..max_stops] of var 0..1: xbi;      % 1 si el bus carga en la parada
 

@@ -17,6 +17,9 @@ array[B,S] of float: tau_bi;
 array[B,S] of float: D;
 array[B,S] of int: T;
 
+float: tau_max = max([tau_bi[b,i] | b in B, i in 1..num_stops[b]]);
+float: t_upper_bound = tau_max + M + beta + SM + mu;
+
 float: Cmin;
 float: Cmax;
 float: alpha;
@@ -30,11 +33,11 @@ float: psi;
 % VARIABLES DEL MODELO (FLOTANTE)
 % -----------------------------
 
-array[B,S] of var 0.0..150000.0: cbi;
-array[B,S] of var 0.0..150000.0: ebi;
-array[B,S] of var 0.0..600.0: ctbi;
-array[B,S] of var 0.0..3000.0: tbi;
-array[B,S] of var 0.0..500.0: d_tbi;
+array[B,S] of var 0.0..Cmax: cbi;
+array[B,S] of var 0.0..Cmax: ebi;
+array[B,S] of var 0.0..beta: ctbi;
+array[B,S] of var 0.0..t_upper_bound: tbi;
+array[B,S] of var 0.0..mu: d_tbi;
 
 array[B,S] of var 0..1: xbi;
 array[ST] of var 0..1: xst;
@@ -96,7 +99,7 @@ constraint forall(b,d in B where b < d)(
         Zbdij[b,d,i,j] <= xbi[d,j] /\
         xbi[b,i] + xbi[d,j] <= Zbdij[b,d,i,j] + 1 /\
         tbi[b,i] >= tbi[d,j] + ctbi[d,j] + SM - M * zbdi[b,d,i,j] /\
-        tbi[d,j] >= tbi[b,i] + ctbi[b,i] + SM - M * zbdi[b,d,j,i] /\
+        tbi[d,j] >= tbi[b,i] + ctbi[b,i] + SM - M * zbdi[d,b,j,i] /\
         zbdi[b,d,i,j] + zbdi[d,b,j,i] - (1 - Zbdij[b,d,i,j]) <= 1
     )
 );

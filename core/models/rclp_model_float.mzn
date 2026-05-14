@@ -19,6 +19,9 @@ array[B,S] of float: tau_bi;
 array[B,S] of float: D;
 array[B,S] of int: T;
 
+float: tau_max = max([tau_bi[b,i] | b in B, i in 1..num_stops[b]]);
+float: t_upper_bound = tau_max + M + beta + SM + mu;
+
 float: Cmin;
 float: Cmax;
 float: alpha;
@@ -32,12 +35,12 @@ float: psi;
 % VARIABLES RCLP (FLOTANTE)
 % -------------------------------
 
-array[B,S] of var 0.0..150000.0: c;
-array[B,S] of var 0.0..150000.0: e;
-array[B,S] of var 0.0..600.0: ct;
-array[B,S] of var 0.0..3000.0: t;
+array[B,S] of var 0.0..Cmax: c;
+array[B,S] of var 0.0..Cmax: e;
+array[B,S] of var 0.0..beta: ct;
+array[B,S] of var 0.0..t_upper_bound: t;
 
-array[B,S] of var 0.0..500.0: dt;
+array[B,S] of var 0.0..mu: dt;
 array[B,S] of var 0..1: x;
 array[ST] of var 0..1: xst;
 
@@ -49,12 +52,12 @@ array[B,B,S,S] of var 0..1: z2;
 % VARIABLES BACKUP
 % -------------------------------
 
-array[B,S] of var 0.0..150000.0: c_p;
-array[B,S] of var 0.0..150000.0: e_p;
-array[B,S] of var 0.0..600.0: ct_p;
-array[B,S] of var 0.0..3000.0: t_p;
+array[B,S] of var 0.0..Cmax: c_p;
+array[B,S] of var 0.0..Cmax: e_p;
+array[B,S] of var 0.0..beta: ct_p;
+array[B,S] of var 0.0..t_upper_bound: t_p;
 
-array[B,S] of var 0.0..500.0: dt_p;
+array[B,S] of var 0.0..mu: dt_p;
 array[B,S] of var 0..1: x_p;
 array[B,B,S,S] of var 0..1: Zpp;
 array[B,B,S,S] of var 0..1: zp1;
@@ -78,7 +81,7 @@ forall(b in B, i in 2..num_stops[b])(
 
 constraint
 forall(b in B, i in 2..num_stops[b])(
-    t[b,i] >= t[b,i-1] + ct[b,i-1] - T[b,i] /\
+    t[b,i] >= t[b,i-1] + ct[b,i-1] + T[b,i] /\
     t[b,i] >= t[b,i-1] + ct[b,i-1] + SM * x[b,i-1] /\
     dt[b,i] >= t[b,i] - tau_bi[b,i] /\
     dt[b,i] >= tau_bi[b,i] - t[b,i] /\
