@@ -383,11 +383,12 @@ class ConverterInterface(tk.Frame):
             command=self._on_format_change
         ).pack(anchor=tk.W)
 
+        # NOTE: "Original decimal mode" removed — use "normalized" or "java"
         tk.Radiobutton(
             format_frame,
-            text="Original decimal mode",
+            text="Java-compatible mode",
             variable=self.output_format_var,
-            value="original",
+            value="java",
             bg=self.theme_dict["bg_base"],
             fg=self.theme_dict["text_primary"],
             selectcolor=self.theme_dict["bg_surface"],
@@ -396,7 +397,7 @@ class ConverterInterface(tk.Frame):
 
         Tooltip(
             format_frame,
-            "Normalized keeps the current scaled integer output. Original preserves the source decimals for the external model.",
+            "Normalized keeps the current scaled integer output. Java-compatible outputs Java-style energy and time units.",
             self.theme_dict
         )
 
@@ -642,10 +643,7 @@ class ConverterInterface(tk.Frame):
             output_format = self.output_format_var.get()
             self.log_queue.put((f"Using conversion format: {output_format}", "info"))
 
-            distances, dist_station_count = DataLoader.load_distances(
-                jits_path,
-                preserve_precision=(output_format == "original")
-            )
+            distances, dist_station_count = DataLoader.load_distances(jits_path)
 
             # Perform conversion with source directory name and loaded data
             success_count, failure_count, messages = ConverterEngine.batch_convert_files(
@@ -882,8 +880,8 @@ TIPS FOR SUCCESSFUL CONVERSION:
     def _on_format_change(self) -> None:
         """React to format selection changes."""
         selected = self.output_format_var.get()
-        if selected == "original":
-            self._log("Original decimal mode selected; distances and energy will be preserved without scaling.", "info")
+        if selected == "java":
+            self._log("Java-compatible mode selected; outputs will follow Java unit conventions.", "info")
         else:
             self._log("Normalized integer mode selected; current scaled output will be used.", "info")
 

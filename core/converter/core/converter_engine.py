@@ -200,7 +200,9 @@ class ConverterEngine:
             processed_buses.append({
                 'station_ids': station_ids,
                 'times': times,
+                'times_seconds': [t * 60 for t in times],
                 'time_deltas': T_values,
+                'time_deltas_seconds': [int(round(v * 60.0)) for v in T_values],
                 'rest_flags': rest_flags,
             })
 
@@ -219,7 +221,9 @@ class ConverterEngine:
             variant_name: Name of the variant (e.g., "20_0")
             config: ExperimentConfig instance (or None for defaults)
             distances_dict: Optional dict of (from_id, to_id) -> distance_meters
-            output_format: "normalized" for scaled integer output, "original" for raw decimal output
+            output_format: "normalized" for scaled integer output,
+                           "original" for raw decimal output,
+                           "java" for Java-compatible units/scales
 
         Returns:
             (success: bool, message: str)
@@ -227,10 +231,12 @@ class ConverterEngine:
         # Create converter instance with config and data
         converter = cls(config=config, distances_dict=distances_dict or {})
         format_mode = (output_format or "normalized").strip().lower()
-        if format_mode not in {"normalized", "original"}:
-            return False, f"Unsupported output format: {output_format}"
+        if format_mode not in {"normalized", "java"}:
+            return False, f"Unsupported output format: {output_format}. 'original' mode has been removed."
 
-        preserve_precision = format_mode == "original"
+        # Original decimal mode removed — always use integer/normalized conversion or java-compatible
+        preserve_precision = False
+        java_mode = format_mode == "java"
 
         logger.info(f"Converting {json_file.name} to {format_mode} DZN format...")
         logger.info(f"  Using model speed: {converter.MIN_SPEED_KMH} km/h, rest time: {converter.config.rest_time} min")
@@ -292,6 +298,11 @@ class ConverterEngine:
                         if not isinstance(distance_km, Decimal):
                             distance_km = Decimal(str(distance_km))
                         energy_consumed_kwh = distance_km * Decimal('0.25')
+                    elif java_mode:
+                        distance_m = converter.distances_dict.get((prev_station_id, curr_station_id), 0)
+                        if isinstance(distance_m, Decimal):
+                            distance_m = float(distance_m * Decimal('1000'))
+                        energy_consumed_kwh = int(round(float(distance_m)))
                     else:
                         distance_m = converter.distances_dict.get((prev_station_id, curr_station_id), 0)
                         distance_km = float(distance_m) / 1000.0
@@ -300,6 +311,9 @@ class ConverterEngine:
 
                 if preserve_precision:
                     energy_values = energy + [Decimal('0')] * (max_stops - len(energy))
+                elif java_mode:
+                    energy_values = [int(v) for v in energy]
+                    energy_values += [0] * (max_stops - len(energy_values))
                 else:
                     # Scale energy by SCALE_ENERGY (1000) - 1 unit = 0.001 kWh
                     energy_values = [converter.scale_energy_to_integer(e) for e in energy]
@@ -308,14 +322,20 @@ class ConverterEngine:
 
                 # T: travel times (NO SCALING - keep as integer minutes)
                 # Consistent with JITS2022: T = distance / speed in minutes
-                times = [converter.scale_time_to_integer(t) for t in bus['time_deltas']]
+                if java_mode:
+                    times = [int(t) for t in bus['time_deltas_seconds']]
+                else:
+                    times = [converter.scale_time_to_integer(t) for t in bus['time_deltas']]
                 times += [0] * (max_stops - len(times))
                 T.extend(times)
 
                 # tau_bi: schedule times (NO SCALING - use raw minutes)
                 # MiniZinc tbi variable is defined as: var 0..3000: tbi
                 # So tau_bi must be in same units (minutes)
-                schedule = [converter.scale_time_to_integer(t) for t in bus['times']]
+                if java_mode:
+                    schedule = [int(t) for t in bus['times_seconds']]
+                else:
+                    schedule = [converter.scale_time_to_integer(t) for t in bus['times']]
                 schedule += [schedule[-1] if schedule else 0] * (max_stops - len(schedule))
                 tau_bi.extend(schedule)
 
@@ -335,6 +355,11 @@ class ConverterEngine:
                     f.write("% Converted to CLP format with ORIGINAL DECIMAL VALUES:\n")
                     f.write("%   - Energy (D, Cmax, Cmin, alpha): raw decimal values (no scaling)\n")
                     f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): native minutes (no scaling)\n")
+                elif java_mode:
+                    f.write("% Converted to CLP format with JAVA-COMPATIBLE CONVENTION:\n")
+                    f.write("%   - Energy (D, Cmax, Cmin): distance-based units (meters-equivalent)\n")
+                    f.write("%   - alpha: converted from Java chargingRate -> units/second\n")
+                    f.write("%   - Time (T, tau_bi, mu, SM, psi, beta): seconds\n")
                 else:
                     f.write("% Converted to CLP format with COHERENT SCALING:\n")
                     f.write("%   - Energy (D, Cmax, Cmin, alpha): scaled by 1000 (1 unit = 0.001 kWh)\n")
@@ -347,6 +372,10 @@ class ConverterEngine:
                     f.write("% - D: energy values kept as raw decimal kWh values\n")
                     f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
                     f.write("%           2.5 kWh -> 2.5 (raw decimal)\n")
+                elif java_mode:
+                    f.write("% - D: direct Java-style distance units (distance_km * 1000)\n")
+                    f.write("% - Example: 07:00 -> 25200 seconds\n")
+                    f.write("%           1.25 km -> 1250 units\n")
                 else:
                     f.write("% - D: energy values scaled by 1000 (1 unit = 0.001 kWh)\n")
                     f.write("% - Example: 420 minutes (07:00) = 420 (no scaling)\n")
@@ -357,6 +386,9 @@ class ConverterEngine:
                 if preserve_precision:
                     f.write("%   - Energy (D): direct kWh values, no scaling applied\n")
                     f.write("%   - MiniZinc constraints use original decimal energy units\n")
+                elif java_mode:
+                    f.write("%   - Energy (D): Java-compatible distance units\n")
+                    f.write("%   - Time values are in seconds\n")
                 else:
                     f.write("%   - Energy (D): integer_value / 1000 = kWh\n")
                     f.write("%   - MiniZinc constraints use scaled units (energy in 0.001 kWh units)\n")
@@ -374,6 +406,17 @@ class ConverterEngine:
                     f.write(f"Cmax = {converter.format_dzn_number(Decimal(str(converter.config.cmax)))};  % Maximum battery capacity (kWh)\n")
                     f.write(f"Cmin = {converter.format_dzn_number(Decimal(str(converter.config.cmin)))};   % Minimum reserve (kWh)\n")
                     f.write(f"alpha = {converter.format_dzn_number(Decimal(str(converter.config.alpha)))};  % Fast charging rate (kWh/min)\n\n")
+                elif java_mode:
+                    cmax_java = int(round(converter.config.cmax))
+                    cmin_java = int(round(converter.config.cmin))
+                    charging_rate = float(converter.config.charging_rate)
+                    alpha_java = (charging_rate * 1000.0) / 60.0
+                    alpha_java_int = int(round(alpha_java))
+
+                    f.write("% Java-compatible values (distance-based energy convention)\n")
+                    f.write(f"Cmax = {cmax_java};  % Java Cmax units\n")
+                    f.write(f"Cmin = {cmin_java};  % Java Cmin units\n")
+                    f.write(f"alpha = {alpha_java_int};  % from chargingRate={charging_rate} -> (rate*1000/60)\n\n")
                 else:
                     f.write(f"% Scaled by {converter.SCALE_ENERGY} (1 unit = 0.001 kWh)\n")
                     f.write(f"Cmax = {converter.CMAX};  % Maximum battery capacity (original: {converter.config.cmax} kWh)\n")
@@ -389,6 +432,25 @@ class ConverterEngine:
                     f.write(f"psi = {converter.format_dzn_number(Decimal(str(converter.config.psi)))};     % Minimum charging time (original: {converter.config.psi} min)\n")
                     f.write(f"beta = {converter.format_dzn_number(Decimal(str(converter.config.beta)))};   % Maximum charging time (original: {converter.config.beta} min)\n")
                     f.write(f"M = {converter.format_dzn_number(Decimal(str(converter.M)))};   % Big-M constant (based on max horizon: ~5000 min)\n\n")
+                elif java_mode:
+                    charging_rate = float(converter.config.charging_rate)
+                    alpha_java = (charging_rate * 1000.0) / 60.0
+                    cmax_java = int(round(converter.config.cmax))
+                    cmin_java = int(round(converter.config.cmin))
+                    beta_java = 0
+                    if alpha_java > 0:
+                        beta_java = int(round(((cmax_java / alpha_java) * 0.8) - (cmin_java / alpha_java)))
+                    beta_java = max(1, beta_java)
+                    mu_java = int(round(converter.config.dt_max * 60))
+                    sm_java = int(round(converter.config.sm * 60))
+                    psi_java = int(round(converter.config.min_ct * 60))
+                    m_java = 100000
+
+                    f.write(f"mu = {mu_java};      % Maximum delay in seconds (from dt_max={converter.config.dt_max} min)\n")
+                    f.write(f"SM = {sm_java};      % Safety margin in seconds (from sm={converter.config.sm} min)\n")
+                    f.write(f"psi = {psi_java};     % Minimum charging time in seconds (from min_ct={converter.config.min_ct} min)\n")
+                    f.write(f"beta = {beta_java};   % Java maxChargingTime approximation in seconds\n")
+                    f.write(f"M = {m_java};   % Big-M constant (Java-style horizon)\n\n")
                 else:
                     f.write(f"mu = {converter.MU};      % Maximum delay (original: {converter.config.mu} min)\n")
                     f.write(f"SM = {converter.SM};      % Safety margin (original: {converter.config.sm} min)\n")
@@ -415,9 +477,16 @@ class ConverterEngine:
 
                 # Energy consumption
                 f.write("% --- Energy Consumption (D) ---\n")
-                f.write("% Energy consumed between stops in kWh (INTEGER values scaled by 1000)\n")
-                f.write("% To get actual kWh: divide by 1000\n")
-                f.write("% Calculated from distance matrix: Energy = distance_km * 0.25 kWh/km\n")
+                if preserve_precision:
+                    f.write("% Energy consumed between stops in raw decimal kWh\n")
+                    f.write("% Calculated from distance matrix: Energy = distance_km * 0.25 kWh/km\n")
+                elif java_mode:
+                    f.write("% Java-compatible distance-based consumption units\n")
+                    f.write("% D[from,to] = int(distance_km * 1000)\n")
+                else:
+                    f.write("% Energy consumed between stops in kWh (INTEGER values scaled by 1000)\n")
+                    f.write("% To get actual kWh: divide by 1000\n")
+                    f.write("% Calculated from distance matrix: Energy = distance_km * 0.25 kWh/km\n")
                 f.write(f"D = array2d(1..{num_buses}, 1..{max_stops}, [\n")
                 for i in range(num_buses):
                     start_idx = i * max_stops
