@@ -236,7 +236,8 @@ class RunnerInterface(tk.Frame):
             state="readonly",
             style="Dark.TCombobox",
         )
-        self.dir_combo.current(0)
+        if dirs:
+            self.dir_combo.current(0)
         self.dir_combo.pack(fill=tk.X, padx=12, pady=(0, 5))
         Tooltip(self.dir_combo, "Select test dataset directory", self.theme_dict)
 
@@ -534,10 +535,12 @@ class RunnerInterface(tk.Frame):
         if not batteries_path.exists():
             return []
 
-        # Get all subdirectories (batteries)
+        # Hide legacy original-decimal batteries from UI to avoid non-parity runs.
+        hidden_legacy_dirs = {"battery-original"}
+
         batteries = sorted([
             d.name for d in batteries_path.iterdir()
-            if d.is_dir() and not d.name.startswith('.')
+            if d.is_dir() and not d.name.startswith('.') and d.name not in hidden_legacy_dirs
         ])
 
         return batteries
@@ -561,6 +564,16 @@ class RunnerInterface(tk.Frame):
 
         if not instance or not model or not precision or not directory:
             messagebox.showwarning("Missing Selection", "Please select directory, instance, model, and number type.")
+            return
+
+        if directory == "battery-original":
+            self._log("'battery-original' is a legacy decimal dataset and is hidden from parity runs.", "warning")
+            self._log("Use 'battery-new' or 'battery-java-aligned' for Java-compatible CLP parity.", "warning")
+            messagebox.showwarning(
+                "Legacy Dataset",
+                "battery-original is legacy decimal data and can yield 0 stations by design.\n"
+                "Use battery-new or battery-java-aligned for Java-compatible runs."
+            )
             return
 
         self._log(f"Starting execution: {instance} ({model}, {precision}) with {solver_name}", "info")
