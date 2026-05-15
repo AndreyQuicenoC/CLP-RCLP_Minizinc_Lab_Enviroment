@@ -188,19 +188,19 @@ class ConverterInterface(tk.Frame):
 
         # Directory selection
         SectionLabel(left, "1. Select Test Battery Directory", self.theme_dict["bg_base"],
-                     self.theme_dict["text_primary"]).pack(fill=tk.X, pady=(0, 10))
+                     self.theme_dict["text_primary"]).pack(fill=tk.X, pady=(0, 0))
 
         self._build_directory_selector(left)
 
-        Divider(left, self.theme_dict["border"]).pack(fill=tk.X, pady=10)
+        Divider(left, self.theme_dict["border"]).pack(fill=tk.X, pady=0)
 
         # Test selection
         SectionLabel(left, "2. Select Tests to Convert", self.theme_dict["bg_base"],
-                     self.theme_dict["text_primary"]).pack(fill=tk.X, pady=(0, 10))
+                     self.theme_dict["text_primary"]).pack(fill=tk.X, pady=(0, 5))
 
         self._build_test_selector(left)
 
-        Divider(left, self.theme_dict["border"]).pack(fill=tk.X, pady=10)
+        Divider(left, self.theme_dict["border"]).pack(fill=tk.X, pady=0)
 
         # Output configuration
         SectionLabel(left, "3. Output Configuration", self.theme_dict["bg_base"],
@@ -238,7 +238,7 @@ class ConverterInterface(tk.Frame):
     def _build_directory_selector(self, parent: tk.Widget) -> None:
         """Build directory selection controls."""
         frame = tk.Frame(parent, bg=self.theme_dict["bg_base"])
-        frame.pack(fill=tk.X, pady=(0, 10))
+        frame.pack(fill=tk.X, pady=(0, 0))
 
         # Instances directory
         tk.Label(
@@ -247,14 +247,14 @@ class ConverterInterface(tk.Frame):
             bg=self.theme_dict["bg_base"],
             fg=self.theme_dict["text_primary"],
             font=("Arial", 9)
-        ).pack(anchor=tk.W, pady=(0, 5))
+        ).pack(anchor=tk.W, pady=(0, 2))
 
         jits_frame = tk.Frame(frame, bg=self.theme_dict["bg_base"])
-        jits_frame.pack(fill=tk.X, pady=(0, 10))
+        jits_frame.pack(fill=tk.X, pady=(0, 2))
 
         self.jits_dir_var = tk.StringVar()
         self.jits_dir_combo = ttk.Combobox(jits_frame, textvariable=self.jits_dir_var, state="readonly")
-        self.jits_dir_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+        self.jits_dir_combo.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 2))
 
         browse_btn = tk.Button(
             jits_frame,
@@ -636,12 +636,23 @@ class ConverterInterface(tk.Frame):
             else:
                 self.log_queue.put(("No distance data found. Using fallback calculation.", "warning"))
 
-            # Create experiment configuration
-            config = ExperimentConfig()
-            self.log_queue.put((f"Using config: model_speed={config.model_speed} km/h, rest_time={config.rest_time} min", "info"))
-
             output_format = self.output_format_var.get()
             self.log_queue.put((f"Using conversion format: {output_format}", "info"))
+
+            # Load JITS experiment parameters when available.
+            # This preserves Java baseline semantics in java-compatible mode.
+            config_file = self._find_experiment_config(jits_path)
+            config = ExperimentConfig(config_file=config_file) if config_file else ExperimentConfig()
+            if config_file:
+                self.log_queue.put((f"Loaded experiment config: {config_file.name}", "info"))
+            else:
+                self.log_queue.put(("No experiment_parameters*.txt found; using default conversion parameters.", "warning"))
+
+            self.log_queue.put((
+                f"Using config: cmax={config.cmax}, cmin={config.cmin}, charging_rate={config.charging_rate}, "
+                f"model_speed={config.model_speed}, rest_time={config.rest_time}",
+                "info"
+            ))
 
             distances, dist_station_count = DataLoader.load_distances(jits_path)
 
@@ -680,6 +691,26 @@ class ConverterInterface(tk.Frame):
         self._log("Conversion stopped by user", "warning")
         self.convert_btn.set_disabled(False)
         self.stop_btn.set_disabled(True)
+
+    def _find_experiment_config(self, jits_path: Path) -> Optional[Path]:
+        """Find best experiment parameter file in the selected JITS dataset directory."""
+        priority = [
+            "experiment_parameters.txt",
+            "experiment_parameters_clean.txt",
+            "experiment_parameters_cork1.txt",
+            "experiment_parameters_toy.txt",
+        ]
+
+        for filename in priority:
+            candidate = jits_path / filename
+            if candidate.exists():
+                return candidate
+
+        wildcard_matches = sorted(jits_path.glob("experiment_parameters*.txt"))
+        if wildcard_matches:
+            return wildcard_matches[0]
+
+        return None
 
     def _build_right_panel(self, parent: tk.Widget) -> None:
         """Build right panel with conversion results."""

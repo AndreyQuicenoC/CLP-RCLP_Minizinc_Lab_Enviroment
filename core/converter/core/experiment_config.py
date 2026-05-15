@@ -112,7 +112,19 @@ class ExperimentConfig:
         """
         try:
             with open(config_file, 'r', encoding='utf-8') as f:
-                lines = [line.strip() for line in f.readlines() if line.strip() and not line.startswith('#')]
+                raw_lines = f.readlines()
+
+            # Remove inline comments and blank lines.
+            # JITS files frequently use: "120000 # Capacity ...".
+            lines = []
+            for raw in raw_lines:
+                line = raw.strip()
+                if not line:
+                    continue
+                if '#' in line:
+                    line = line.split('#', 1)[0].strip()
+                if line:
+                    lines.append(line)
 
             # Expected order of parameter arrays (after first 3 lines)
             param_names = [
@@ -126,7 +138,7 @@ class ExperimentConfig:
             if len(lines) > 3:
                 for i, param_name in enumerate(param_names):
                     if i + 3 < len(lines):
-                        values_str = lines[i + 3].split(',')[0].strip()  # Take first value
+                        values_str = lines[i + 3].split(',')[0].strip()  # Take first value when list-like
                         try:
                             if param_name in self.params:
                                 if isinstance(self.DEFAULTS[param_name], int):

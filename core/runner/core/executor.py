@@ -120,7 +120,11 @@ class MiniZincExecutor:
             # Check if satisfiable - look for actual "UNSATISFIABLE" marker
             if output.strip().startswith("UNSATISFIABLE") or "% UNSATISFIABLE" in output:
                 logger.info(f"Instance is UNSATISFIABLE with {SolverManager.get_display_name(solver)}")
-                return False, None
+                return False, {
+                    "status": "unsatisfiable",
+                    "model_path": str(self.model_path),
+                    "model_precision": "floating" if "float" in self.model_path.stem.lower() else "integer",
+                }
 
             # Extract key values from solution
             lines = output.strip().split("\n")

@@ -237,15 +237,15 @@ class RunnerInterface(tk.Frame):
             style="Dark.TCombobox",
         )
         self.dir_combo.current(0)
-        self.dir_combo.pack(fill=tk.X, padx=12, pady=(0, 12))
+        self.dir_combo.pack(fill=tk.X, padx=12, pady=(0, 5))
         Tooltip(self.dir_combo, "Select test dataset directory", self.theme_dict)
 
-        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=5, pady=5)
 
         # Test instance selection
         SectionLabel(card, "Instance", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 6))
         inst_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
-        inst_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+        inst_frame.pack(fill=tk.X, padx=12, pady=(0, 5))
 
         self.instance_var = tk.StringVar()
         self.instance_combo = ttk.Combobox(
@@ -263,12 +263,12 @@ class RunnerInterface(tk.Frame):
         refresh_btn.pack(side=tk.LEFT, padx=(6, 0))
         Tooltip(refresh_btn, "Reload list of available instances", self.theme_dict)
 
-        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=5)
 
         # Solver selection
         SectionLabel(card, "Solver", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 6))
         solver_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
-        solver_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+        solver_frame.pack(fill=tk.X, padx=12, pady=(0, 5))
 
         self.solver_var = tk.StringVar(value="chuffed")
         solver_names = [SolverManager.get_display_name(s) for s in SolverManager.get_available_solvers()]
@@ -302,7 +302,7 @@ class RunnerInterface(tk.Frame):
         self.model_var = tk.StringVar(value="CLP")
 
         model_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
-        model_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+        model_frame.pack(fill=tk.X, padx=12, pady=(0, 5))
 
         for model in ["CLP", "RCLP"]:
             rb = tk.Radiobutton(
@@ -317,11 +317,11 @@ class RunnerInterface(tk.Frame):
             )
             rb.pack(side=tk.LEFT, padx=8)
 
-        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=5)
 
         SectionLabel(card, "Number Type", self.theme_dict).pack(anchor="w", padx=12, pady=(0, 6))
         precision_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
-        precision_frame.pack(fill=tk.X, padx=12, pady=(0, 12))
+        precision_frame.pack(fill=tk.X, padx=12, pady=(0, 5))
 
         self.precision_var = tk.StringVar(value="integer")
         for label, value in [("Integer", "integer"), ("Floating", "floating")]:
@@ -343,7 +343,7 @@ class RunnerInterface(tk.Frame):
             self.theme_dict,
         )
 
-        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=12)
+        Divider(card, self.theme_dict).pack(fill=tk.X, padx=12, pady=5)
 
         # Action buttons
         btn_frame = tk.Frame(card, bg=self.theme_dict["bg_elevated"])
@@ -619,7 +619,7 @@ class RunnerInterface(tk.Frame):
                 # Save results organized by test name and solver
                 test_name = instance.replace('.dzn', '')
                 handler = ResultHandler(
-                    str(Path(self.project_root) / "Tests" / "Output" / directory),
+                    str(Path(self.project_root) / "experiments" / "results" / "output" / directory),
                     test_name=test_name
                 )
                 success_save, json_path, txt_path = handler.save_results(instance, result_dict, SolverManager.get_display_name(solver_type))
@@ -638,7 +638,7 @@ class RunnerInterface(tk.Frame):
                     'minizinc_stderr': '',
                     'execution_time': exec_time
                 }
-                handler = ResultHandler(str(Path(self.project_root) / "Tests"))
+                handler = ResultHandler(str(Path(self.project_root) / "experiments" / "results"))
                 handler.save_diagnostic(instance, diag_result, SolverManager.get_display_name(solver_type), "unsatisfiable")
             else:
                 self._log(f"Execution failed with {solver_name}", "error")
